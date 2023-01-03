@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-31] NIS 서비스 비활성화
+CODE [U-31] 스팸 메일 릴레이 제한
 
 cat << EOF >> $RESULT
 
-[양호]: 불필요한 NIS 서비스가 비활성화 되어있는 경우
+[양호]: SMTP 서비스를 사용하지 않거나 릴레이 제한이 설정되어 있는 경우
 
-[취약]: 불필요한 NIS 서비스가 활성화 되어있는 경우
+[취약]: SMTP 서비스를 사용하며 릴레이 제한이 설정되어 있지 않은 경우
 
 EOF
 
@@ -24,25 +24,39 @@ BAR
 
  
 
-ps -ef | grep yp | grep -v grep >/dev/null 2>&1
+TMP1=$(mktemp)
+
+TMP2=$(mktemp)
+
+FILE=/etc/mail/sendmail.cf
 
  
 
-if [ $? -eq 0 ] ; then
+ps -ef | grep sendmail | grep -v grep > $TMP1
 
-WARN NIS 서비스가 활성화 되어 있습니다.
+ 
 
-INFO 서비스 정지 /usr/lib/netsvc/yp/ypstop
+if [ -z $TMP1 ] ; then
 
-INFO rm -r /var/yp/blue.org
-
-INFO rm /etc/ethers /etc/netgroup /etc/timezone /etc/bootparams
-
-INFO vi /etc/nsswitch.conf
+OK SMTP서비스를 사용하지 않습니다.
 
 else
 
-OK NIS 서비스가 비활성화 되어 있습니다. 
+cat $FILE | grep "R$\*" | grep "Relaying denied">$TMP2
+
+CHECK=`cut -c 1 $TMP2`
+
+if [ $CHECK == "#" ] ; then
+
+WARN SMTP 릴레이 제한이 설정되어 있지 않습니다. 
+
+INFO $FILE 의 Relaying denied 주석을 제거 하고 /etc/mail/access에 지정하십시오.
+
+else
+
+OK SMTP 릴레이 제한이 설정되어 있습니다.
+
+fi
 
 fi
 

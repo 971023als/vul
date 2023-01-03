@@ -6,17 +6,17 @@
 
  
 
+ 
+
 BAR
 
-CODE [U-29] 접속 IP 및 포트 제한 
+CODE [U-29] tftp, talk 서비스 비활성화
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/hosts.deny 파일에 ALL Deny 설정후
+[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우
 
-/etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록한 경우
-
-[취약]: 위와 같이 설정되지 않은 경우
+[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우
 
 EOF
 
@@ -24,21 +24,47 @@ BAR
 
  
 
-cat /etc/hosts.deny | grep -v '^#' | grep 'ALL: ALL' > /dev/null 2>&1
+TMP=$(mktemp)
+
+cat << EOF >> $TMP
+
+tftp
+
+talk
+
+ntalk
+
+EOF
 
  
 
-if [ $? -eq 0 ] ; then
+cat $TMP | while read DAEMON
 
-OK /etc/hosts.deny 파일에 ALL Deny 설정이 되어 있습니다.
+do
+
+ls -l /etc/xinetd.d/$DAEMON >/dev/null 2>&1
+
+if [ $? -ne 0 ] ; then
+
+OK $DAEMON 이 비활성화 되어 있습니다.
 
 else
 
-WARN /etc/hosts.deny 파일에 ALL Deny 설정이 되어 있지 않습니다. 
+CHECK=`cat /etc/xinet.d/$DAEMON | grep disable | awk -F= '{print $2}'`
 
-INFO /etc/hosts.deny , /etc/hosts.allow 설정을 확인하십시오. 
+if [ $CHECK == 'yes' ] ; then
+
+OK $DAEMON이 비활성화 되어 있습니다.
+
+else
+
+WARN $DAEMON이 활성화 되어 있습니다.
 
 fi
+
+fi
+
+done
 
  
 

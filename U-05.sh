@@ -4,6 +4,8 @@
 
 . function.sh
 
+ 
+
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1
@@ -12,13 +14,13 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-05] root 이외의 UID가 '0' 금지
+CODE [U-05] root 홈, 패스(PATH) 디렉토리 권한 및 패스(PATH) 설정
 
 cat << EOF >> $RESULT
 
-[양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
+[양호]: PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않은 경우
 
-[취약]: root 계정과 동일한 UID를 갖는 계정이 존재하는 경우
+[취약]: PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되어 있는 경우
 
 EOF
 
@@ -26,23 +28,31 @@ BAR
 
  
 
-PASSFILE=passwd
+ROOTPATH=$(su - root -c 'echo $PATH')
 
-awk -F: '$3 == "0" {print $1}' $PASSFILE >> $TMP1
+CHECKPATH=$(echo $ROOTPATH | egrep '^:|:$|::|^.:|:.:|:.$')
 
-UIDZEROCNT=$(wc -l < $TMP1)
+if [ -z $CHECKPATH ] ; then
 
-if [ $UIDZEROCNT -ge 2 ] ; then
-
-WARN 'root 계정과 동일한 UID를 갖는 계정이 존재합니다'
-
-INFO $TMP1 참고 하십시오
+OK PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않았습니다.
 
 else
 
-OK 'root 계정과 동일한 UID를 갖는 계정은 없습니다.'
+WARN PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되어 있습니다.
+
+INFO $TMP1 파일을 참고 하십시오.
+
+echo "==================================================" >> $TMP1
+
+echo "1. root 사용자의 PATH 변수 내용입니다." >> $TMP1
+
+echo "$CHECKEDPATH" >> $TMP1
+
+echo "==================================================" >> $TMP1
 
 fi
+
+ 
 
  
 

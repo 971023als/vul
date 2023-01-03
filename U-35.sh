@@ -6,21 +6,17 @@
 
  
 
-TMP1=./log/`SCRIPTNAME`.log
-
-> $TMP1
-
  
 
 BAR
 
-CODE [U-35] 숨겨진 파일 및 디렉터리 검색 및 제거
+CODE [U-35] Apache 디렉터리 리스팅 제거
 
 cat << EOF >> $RESULT
 
-[양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
+[양호]: 디렉터리 검색 기능을 사용하지 않는 경우
 
-[취약]: 디렉터리 내 숨겨진 파일을 확인하지 않고, 불필요한 파일을 방치한 경우
+[취약]: 디렉터리 검색 기능을 사용하는 경우
 
 EOF
 
@@ -28,16 +24,38 @@ BAR
 
  
 
-find / -name '.*' > $TMP1
+TMP1=$(mktemp)
+
+FILE=/etc/httpd/conf/httpd.conf
 
  
 
-INFO "$TMP1 (숨김파일 목록) 파일 참고하시기 바랍니다. "
+ps -ef | grep apache | grep -v grep >/dev/null 2>&1
+
+ 
+
+if [ $? -eq 0 ] ; then
+
+cat $FILE | grep -w Options | grep -v '^#' | grep Indexes > $TMP1
+
+if [ -z $TMP1 ] ; then
+
+OK 디렉터리 검색 기능을 사용하지 않습니다.
+
+else
+
+WARN 디렉터리 검색 기능을 사용하고 있습니다. $FILE의 Indexes 옵션을 제거 하십시오.
+
+fi
+
+else
+
+OK Apache서버를 사용하지 않습니다. 
+
+fi
 
  
 
 echo >>$RESULT
 
 echo >>$RESULT
-
- 

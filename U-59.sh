@@ -6,17 +6,21 @@
 
  
 
+TMP1=./log/`SCRIPTNAME`.log
+
+> $TMP1
+
  
 
 BAR
 
-CODE [U-59] ssh 원격접속 허용
+CODE [U-59] 숨겨진 파일 및 디렉터리 검색 및 제거
 
 cat << EOF >> $RESULT
 
-[양호]: 원격 접속 시 SSH 프로토콜을 사용하는 경우
+[양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
 
-[취약]: 원격 접속 시 Telnet, FTP 등 안전하지 않은 프로토콜을 사용하는 경우
+[취약]: 디렉터리 내 숨겨진 파일을 확인하지 않고, 불필요한 파일을 방치한 경우
 
 EOF
 
@@ -24,22 +28,16 @@ BAR
 
  
 
-ps -ef | grep sshd | grep -v grep >/dev/null 2>&1
+find / -name '.*' > $TMP1
 
  
 
-if [ $? -eq 0 ] ; then
-
-OK SSH 프로토콜을 사용하고 있습니다.
-
-else
-
-WARN SSH 프로토콜을 사용하고 있지 않습니다. 
-
-fi
+INFO "$TMP1 (숨김파일 목록) 파일 참고하시기 바랍니다. "
 
  
 
 echo >>$RESULT
 
 echo >>$RESULT
+
+ 

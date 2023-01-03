@@ -4,11 +4,9 @@
 
 . function.sh
 
- 
-
 TMP1=`SCRIPTNAME`.log
 
->$TMP1
+> $TMP1
 
  
 
@@ -16,13 +14,13 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-20] /etc/hosts 파일 소유자 및 권한 설정.
+CODE [U-20] Anonymous FTP 비활성화
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우
+[양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우
 
-[취약]: /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우
+[취약]: Anonymous FTP (익명 ftp) 접속을 차단하지 않은 경우
 
 EOF
 
@@ -30,109 +28,55 @@ BAR
 
  
 
- 
-
-FILE=hperm.list
-
-# cat herm.list
-
-#/etc/hosts root 600 rw-------
+INFO $TMP1 파일을 점검한다.
 
  
 
- 
-
-TMP2=/tmp/tmp2
-
->$TMP2
-
-TMP3=/tmp/tmp3
-
->$TMP3
+netstat -antp | grep ftp | awk '{print $7}' | awk -F: '{print $1}' | awk -F/ '{print $2}' >/dev/null 2>&1
 
  
 
- 
+if [ $? -eq 0 ] ; then 
 
-cat $FILE | while read FILE1 OWNER1 PERM1 PERM2
+WARN 'FTP 서비스가 존재합니다'
 
-do
+pgrep -lf vsftpd > vsftpd.pid
 
-# echo $FILE1 $OWNER1 $PERM1 $PERM2
+if [ -s vsftpd.pid ] ; then 
 
-FILENAME=$(basename $FILE1)
+cat vsftpd.pid > $TMP1
 
-if [ -f $FILE1 ] ; then
+WARN vsftpd 서비스가 동작 중 입니다.
 
-FILE_CHECK=$(ls -l $FILE1 | awk '{print $1, $3}')
+RES=$(cat /etc/vsftpd/vsftpd.conf | egrep -v '^#' \
 
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
+| egrep anonymous_enable \
 
--ls | grep -v $PERM2 > $TMP2 
+| awk -F= '{print $2}')
 
-if [ -s $TMP2 ] ; then
+if [ $RES = 'YES' ] ; then
 
-echo "[ CHECK ] $FILE1 ($FILE_CHECK)" >>$TMP3
+WARN Anonymous FTP 서비스가 활성화 되어 있습니다.
+
+echo "/etc/vsftpd/vsftpd.conf(anonymous_enable=YES)" >> $TMP1
 
 else
 
-echo "[ WARN ] $FILE1 ($FILE_CHECK)" >>$TMP3
+OK Anonymous FTP 서비스가 비활성화 되어 있습니다.
 
 fi
 
 else
 
-INFO $FILE1 파일이 존재하지 않습니다. >> $TMP3
+OK vsftpd 서비스가 동작 중이 아닙니다.
 
 fi
-
-done
-
- 
-
-cat << EOF >> $TMP1
-
-=========================================================================
-
-(1) /etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우인지 확인 하세요!
-
-(2) /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우인지 확인 하세요!
-
- 
-
-ex) find /etc/ -name hosts -user root -perm -600 -ls | grep -v 'rw-------'
-
-=========================================================================
-
- 
-
-EOF
-
- 
-
- 
-
-cat $TMP3 >> $TMP1
-
- 
-
- 
-
- 
-
-if grep -w -q WARN $TMP3 ; then
-
-WARN "/etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우"
 
 else
 
-OK "etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우"
+INFO 'FTP 서비스가 존재하지 않습니다'
 
 fi
-
-INFO "자세한 내용은 $TMP1 파일을 확인 하세요."
-
- 
 
 cat $RESULT
 

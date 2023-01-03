@@ -6,17 +6,21 @@
 
  
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1
+
  
 
 BAR
 
-CODE [U-54] Apache 상위 디렉터리 접근 금지 
+CODE [U-54] Session Timeout 설정
 
 cat << EOF >> $RESULT
 
-[양호]: 상위 디렉터리에 이동제한을 설정한 경우
+[양호]: Session Timeout이 600초(10분) 이하로 설정되어 있는 경우
 
-[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우
+[취약]: Session Timeout이 600초(10분) 이하로 설정되지 않은 경우
 
 EOF
 
@@ -24,27 +28,45 @@ BAR
 
  
 
-FILE=/etc/httpd/conf/httpd.conf
+PASS_FILE=/etc/passwd
 
-TMP=/tmp/tmp1
+TMP2=/tmp/tmp2
 
- 
-
-TRUEFLASE=1
+> $TMP2
 
  
 
-cat $FILE | grep AllowOverride | grep -v '^#' | awk '{print $2}' >$TMP
+awk -F: '$3 >= 1000 && $3 <= 60000 {print $1}' $PASS_FILE > $TMP2
 
  
 
-for CHECK in `cat $TMP`
+for Saram in $(cat $TMP2)
 
 do
 
-if [ $CHECK != 'AuthConfig' -o $CHECK != 'All' ] ; then
+#echo $Saram
 
-TRUEFLASE=0
+TMOUT_USER=$Saram
+
+TMOUT_OUTPUT=$(su - $TMOUT_USER -c 'echo $TMOUT')
+
+# echo $TMOUT_PUTPUT
+
+if [ -z $TMOUT_OUTPUT ] ; then
+
+echo "[ WARN ] $TMOUT_USER : not configured" >> $TMP1
+
+else
+
+if [ $TMOUT_OUTPUT -le 600 ] ; then
+
+echo "[ OK ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
+
+else
+
+echo "[ WARN ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
+
+fi
 
 fi
 
@@ -52,25 +74,18 @@ done
 
  
 
-if [ $TRUEFLASE -eq 0 ] ; then
+if grep -q -w WARN $TMP1 ; then
 
-WARN 상위 디렉터리에 이동제한이 설정되어 있지 않습니다.
-
-INFO $FILE 의 디렉터리의 AllowOverride 지시자의 옵션을 AuthConfig 또는 All 로 변경하십시오.
+WARN 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되지 않은 경우'
 
 else
 
-OK 상위 디렉터리에 이동제한이 설정되어 있습니다.
+OK 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되어 있는 경우'
 
 fi
 
- 
+INFO $TMP1 '파일의 내용을 참고합니다.'
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
-
- 
-
- 
-
+echo ; echo

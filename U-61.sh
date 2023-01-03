@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-61] ftp 계정 shell 제한
+CODE [U-61] ftp 서비스 확인
 
 cat << EOF >> $RESULT
 
-[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
+[양호]: FTP 서비스가 비활성화 되어 있는 경우
 
-[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않 경우
+[취약]: FTP 서비스가 활성화 되어 있는 경우
 
 EOF
 
@@ -24,17 +24,17 @@ BAR
 
  
 
-CHECK=`cat /etc/passwd | grep ^ftp | awk -F: '{print $7}' `
+ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1
 
  
 
-if [ $CHECK = '/bin/false' -o $CHECK = '/sbin/nologin' ] ; then
+if [ $? -eq 0 ] ; then
 
-OK ftp 계정에 쉘이 부여되어 있지 않습니다. 
+WARN FTP 서비스를 사용하고 있습니다.
 
 else
 
-WARN ftp 계정에 쉘이 부여되어 있습니다.
+OK FTP 서비스를 사용하고 있지 않습니다. 
 
 fi
 
@@ -43,5 +43,3 @@ fi
 echo >>$RESULT
 
 echo >>$RESULT
-
- 

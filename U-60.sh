@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-60] ftp 서비스 확인
+CODE [U-60] ssh 원격접속 허용
 
 cat << EOF >> $RESULT
 
-[양호]: FTP 서비스가 비활성화 되어 있는 경우
+[양호]: 원격 접속 시 SSH 프로토콜을 사용하는 경우
 
-[취약]: FTP 서비스가 활성화 되어 있는 경우
+[취약]: 원격 접속 시 Telnet, FTP 등 안전하지 않은 프로토콜을 사용하는 경우
 
 EOF
 
@@ -24,17 +24,17 @@ BAR
 
  
 
-ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1
+ps -ef | grep sshd | grep -v grep >/dev/null 2>&1
 
  
 
 if [ $? -eq 0 ] ; then
 
-WARN FTP 서비스를 사용하고 있습니다.
+OK SSH 프로토콜을 사용하고 있습니다.
 
 else
 
-OK FTP 서비스를 사용하고 있지 않습니다. 
+WARN SSH 프로토콜을 사용하고 있지 않습니다. 
 
 fi
 

@@ -1,54 +1,54 @@
 #!/bin/bash
 
+ 
+
 . function.sh
+
+ 
+
+TMP1=$(SCRIPTNAME).log
+
+> $TMP1
 
  
 
 BAR
 
-CODE [U-06] root 계정 su 제한
+CODE [U-06] 파일 및 디렉토리 소유자 설정
 
 cat << EOF >> $RESULT
 
-[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
+[양호]: 소유자가 존재하지 않은 파일 및 디렉터리가 존재하지 않는 경우
 
-[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
+[취약]: 소유자가 존재하지 않은 파일 및 디렉터리가 존재하는 경우
 
 EOF
 
 BAR
 
- 
+echo "[U-17] Checking.... Please wait...."
 
-PAM_FILE=/etc/pam.d/su
+TMP2=$(mktemp)
 
-PAM_MODULE=pam_wheel.so
+find / \( -nouser -o -nogroup \) -ls 2>/dev/null >$TMP2
 
-GROUP_FILE=/etc/group
+if [ -s $TMP2 ] ; then
 
- 
+WARN 소유자가 존재하지 않은 파일 및 디렉토리가 있습니다.
 
-egrep -v '^#|^$' $PAM_FILE | grep -q $PAM_MODULE
+INFO $TMP1 파일의 내용을 참고합니다.
 
-if [ $? -eq 0 ] ; then
+echo "다음 명령어가 실행된 출력 결과입니다." >> $TMP1
 
-INFO 'pam_wheel.so 모듈을 사용하고 있습니다.'
+echo 'CMD : find / \( -nouser -o -nogroup \) -ls 2>/dev/null' >> $TMP1
 
-if grep -q wheel $GROUP_FILE ; then
+echo "======================================================" >> $TMP1
 
-INFO 'wheel 그룹이 존재합니다.'
-
-else
-
-INFO 'wheel 그룹이 존재하지 않습니다.'
-
-fi
-
-OK 'su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우입니다.'
+cat $TMP2 >> $TMP1
 
 else
 
-WARN 'su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우입니다.'
+OK 소유자가 존재하지 않은 파일 및 디렉토리가 없습니다.
 
 fi
 

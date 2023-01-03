@@ -4,21 +4,18 @@
 
 . function.sh
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
 
  
 
 BAR
 
-CODE 'cron 파일 소유자 및 권한 설정'
+CODE [U-39] Apache 링크 사용 금지 
 
 cat << EOF >> $RESULT
 
-[양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우
+[양호]: 심볼릭 링크, aliases 사용을 제한한 경우
 
-[취약]: cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우
+[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우
 
 EOF
 
@@ -26,104 +23,36 @@ BAR
 
  
 
- 
+FILE=/etc/httpd/conf/httpd.conf
 
-# cat filepem.list
-
-# /etc/cron.allow root 640 rw-r-----
-
-# /etc/cron.deny root 640 rw-r-----
+TMP=$(mktemp)
 
  
 
- 
-
-PEM_FILE=filepem.list #상대경로
-
-TMP2=/tmp/tmp2
-
-> $TMP2
-
-TMP3=/tmp/tmp3
-
-> $TMP3
+TRUEFLASE=0
 
  
 
-cat $PEM_FILE | while read FILE1 OWNER1 PERM1 PERM2
+cat $FILE | grep Options | grep -v '^#' | grep FollowSymLinks >$TMP
 
-do
+ 
 
-# echo "$FILE1 $OWNER1 $PERM1 $PERM2"
+if [ -z $TMP ] ; then
 
-FILENAME=$(basename $FILE1)
-
-if [ -f $FILE1 ] ; then
-
-FILE_ATTR=$(ls -l $FILE1 | awk '{print $1, $3, $4}')
-
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
-
--ls | grep -v $PERM2 > $TMP2
-
-if [ -s $TMP2 ] ; then
-
-echo "[ WARN ] $FILE1 ($FILE_ATTR)" >> $TMP3
+OK 심볼릭 링크를 사용하지 않습니다.
 
 else
 
-echo "[ OK ] $FILE1 ($FILE_ATTR)" >> $TMP3
+WARN 심볼릭 링크를 사용하고 있습니다.
+
+INFO $FILE에 설정된 디렉터리의 Options의 FollowSymLinks를 제거 하십시오.
 
 fi
 
-else
-
-echo "[ OK ] $FILE1 존재하지 않습니다." >> $TMP3
-
-fi
-
-done
-
  
 
-cat << EOF >> $TMP1
+echo >>$RESULT
 
-=======================================================================
-
-/etc/cron.allow 파일이 존재하면서, root 사용자 소유이고, 권한이 640 이하인지 점검한다.
-
-/etc/cron.deny 파일이 존재하면서, root 사용자 소유이고, 권한이 640 이하인지 점검한다.
-
-ex) find /etc/ -name /etc/cron.deny -user root -perm -640 -ls | grep -v 'rw-r-----'
-
-=======================================================================
-
-EOF
+echo >>$RESULT
 
  
-
-cat $TMP3 >> $TMP1
-
- 
-
-if grep -w -q 'WARN' $TMP3 ; then
-
-WARN 'cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우'
-
-else
-
-OK 'cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우 입니다'
-
-fi
-
-INFO "자세한 정보는 $TMP1 파일을 참고해 주세요."
-
- 
-
- 
-
-# 오류나는 부분에 ; read 추가해 bash -x 디버깅 모드로 돌려 검사
-
-cat $RESULT
-
-echo ; echo

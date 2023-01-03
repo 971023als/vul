@@ -4,23 +4,19 @@
 
 . function.sh
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
  
 
  
 
 BAR
 
-CODE '[U-37] Anonymous FTP 비활성화'
+CODE [U-37] Apache 상위 디렉터리 접근 금지 
 
 cat << EOF >> $RESULT
 
-[양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우
+[양호]: 상위 디렉터리에 이동제한을 설정한 경우
 
-[취약]: Anonymous FTP (익명 ftp) 접속을 차단하지 않은 경우
+[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우
 
 EOF
 
@@ -28,56 +24,53 @@ BAR
 
  
 
-INFO $TMP1 파일을 점검한다.
+FILE=/etc/httpd/conf/httpd.conf
+
+TMP=/tmp/tmp1
 
  
 
-netstat -antp | grep ftp | awk '{print $7}' | awk -F: '{print $1}' | awk -F/ '{print $2}' >/dev/null 2>&1
+TRUEFLASE=1
 
  
 
-if [ $? -eq 0 ] ; then 
+cat $FILE | grep AllowOverride | grep -v '^#' | awk '{print $2}' >$TMP
 
-WARN 'FTP 서비스가 존재합니다'
+ 
 
-pgrep -lf vsftpd > vsftpd.pid
+for CHECK in `cat $TMP`
 
-if [ -s vsftpd.pid ] ; then 
+do
 
-cat vsftpd.pid > $TMP1
+if [ $CHECK != 'AuthConfig' -o $CHECK != 'All' ] ; then
 
-WARN vsftpd 서비스가 동작 중 입니다.
-
-RES=$(cat /etc/vsftpd/vsftpd.conf | egrep -v '^#' \
-
-| egrep anonymous_enable \
-
-| awk -F= '{print $2}')
-
-if [ $RES = 'YES' ] ; then
-
-WARN Anonymous FTP 서비스가 활성화 되어 있습니다.
-
-echo "/etc/vsftpd/vsftpd.conf(anonymous_enable=YES)" >> $TMP1
-
-else
-
-OK Anonymous FTP 서비스가 비활성화 되어 있습니다.
+TRUEFLASE=0
 
 fi
 
+done
+
+ 
+
+if [ $TRUEFLASE -eq 0 ] ; then
+
+WARN 상위 디렉터리에 이동제한이 설정되어 있지 않습니다.
+
+INFO $FILE 의 디렉터리의 AllowOverride 지시자의 옵션을 AuthConfig 또는 All 로 변경하십시오.
+
 else
 
-OK vsftpd 서비스가 동작 중이 아닙니다.
+OK 상위 디렉터리에 이동제한이 설정되어 있습니다.
 
 fi
 
-else
+ 
 
-INFO 'FTP 서비스가 존재하지 않습니다'
+echo >>$RESULT
 
-fi
+echo >>$RESULT
 
-cat $RESULT
+ 
 
-echo ; echo
+ 
+

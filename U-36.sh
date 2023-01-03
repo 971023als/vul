@@ -6,15 +6,17 @@
 
  
 
+ 
+
 BAR
 
-CODE '[U-36] finger 서비스 비활성화'
+CODE [U-36] Apache 웹 프로세스 권한 제한 
 
 cat << EOF >> $RESULT
 
-[양호]: Finger 서비스가 비활성화 되어 있는 경우
+[양호]: Apache 데몬이 root 권한으로 구동되지 않는 경우
 
-[취약]: Finger 서비스가 활성화 되어 있는 경우
+[취약]: Apache 데몬이 root 권한으로 구동되는 경우
 
 EOF
 
@@ -22,40 +24,52 @@ BAR
 
  
 
-SERVICENAME='finger.socket'
-
-systemctl list-unit-files | grep -q $SERVICENAME | grep -v UNIT | \
-
-#grep -v 'unit-files' \
-
-#grep $SERVICENAME >/dev/null 2>&1
+FILE=/etc/httpd/conf/httpd.conf
 
  
 
-if [ $? -eq 0 ] ; then
+APACHEUSER=`cat $FILE | grep ^User | awk '{print $2}'`
 
-INFO 'Finger 서비스가 설치되어 있습니다.'
+APACHEGROUP=`cat $FILE | grep ^Group| awk '{print $2}'` 
 
-STATUS=$(systemctl is-active $SERVICENAME)
+ 
 
-if [ $STATUS = 'active' ] ; then
+TRUEFLASE=1
 
-WARN 'Finger 서비스가 활성화 되어 있습니다.'
+ 
 
-else 
+if [ $APACHEUSER = "root" ] ; then
 
-OK '서비스가 비활성화 되어 있습니다.'
+TRUEFLASE=0
 
 fi
+
+ 
+
+if [ $APACHEGROUP = "root" ] ; then
+
+TRUEFLASE=0
+
+fi
+
+ 
+
+if [ -z $TRUEFLASE ] ; then
+
+WARN Apache 데몬이 root의 권한으로 구동되고 있습니다.
+
+INFO $FILE의 User와 Group의 계정을 root가 아닌 사용자로 바꾸십시오.
 
 else
 
-OK 'Finger 서비스가 설치 되어 있지 않습니다.'
+OK Apache 데몬이 root의 권한으로 구동되지 않습니다.
 
 fi
 
  
 
-cat $RESULT
+echo >>$RESULT
 
-echo ; echo
+echo >>$RESULT
+
+ 

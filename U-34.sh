@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-34] 홈 디렉터리로 지정한 디렉터리의 존재 관리 
+CODE [U-34] DNS Zone Transfer 설정
 
 cat << EOF >> $RESULT
 
-[양호]: 홈 디렉터리가 존재하지 않는 계정이 발견되지 않는 경우
+[양호]: DNS 서비스 미사용 또는, Zone Transfer를 허가된 사용자에게만 허용한 경우
 
-[취약]: 홈 디렉터리가 존재하지 않는 계정이 발견된 경우
+[취약]: DNS 서비스를 사용하여 Zone Transfer를 모든 사용자에게 허용한 경우
 
 EOF
 
@@ -24,45 +24,35 @@ BAR
 
  
 
-TMP1=$(mktemp)
+TMP=./log/`SCRIPTNAME`.log
 
-FILE1=/etc/passwd
-
-TRUEFALSE=1
+> $TMP
 
  
 
-cat /etc/passwd | awk -F: '$3 >= 500 && $3 <60000 {print $1,$6}' > $TMP1
+ps -ef | grep named | grep -v grep >/dev/null 2>&1
 
  
 
-cat $TMP1 | while read USERNAME HOMEDIR
+if [ $? -eq 0 ] ; then
 
-do
+cat /etc/named.* | egrep -v '(^#|^$|^//)'| grep allow-transfer > $TMP 2>&1
 
-if [ -z $HOMEDIR ] ; then
+if [ -s $TMP ] ; then
 
-WARN $HOMENAME 의 홈디렉터리가 존재하지 않습니다. 
+OK Zone Transfer 설정 되어있습니다. 
 
-TRUEFALSE=0
+INFO $TMP 파일을 확인하십시오.
+
+else
+
+WARN Zone Transfer 설정이 되어 있지 않습니다.
 
 fi
 
-if [ $HOMEDIR == '/' ] ; then
+else 
 
-WARN $HOMENAME 의 홈디렉터리가 /로 설정되어 있습니다.
-
-TRUEFALSEs=0
-
-fi
-
-done
-
- 
-
-if [ $TRUEFALSE -eq 1 ] ; then
-
-OK 사용자의 홈디렉터리 설정이 양호합니다. 
+OK DNS 서비스를 사용하고 있지 않습니다.
 
 fi
 

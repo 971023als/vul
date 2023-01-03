@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-55] Apache 불필요한 파일 제거 
+CODE [U-55] hosts.lpd 파일 소유자 및 권한 설정
 
 cat << EOF >> $RESULT
 
-[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
+[양호]: 파일의 소유자가 root 이고 Other에 쓰기 권한이 부여되어 있지 않는 경우
 
-[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우
+[취약]: 파일의 소유자가 root가 아니고 Other에 쓰기 권한이 부여되어 있는 경우
 
 EOF
 
@@ -24,49 +24,17 @@ BAR
 
  
 
-FILE=/etc/httpd
+FILE=/etc/hosts.lpd
 
-TRUEFLASE=0
+PERM1=600
 
- 
+PERM2=rw-------
 
-ls -ld $FILE/htdocs/manual >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN $FILE/htdocs/manual이 존재합니다. 
-
-else
-
-TRUEFLASE=1
-
-fi
+FILEUSER=root
 
  
 
-ls -ld $FILE/manual >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN $FILE/manual이 존재합니다.
-
-else
-
-TRUEFLASE=1
-
-fi
-
- 
-
-if [ -n $TUREFLASE ] ; then
-
-OK 매뉴얼 파일 및 디렉터리가 존재하지 않습니다.
-
-fi
+./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
 
  
 

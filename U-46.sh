@@ -6,17 +6,15 @@
 
  
 
- 
-
 BAR
 
-CODE [U-46] tftp, talk 서비스 비활성화
+CODE [U-46] 패스워드 최소 길이 설정
 
 cat << EOF >> $RESULT
 
-[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우
+[양호]: 패스워드 최소 길이가 8자 이상으로 설정되어 있는 경우
 
-[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우
+[취약]: 패스워드 최소 길이가 8자 미만으로 설정되어 있는 경우
 
 EOF
 
@@ -24,50 +22,42 @@ BAR
 
  
 
-TMP=$(mktemp)
+ 
 
-cat << EOF >> $TMP
+TMP1=`SCRIPTNAME`.log
 
-tftp
+> $TMP1
 
-talk
-
-ntalk
-
-EOF
+TMP2=$(mktemp)
 
  
 
-cat $TMP | while read DAEMON
+INFO_FILE=$(cat /etc/login.defs | egrep -v '^#|^$' | grep PASS_MIN_LEN )
 
-do
-
-ls -l /etc/xinetd.d/$DAEMON >/dev/null 2>&1
-
-if [ $? -ne 0 ] ; then
-
-OK $DAEMON 이 비활성화 되어 있습니다.
-
-else
-
-CHECK=`cat /etc/xinet.d/$DAEMON | grep disable | awk -F= '{print $2}'`
-
-if [ $CHECK == 'yes' ] ; then
-
-OK $DAEMON이 비활성화 되어 있습니다.
-
-else
-
-WARN $DAEMON이 활성화 되어 있습니다.
-
-fi
-
-fi
-
-done
+CHECK_FILE=$(cat /etc/login.defs | egrep -v '^#|^$' | grep PASS_MIN_LEN | awk '{print $2}')
 
  
 
-echo >>$RESULT
+ 
 
-echo >>$RESULT
+# echo $CHECK_FILE
+
+if [ $CHECK_FILE -lt 8 ] ; then
+
+WARN '패스워드 최소 길이가 8자 미만으로 설정되어 있는 경우 입니다.'
+
+INFO $INFO_FILE
+
+else
+
+OK '패스워드 최소 길이가 8자 이상으로 설정되어 있습니다.'
+
+INFO $INFO_FILE
+
+fi
+
+ 
+
+cat $RESULT
+
+echo ; echo

@@ -4,19 +4,21 @@
 
 . function.sh
 
- 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1
 
  
 
 BAR
 
-CODE [U-48] 스팸 메일 릴레이 제한
+CODE [U-48] 패스워드 최소 사용기간 설정
 
 cat << EOF >> $RESULT
 
-[양호]: SMTP 서비스를 사용하지 않거나 릴레이 제한이 설정되어 있는 경우
+[양호]: 패스워드 최소 사용기간이 1일(1주)로 설정되어 있는 경우
 
-[취약]: SMTP 서비스를 사용하며 릴레이 제한이 설정되어 있지 않은 경우
+[취약]: 패스워드 최소 사용기간이 설정되어 있지 않는 경우
 
 EOF
 
@@ -24,44 +26,36 @@ BAR
 
  
 
-TMP1=$(mktemp)
+LOGINDEFSFILE=/etc/login.defs
 
-TMP2=$(mktemp)
+SEARCHVALUE=PASS_MIN_DAYS
 
-FILE=/etc/mail/sendmail.cf
+NUM=$(SearchValue VALUE $LOGINDEFSFILE $SEARCHVALUE)
 
- 
+if [ $NUM -ge 7 ] ; then
 
-ps -ef | grep sendmail | grep -v grep > $TMP1
-
- 
-
-if [ -z $TMP1 ] ; then
-
-OK SMTP서비스를 사용하지 않습니다.
+OK "패스워드 최소 사용기간이 1일(1주)로 설정 되어 있습니다."
 
 else
 
-cat $FILE | grep "R$\*" | grep "Relaying denied">$TMP2
+WARN "패스워드 최소 사용기간이 1일(1주)로 설정 되어 있지 않습니다."
 
-CHECK=`cut -c 1 $TMP2`
+INFO $TMP1 파일을 참고 하세요.
 
-if [ $CHECK == "#" ] ; then
+echo "===================================================" >> $TMP1
 
-WARN SMTP 릴레이 제한이 설정되어 있지 않습니다. 
+echo "1. $LOGINDEFSFILE 파일의 내용입니다." >> $TMP1
 
-INFO $FILE 의 Relaying denied 주석을 제거 하고 /etc/mail/access에 지정하십시오.
+echo "" >> $TMP1
 
-else
+SearchValue KEYVALUE $LOGINDEFSFILE $SEARCHVALUE >> $TMP1
 
-OK SMTP 릴레이 제한이 설정되어 있습니다.
-
-fi
+echo "===================================================" >> $TMP1
 
 fi
 
  
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo

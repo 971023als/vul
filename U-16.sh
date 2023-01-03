@@ -6,7 +6,7 @@
 
  
 
-TMP1=`SCRIPTNAME`.log
+TMP1=./log/`SCRIPTNAME`.log
 
 > $TMP1
 
@@ -14,13 +14,13 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE "[U-16] root 홈, 패스(PATH) 디렉토리 권한 및 패스(PATH) 설정"
+CODE [U-16] /dev에 존재하지 않는 device 파일 점검
 
 cat << EOF >> $RESULT
 
-[양호]: PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않은 경우
+[양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우
 
-[취약]: PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되어 있는 경우
+[취약]: dev에 대한 파일 미점검, 또는, 존재하지 않은 device 파일을 방치한 경우
 
 EOF
 
@@ -28,34 +28,26 @@ BAR
 
  
 
-ROOTPATH=$(su - root -c 'echo $PATH')
+ 
 
-CHECKPATH=$(echo $ROOTPATH | egrep '^:|:$|::|^.:|:.:|:.$')
+find /dev -type f -exec ls -l {} \; > $TMP1
 
-if [ -z $CHECKPATH ] ; then
+ 
 
-OK PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않았습니다.
+if [ -s $TMP1 ] ; then
+
+WARN 파일이 존재합니다. 
+
+INFO $TMP1를 확인하십시오.
 
 else
 
-WARN PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되어 있습니다.
-
-INFO $TMP1 파일을 참고 하십시오.
-
-echo "==================================================" >> $TMP1
-
-echo "1. root 사용자의 PATH 변수 내용입니다." >> $TMP1
-
-echo "$CHECKEDPATH" >> $TMP1
-
-echo "==================================================" >> $TMP1
+OK 파일이 존재하지 않습니다. 
 
 fi
 
  
 
- 
+echo >>$RESULT
 
-cat $RESULT
-
-echo ; echo
+echo >>$RESULT

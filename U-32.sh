@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-32] UMASK 설정 관리 
+CODE [U-32] 일반사용자의 Sendmail 실행 방지
 
 cat << EOF >> $RESULT
 
-[양호]: UMASK 값이 022 이하로 설정된 경우
+[양호]: SMTP 서비스 미사용 또는, 일반 사용자의 Sendmail 실행 방지가 설정된 경우
 
-[취약]: UMASK 값이 022 이하로 설정되지 않은 경우 
+[취약]: SMTP 서비스 사용 및 일반 사용자의 Sendmail 실행 방지가 설정되어 있지 않은 경우
 
 EOF
 
@@ -24,19 +24,41 @@ BAR
 
  
 
-UMASK=`umask`
+TMP1=$(mktemp)
+
+FILE=/etc/mail/sendmail.cf
 
  
 
-if [ $UMASK -le 0022 ] ; then
+ps -ef | grep sendmail | grep -v grep > $TMP1
 
-OK UMASK 값이 022 이하로 설정되어 있습니다.
+ 
+
+if [ -z $TMP1 ] ; then
+
+OK SMTP서비스를 사용하지 않습니다.
+
+ 
 
 else
 
-WARN UMASK 값이 022 이하로 설정되어 있지 않습니다.
+grep -v '^ *#' /etc/mail/sendmail.cf | grep -i privacyoptions \
 
-INFO /etc/bashrc 파일을 수정하십시오.
+| grep restrictqrun >/dev/null 2>&1
+
+ 
+
+if [ $? -eq 0 ] ; then
+
+OK 일반 사용자의 Sendmail 실행 방지가 설정 되어 있습니다.
+
+else
+
+WARN 일반 사용자의 Sendmail 실행 방지가 설정 되어 있지 않습니다.
+
+INFO $FILE1 의 PrivacyOtions에 restrictqrun 옵션을 추가하십시오.
+
+fi
 
 fi
 
@@ -45,3 +67,5 @@ fi
 echo >>$RESULT
 
 echo >>$RESULT
+
+ 

@@ -16,7 +16,7 @@ TMP1=$(SCRIPTNAME).log
 
 BAR
 
-CODE [U-02] 패스워드 복잡성 검사
+CODE [U-02] 패스워드 복잡성 설정
 
 cat << EOF >> $RESULT
 

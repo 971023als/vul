@@ -1,22 +1,16 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
- 
-
- 
 
 BAR
 
-CODE [U-45] NIS, NIS+ 점검 
+CODE [U-45] root 계정 su 제한
 
 cat << EOF >> $RESULT
 
-[양호]: NIS 서비스가 비활성화 되어 있거나. 필요 시 NIS+를 사용하는 경우
+[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
 
-[취약]: NIS 서비스가 활성화 되어 있는 경우
+[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
 
 EOF
 
@@ -24,34 +18,40 @@ BAR
 
  
 
-TMP=$(mktemp)
+PAM_FILE=/etc/pam.d/su
+
+PAM_MODULE=pam_wheel.so
+
+GROUP_FILE=/etc/group
 
  
 
-ps -ef | egrep "ypserv|ypbind|ypxfrd|rpc.yppasswdd|rpc.ypupdated" | grep -v grep | awk '{print $2,$6}'> $TMP
+egrep -v '^#|^$' $PAM_FILE | grep -q $PAM_MODULE
 
- 
+if [ $? -eq 0 ] ; then
 
-if [ -n $TMP ] ; then
+INFO 'pam_wheel.so 모듈을 사용하고 있습니다.'
 
-OK NIS 서비스가 비활성화 되어있습니다.
+if grep -q wheel $GROUP_FILE ; then
+
+INFO 'wheel 그룹이 존재합니다.'
 
 else
 
-cat $TMP | while read PID PROCESS
+INFO 'wheel 그룹이 존재하지 않습니다.'
 
-do
+fi
 
-WARN $PID / $PROCESS 가 구동중 입니다. 
+OK 'su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우입니다.'
 
-done
+else
+
+WARN 'su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우입니다.'
 
 fi
 
  
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
-
- 
+echo ; echo

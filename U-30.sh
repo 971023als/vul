@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-30] hosts.lpd 파일 소유자 및 권한 설정
+CODE [U-30] Sendmail 버전 점검
 
 cat << EOF >> $RESULT
 
-[양호]: 파일의 소유자가 root 이고 Other에 쓰기 권한이 부여되어 있지 않는 경우
+[양호]: Sendmail 버전이 8.13.8 이상인 경우
 
-[취약]: 파일의 소유자가 root가 아니고 Other에 쓰기 권한이 부여되어 있는 경우
+[취약]: Sendmail 버전이 8.13.8 이상이 아닌 경우
 
 EOF
 
@@ -24,20 +24,46 @@ BAR
 
  
 
-FILE=/etc/hosts.lpd
+TMP1=$(mktemp)
 
-PERM1=600
-
-PERM2=rw-------
-
-FILEUSER=root
+TMP2=$(mktemp)
 
  
 
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
+QUIT () { sleep 1 ; echo "quit"; }
+
+ 
+
+ps -ef | grep sendmail | grep -v grep > $TMP1
+
+ 
+
+if [ -z $TMP1 ] ; then
+
+OK sendmail을 사용하지 않습니다.
+
+else
+
+QUIT | telnet localhost 25 > $TMP2 2>&1
+
+VERSION=`cat $TMP2 | grep Sendmail | awk '{print $5}' | awk -F/ '{print $1}'`
+
+if [ $VERSION == 8.13.8 ] ; then
+
+OK Sendmail $VERSION 사용중입니다.
+
+else
+
+WARN Sendmail $VERSION 사용중입니다. 8.13.8 버전으로 업데이트 하십시오.
+
+fi
+
+fi
 
  
 
 echo >>$RESULT
 
 echo >>$RESULT
+
+ 

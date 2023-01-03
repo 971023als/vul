@@ -6,17 +6,15 @@
 
  
 
- 
-
 BAR
 
-CODE [U-47] Sendmail 버전 점검
+CODE [U-47] 패스워드 최대 사용기간 설정
 
 cat << EOF >> $RESULT
 
-[양호]: Sendmail 버전이 8.13.8 이상인 경우
+[양호]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우
 
-[취약]: Sendmail 버전이 8.13.8 이상이 아닌 경우
+[취약]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않은 경우
 
 EOF
 
@@ -24,46 +22,44 @@ BAR
 
  
 
-TMP1=$(mktemp)
+TMP1=$(SCRIPTNAME).log
 
-TMP2=$(mktemp)
-
- 
-
-QUIT () { sleep 1 ; echo "quit"; }
+>$TMP1
 
  
 
-ps -ef | grep sendmail | grep -v grep > $TMP1
+Value=$(egrep -v '^#|^$' /etc/login.defs | grep PASS_MAX_DAYS)
 
- 
+CHECK_FILE=$(egrep -v '^#|^$' /etc/login.defs | grep PASS_MAX_DAYS | awk '{print $2}')
 
-if [ -z $TMP1 ] ; then
+#echo $CHECK_FILE
 
-OK sendmail을 사용하지 않습니다.
+if [ $CHECK_FILE -le 90 ] ; then
+
+OK "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있습니다."
 
 else
 
-QUIT | telnet localhost 25 > $TMP2 2>&1
+WARN "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않습니다."
 
-VERSION=`cat $TMP2 | grep Sendmail | awk '{print $5}' | awk -F/ '{print $1}'`
+INFO $TMP1 파일을 참고 하세요.
 
-if [ $VERSION == 8.13.8 ] ; then
+echo "===================================================" >> $TMP1
 
-OK Sendmail $VERSION 사용중입니다.
+echo "1. $LOGINDEFSFILE 파일의 내용입니다." >> $TMP1
 
-else
+echo "" >> $TMP1
 
-WARN Sendmail $VERSION 사용중입니다. 8.13.8 버전으로 업데이트 하십시오.
+echo $Value >> $TMP1
 
-fi
+echo "===================================================" >> $TMP1
 
 fi
 
  
 
-echo >>$RESULT
-
-echo >>$RESULT
-
  
+
+cat $RESULT
+
+echo ; echo

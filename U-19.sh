@@ -6,23 +6,15 @@
 
  
 
-TMP1=`SCRIPTNAME`.log
+BAR
 
->$TMP1
-
- 
-
- 
-
-BAR 
-
-CODE [U-19] /etc/shadow 파일 소유자 및 권한 설정
+CODE [U-19] finger 서비스 비활성화
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
+[양호]: Finger 서비스가 비활성화 되어 있는 경우
 
-[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우
+[취약]: Finger 서비스가 활성화 되어 있는 경우
 
 EOF
 
@@ -30,103 +22,37 @@ BAR
 
  
 
- 
+SERVICENAME='finger.socket'
 
-TMP2=/tmp/tmp2
+systemctl list-unit-files | grep -q $SERVICENAME | grep -v UNIT | \
 
->$TMP2
+#grep -v 'unit-files' \
 
-TMP3=/tmp/tmp3
-
->$TMP3
+#grep $SERVICENAME >/dev/null 2>&1
 
  
 
- 
+if [ $? -eq 0 ] ; then
 
-PERMFILE=sperm.list
+INFO 'Finger 서비스가 설치되어 있습니다.'
 
- 
+STATUS=$(systemctl is-active $SERVICENAME)
 
- 
+if [ $STATUS = 'active' ] ; then
 
-cat $PERMFILE | while read FILE1 OWNER1 PERM1 PERM2
+WARN 'Finger 서비스가 활성화 되어 있습니다.'
 
-do
+else 
 
-# echo $FILE1 $OWNER1 $PERM1 $PERM2
-
-FILENAME=$(basename $FILE1)
-
-if [ -f $FILE1 ] ; then
-
-FILE_ATTR=$(ls -l $FILE1 | awk '{print $1, $3}') 
-
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
-
--ls | grep -v $PERM2 > $TMP2 
-
-if [ -s $TMP2 ] ; then
-
-echo "[ WARN ] $FILE1 ($FILE_ATTR)" >> $TMP3
-
-else
-
-echo "[ OK ] $FILE1 ($FILE_ATTR)" >> $TMP3
+OK '서비스가 비활성화 되어 있습니다.'
 
 fi
 
 else
 
-"[ INFO ] $FILE1 가 존재하지 않습니다." >> $TMP3
+OK 'Finger 서비스가 설치 되어 있지 않습니다.'
 
 fi
-
-done
-
- 
-
- 
-
-cat<< EOF >>$TMP1
-
-=======================================================================
-
-/etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우인지 점검한다.
-
-/etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우를 점검한다.
-
-ex) find /etc/ -name /etc/shadow -user root -perm -640 -ls | grep -v 'r--------'
-
-=======================================================================
-
- 
-
-EOF
-
- 
-
- 
-
-cat $TMP3 >>$TMP1
-
- 
-
- 
-
-if grep -w -q 'WARN' $TMP3 ; then
-
-WARN '파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우 입니다.'
-
-else
-
-OK '파일의 소유자가 root이고 권한이 400인 경우 입니다.'
-
-fi
-
-INFO "자세한 정보는 $TMP1 파일을 참고해 주세요."
-
- 
 
  
 

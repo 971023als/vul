@@ -8,13 +8,13 @@
 
 BAR
 
-CODE [U-67] 로그온 시 경고 메시지 제공
+CODE [U-67] SNMP 서비스 Community String의 복잡성 설정
 
 cat << EOF >> $RESULT
 
-[양호]: 서버 및 Telnet 서비스에 로그온 메시지가 설정되어 있는 경우
+[양호]: SNMP Community 이름이 public, private 이 아닌 경우
 
-[취약]: 서버 및 Telnet 서비스에 로그온 메시지가 설정되어 있지 않은 경우
+[취약]: SNMP Community 이름이 public, private 인 경우
 
 EOF
 
@@ -22,43 +22,37 @@ BAR
 
  
 
-FILE1=/etc/motd
+FILE=/etc/snmp/snmpd.conf
 
-FILE2=/etc/issue.net
-
- 
-
-FILESIZE=`ls -l $FILE1 | awk '{print $5}'`
+TMP=$(mktemp)
 
  
 
-if [ -n $FILESIZE ] ; then
-
-WARN 서버 로그온 메시지가 없습니다. 
-
-INFO $FILE1에 메시지를 추가하십시오.
-
-else
-
-OK 서버 로으노 메시지가 있습니다.
-
-fi
-
- 
-
-cat $FILE2 | egrep 'CentOS release|Kernel' >/dev/null 2>&1
+ps -ef | grep snmp | grep -v grep >/dev/null 2>&1
 
  
 
 if [ $? -eq 0 ] ; then
 
-WARN Telnet 로그온 메시지를 변경하십시오.
+cat $FILE | grep com2sec | grep -v '^#' \
 
-INFO $FILE2에 메시지를 변경하십시오.
+| egrep 'default|private' >/dev/null 2>&1
+
+if [ $? -eq 0 ] ; then
+
+WARN SNMP Community 이름이 public, private로 설정되어 있습니다.
+
+INFO $FILE에서 Comunity를 변경하십시오.
 
 else
 
-OK Telnet 로그온 메시지가 있습니다.
+OK SNMP Community 이름의 설정이 양호합니다. 
+
+fi
+
+else
+
+OK SNMP 서비스를 사용하지 않고 있습니다.
 
 fi
 
@@ -67,5 +61,3 @@ fi
 echo >>$RESULT
 
 echo >>$RESULT
-
- 

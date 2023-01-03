@@ -6,25 +6,17 @@
 
  
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
-TMP2=/tmp/tmp2
-
-> $TMP2
-
  
 
 BAR
 
-CODE 'r 계열 서비스 비활성화'
+CODE [U-38] Apache 불필요한 파일 제거 
 
 cat << EOF >> $RESULT
 
-[양호]: r 계열 서비스가 비활성화 되어 있는 경우
+[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
 
-[취약]: r 계열 서비스가 활성화 되어 있는 경우
+[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우
 
 EOF
 
@@ -32,48 +24,52 @@ BAR
 
  
 
- 
+FILE=/etc/httpd
+
+TRUEFLASE=0
 
  
 
-SERVICE_LIST='rlogin.socket rexec.socket rsh.socket'
+ls -ld $FILE/htdocs/manual >/dev/null 2>&1
 
-for SERVICE in $SERVICE_LIST
+ 
 
-do
+if [ $? -eq 0 ] ; then
 
-#echo $SERVICE
-
-STATUS=$(systemctl is-active $SERVICE)
-
-if [ $STATUS = 'active' ] ; then
-
-echo "[ WARN ] $SERVICE is Active". >> $TMP1
+WARN $FILE/htdocs/manual이 존재합니다. 
 
 else
 
-echo "[ OK ] $SERVICE not configured">> $TMP1
-
-fi
-
-done
-
- 
-
-if grep -q WARN $TMP1 ; then
-
-WARN 'r 계열 서비스가 활성화 되어 있습니다.'
-
-INFO "$TMP1 파일의 내용을 참고 하세요."
-
-else
-
-OK 'r 계열 서비스가 비활성회 되어 있습니다.'
+TRUEFLASE=1
 
 fi
 
  
 
-cat $RESULT
+ls -ld $FILE/manual >/dev/null 2>&1
 
-echo ; echo
+ 
+
+if [ $? -eq 0 ] ; then
+
+WARN $FILE/manual이 존재합니다.
+
+else
+
+TRUEFLASE=1
+
+fi
+
+ 
+
+if [ -n $TUREFLASE ] ; then
+
+OK 매뉴얼 파일 및 디렉터리가 존재하지 않습니다.
+
+fi
+
+ 
+
+echo >>$RESULT
+
+echo >>$RESULT

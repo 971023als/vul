@@ -6,17 +6,15 @@
 
  
 
- 
-
 BAR
 
-CODE [U-68] NFS 설정파일 접근권한
+CODE [U-68] 로그온 시 경고 메시지 제공
 
 cat << EOF >> $RESULT
 
-[양호]: NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하인 경우
+[양호]: 서버 및 Telnet 서비스에 로그온 메시지가 설정되어 있는 경우
 
-[취약]: NFS 접근제어 설정파일의 소유자가 root 가 아니거나, 권한이 644 이하가 아닌 경우
+[취약]: 서버 및 Telnet 서비스에 로그온 메시지가 설정되어 있지 않은 경우
 
 EOF
 
@@ -24,17 +22,45 @@ BAR
 
  
 
-FILE=/etc/exports
+FILE1=/etc/motd
 
-PERM1=644
-
-PERM2=rw-r--r--
-
-FILEUSER=root
+FILE2=/etc/issue.net
 
  
 
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
+FILESIZE=`ls -l $FILE1 | awk '{print $5}'`
+
+ 
+
+if [ -n $FILESIZE ] ; then
+
+WARN 서버 로그온 메시지가 없습니다. 
+
+INFO $FILE1에 메시지를 추가하십시오.
+
+else
+
+OK 서버 로으노 메시지가 있습니다.
+
+fi
+
+ 
+
+cat $FILE2 | egrep 'CentOS release|Kernel' >/dev/null 2>&1
+
+ 
+
+if [ $? -eq 0 ] ; then
+
+WARN Telnet 로그온 메시지를 변경하십시오.
+
+INFO $FILE2에 메시지를 변경하십시오.
+
+else
+
+OK Telnet 로그온 메시지가 있습니다.
+
+fi
 
  
 
@@ -42,3 +68,4 @@ echo >>$RESULT
 
 echo >>$RESULT
 
+ 

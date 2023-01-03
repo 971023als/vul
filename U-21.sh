@@ -6,15 +6,25 @@
 
  
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1
+
+TMP2=/tmp/tmp2
+
+> $TMP2
+
+ 
+
 BAR
 
-CODE [U-21] /etc/xinetd.conf 파일 소유자 및 권한 설정 
+CODE [U-21] r 계열 서비스 비활성화
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/xinetd.conf 파일의 소유자가 root이고, 권한이 600인 경우
+[양호]: r 계열 서비스가 비활성화 되어 있는 경우
 
-[취약]: /etc/xinetd.conf 파일의 소유자가 root가 아니거나, 권한이 600이 아닌경우
+[취약]: r 계열 서비스가 활성화 되어 있는 경우
 
 EOF
 
@@ -22,22 +32,48 @@ BAR
 
  
 
-FILE=/etc/xinetd.conf
-
-PERM1=600
-
-PERM2=rw-------
-
-FILEUSER=root
+ 
 
  
 
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
+SERVICE_LIST='rlogin.socket rexec.socket rsh.socket'
+
+for SERVICE in $SERVICE_LIST
+
+do
+
+#echo $SERVICE
+
+STATUS=$(systemctl is-active $SERVICE)
+
+if [ $STATUS = 'active' ] ; then
+
+echo "[ WARN ] $SERVICE is Active". >> $TMP1
+
+else
+
+echo "[ OK ] $SERVICE not configured">> $TMP1
+
+fi
+
+done
 
  
 
-echo >>$RESULT
+if grep -q WARN $TMP1 ; then
 
-echo >>$RESULT
+WARN 'r 계열 서비스가 활성화 되어 있습니다.'
+
+INFO "$TMP1 파일의 내용을 참고 하세요."
+
+else
+
+OK 'r 계열 서비스가 비활성회 되어 있습니다.'
+
+fi
 
  
+
+cat $RESULT
+
+echo ; echo

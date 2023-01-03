@@ -1,5 +1,13 @@
 #!/bin/bash
 
+chmod 755 -R /vul
+
+CURRENT_PATH = 'dirname $0'
+
+NAME = 'basename $0'
+
+RESULT="$CHRRENT_PATH/result_$NAME.txt"
+
 echo "-----------check list-----------"
 
 ​./vul/U-01.sh
@@ -46,27 +54,13 @@ echo "-----------check list-----------"
 
 ​./vul/U-22.sh
 
-​./vul/U-23.sh
-
 ​./vul/U-24.sh
-
-​./vul/U-25.sh
-
-​./vul/U-26.sh
-
-​./vul/U-27.sh
 
 ​./vul/U-28.sh
 
-​./vul/U-29.sh
-
 ​./vul/U-30.sh
 
-​./vul/U-31.sh
-
 ​./vul/U-32.sh
-
-​./vul/U-33.sh
 
 ​./vul/U-34.sh
 
@@ -80,6 +74,16 @@ echo "-----------check list-----------"
 
 ​./vul/U-39.sh
 
+​./vul/U-40.sh
+
+​./vul/U-41.sh
+
+​./vul/U-42.sh
+
+​./vul/U-43.sh
+
+​./vul/U-44.sh
+
 ​./vul/U-45.sh
 
 ​./vul/U-46.sh
@@ -89,6 +93,8 @@ echo "-----------check list-----------"
 ​./vul/U-48.sh
 
 ​./vul/U-49.sh
+
+​./vul/U-50.sh
 
 ​./vul/U-51.sh
 
@@ -131,6 +137,8 @@ echo "-----------check list-----------"
 ​./vul/U-70.sh
 
 ​./vul/U-71.sh
+
+​./vul/U-72.sh
 
 ​./vul/U-72.sh
 

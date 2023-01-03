@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-72] Apache 웹서비스 정보 숨김
+CODE [U-72] 정책에 따른 시스템 로깅 설정
 
 cat << EOF >> $RESULT
 
-[양호]: 로그 기록의 검토, 분석, 리포트 작성 및 보고 등이 정기적으로 이루어지는 경우
+[양호]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있는 경우
 
-[취약]: 로그 기록의 검토, 분석, 리포트 작성 및 보고 등이 정기적으로 이루어지지 않는 경우는 경우
+[취약]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있지 않은 경우
 
 EOF
 
@@ -24,11 +24,57 @@ BAR
 
  
 
-INFO 1. 정기적인 로그 검토 및 분석 주기 수립
+FILE=/etc/syslog.conf
 
-INFO 2. 로그 분석에 대한 결과 보고서 작성 
+FILE1=./log/`SCRIPTNAME`.log
 
-INFO 3. 로그 분석 결과보고서 보고 체계 수립 
+> $FILE1
+
+ 
+
+cat << EOF >> $FILE1
+
+*.info;mail.none;authpriv.none;cron.none /var/log/messages
+
+authpriv.* /var/log/secure
+
+mail.* /var/log/maillog
+
+cron.* /var/log/cron
+
+*.alert /dev/console
+
+*.emerg *
+
+EOF
+
+ 
+
+FILE2=$(mktemp)
+
+ 
+
+cat $FILE | egrep -v '^#|^$' >$FILE2
+
+ 
+
+diff -b $FILE1 $FILE2 | grep '<' /dev/null 2>&1
+
+ 
+
+if [ $? -eq 0 ] ; then
+
+OK 로그 기록 정책 설정이 양호합니다.
+
+else
+
+WARN 로그 기록 정책 설정이 취약합니다. 
+
+INFO $FILE에 $FILE1 내용을 추가/변경 하십시오.
+
+fi
+
+ 
 
  
 

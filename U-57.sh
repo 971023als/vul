@@ -10,13 +10,13 @@
 
 BAR
 
-CODE [U-57] Apache 파일 업로드 및 다운로드 제한 
+CODE [U-57] 홈 디렉터리 소유자 및 권한
 
 cat << EOF >> $RESULT
 
-[양호]: 파일 업로드 및 다운로드를 제한한 경우
+[양호]: 홈 디렉터리 소유자가 해당 계정이고, 일반 사용자 쓰기 권한이 제거된 경우
 
-[취약]: 파일 업로드 및 다운로드를 제한하지 않은 경우
+[취약]: 홈 디렉터리 소유자가 해당 계정이 아니고, 일반 사용자 쓰기 권한이 부여된 경우 
 
 EOF
 
@@ -24,55 +24,51 @@ BAR
 
  
 
-FILE=/etc/httpd/conf/httpd.conf
-
-TMP=$(mktemp)
+TMP1=$(mktemp)
 
 TMP2=$(mktemp)
 
-ps -ef | grep httpd | grep -v grep >/dev/null 2>&1
+TUREFALSE=1
 
  
 
-if [ $? -eq 0 ] ; then
-
-cat $FILE | sed -n '/\<Directory \/>/,/Directory>/p' | grep LimitRequestBody > $TMP
+cat /etc/passwd | awk -F: '$3 >= 500 && $3 <60000 {print $1,$6}' > $TMP1
 
  
 
-if [ -s /tmp/tmp1 ] ; then
-
-# SIZE=`cat /tmp/tmp1 | awk '{print $2}'`
-
-cat $FILE | grep LimitRequestBody >$TMP2
-
-cat $TMP2 | while read OPTION SIZE
+cat $TMP1 | while read USERNAME HOMEDIR
 
 do
 
-if [ $SIZE -gt 5000000 ] ; then
+LIST1=`ls -ald $HOMEDIR | awk '{print $3}'`
 
-WARN 너무 큰 용량으로 설정되어 있습니다.
+LIST2=`ls -ald $HOMEDIR | awk '{print $1}'`
 
-else
+find $HOMEDIR -type d -perm -600 -ls | grep -v drwx------ | grep $HOMEDIR$ > $TMP2
 
-OK 파일 업로드 및 다운로드를 제한하고 있습니다.
+if [ -s $TMP2 ] ; then
+
+WARN $USERNAME 사용자의 홈 디렉터리 $HOMEDIR 권한을 확인 하십시오.
+
+TUREFALSE=0
+
+fi
+
+if [ $USERNAME != $LIST1 ] ; then
+
+WARN $USERNAME 사용자의 홈 디렉터리 $HOMEDIR 소유자를 확인 하십시오.
+
+TUREFALSE=0
 
 fi
 
 done
 
-else
+ 
 
-WARN 파일 업로드 및 다운로드 제한이 필요합니다. 
+if [ $TUREFALSE -eq 1 ] ; then
 
-INFO $FILE의 LimitRequestBody 설정을 하십시오. 
-
-fi
-
-else
-
-OK Apache 서버를 사용하지 않습니다. 
+OK 사용자의 홈 디렉터리 소유자와 권한 설정이 양호합니다. 
 
 fi
 
@@ -81,3 +77,5 @@ fi
 echo >>$RESULT
 
 echo >>$RESULT
+
+ 

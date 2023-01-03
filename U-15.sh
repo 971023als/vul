@@ -6,7 +6,7 @@
 
  
 
-TMP1=`SCRIPTNAME`.log
+TMP1=./log/`SCRIPTNAME`.log
 
 > $TMP1
 
@@ -14,13 +14,13 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-15] Session Timeout 설정
+CODE [U-15] world writable 파일 점검
 
 cat << EOF >> $RESULT
 
-[양호]: Session Timeout이 600초(10분) 이하로 설정되어 있는 경우
+[양호]: world writable 파일이 존재하지 않거나, 존재 시 설정 이유를 확인하고 있는 경우
 
-[취약]: Session Timeout이 600초(10분) 이하로 설정되지 않은 경우
+[취약]: world writable 파일이 존재하나 해당 설정 이유를 확인하고 있지 않은 경우
 
 EOF
 
@@ -28,45 +28,23 @@ BAR
 
  
 
-PASS_FILE=/etc/passwd
-
-TMP2=/tmp/tmp2
-
-> $TMP2
+TMP2=$(mktemp)
 
  
 
-awk -F: '$3 >= 1000 && $3 <= 60000 {print $1}' $PASS_FILE > $TMP2
+find / -perm -2 -ls 2>/dev/null | egrep -v '(/proc|lrwx|/tmp)' >$TMP2
 
  
 
-for Saram in $(cat $TMP2)
+cat $TMP2 | while read INUM1 NUM1 PERM1 OTHER
 
 do
 
-#echo $Saram
+echo $PERM1 | egrep -v '(^s|^d|^c|^b|t$)' > /dev/null 2>&1
 
-TMOUT_USER=$Saram
+if [ $? -eq 0 ] ; then
 
-TMOUT_OUTPUT=$(su - $TMOUT_USER -c 'echo $TMOUT')
-
-# echo $TMOUT_PUTPUT
-
-if [ -z $TMOUT_OUTPUT ] ; then
-
-echo "[ WARN ] $TMOUT_USER : not configured" >> $TMP1
-
-else
-
-if [ $TMOUT_OUTPUT -le 600 ] ; then
-
-echo "[ OK ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
-
-else
-
-echo "[ WARN ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
-
-fi
+echo $PERM1 $OTHER >> $TMP1
 
 fi
 
@@ -74,18 +52,22 @@ done
 
  
 
-if grep -q -w WARN $TMP1 ; then
+if [ -s $TMP1 ] ; then
 
-WARN 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되지 않은 경우'
+WARN world writable 파일이 존재합니다.
+
+INFO $TMP1을 확인하십시오.
 
 else
 
-OK 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되어 있는 경우'
+OK world writable 파일이 존재하지 않습니다.
 
 fi
 
-INFO $TMP1 '파일의 내용을 참고합니다.'
+ 
 
-cat $RESULT
+echo >>$RESULT
 
-echo ; echo
+echo >>$RESULT
+
+ 

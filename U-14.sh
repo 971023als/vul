@@ -6,25 +6,19 @@
 
  
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
-TMP2=/tmp/tmp1
-
-> $TMP2
-
- 
-
 BAR
 
-CODE [U-14] 사용자 shell 점검
+CODE [U-14] 사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정 
 
 cat << EOF >> $RESULT
 
-[취약]: 로그인이 필요하지 않은 계정에 /bin/false(nologin) 쉘이 부여되어 있는 경우
+[양호]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고 
 
-[양호]: 로그인이 필요하지 않은 계정에 /bin/false(nologin) 쉘이 부여되지 않은 경우
+홈 디렉터리 환경변수 파일에 root와 소유자만 쓰기 권한이 부여된 경우
+
+[취약]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되지 않고 
+
+홈 디렉터리 환경변수 파일에 root와 소유자 외에 쓰기 권한이 부여된 경우
 
 EOF
 
@@ -34,54 +28,64 @@ BAR
 
  
 
-# PASSFILE=/etc/passwd
+TMP1=$(mktemp)
 
-PASSFILE=passwd
+TMP2=$(mktemp)
 
- 
-
- 
-
-# (1) 점검해야 하는 사용자 목록 생성
-
-awk -F: '$3 < 1000 || $3 > 60000 {print $0}' /etc/passwd | egrep -v '^root:' | awk -F: '{print $1, $7}' > $TMP2
+TRUEFALSE=1
 
  
 
- 
-
-if [ -s $TMP2 ] ; then
-
-WARN 로그인이 필요하지 않은 계정에 로그인 쉘이 부여되어 있습니다.
-
-INFO $TMP1 파일의 내용을 참고하십시오.
-
-cat << EOF >> $TMP1
-
-====================================================================
-
-1. 다음 같은 조건을 가진, 로그인 가능 쉘이 부여된 사용자 목록입니다.
-
-* UID 번호가 1 ~ 299 사용자 중 로그인 가능 쉘이 부여된 사용자 목록
-
-* UID 번호가 60001 ~ 65535 사용자 중 로그인 가능 쉘이 부여된 사용자 목록
+cat /etc/passwd | awk -F: '$3 >= 500 && $3 < 60000 {print $1}' > $TMP1
 
  
 
-$(cat $TMP2)
+for i in `cat $TMP1`
 
-====================================================================
+do
 
-EOF
+ls -al /home/$i \
 
-else
+| egrep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \
 
-OK 로그인이 필요하지 않은 계정에 로그인 쉘이 부여되어 있지 않습니다.
+| awk '{print $3}' > $TMP2
+
+for j in `cat $TMP2`
+
+do
+
+case $j in
+
+$i) : ;;
+
+root) : ;;
+
+*) 
+
+WARN 환경변수의 소유자가 다른 계정으로 지정되어 있습니다. 
+
+INFO /home/$i의 환경 파일을 확인하십시오
+
+TRUEFALSE=0 ;;
+
+esac
+
+done
+
+done
+
+ 
+
+if [ $TRUEFALSE -eq 1 ] ; then
+
+OK 환경 변수의 소유자 설정이 양호합니다. 
 
 fi
 
  
 
-cat $RESULT
+echo >>$RESULT
 
-echo ; echo
+echo >>$RESULT
+
+ 
