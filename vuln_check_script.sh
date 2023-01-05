@@ -1,148 +1,140 @@
 #!/bin/bash
 
-chmod 755 -R /vul
-
-CURRENT_PATH = 'dirname $0'
-
-NAME = 'basename $0'
-
-RESULT="$CHRRENT_PATH/result_$NAME.txt"
-
 echo "-----------check list-----------"
 
-​./vul/U-01.sh
+​./U-01.sh
 
-​./vul/U-02.sh
+​./U-02.sh
 
-​./vul/U-03.sh
+​./U-03.sh
 
-​./vul/U-04.sh
+​./U-04.sh
 
-​./vul/U-05.sh
+​./U-05.sh
 
-​./vul/U-06.sh
+​./U-06.sh
 
-​./vul/U-07.sh
+​./U-07.sh
 
-​./vul/U-08.sh
+​./U-08.sh
 
-​./vul/U-09.sh
+​./U-09.sh
 
-​./vul/U-10.sh
+​./U-10.sh
 
-​./vul/U-11.sh
+​./U-11.sh
 
-​./vul/U-12.sh
+​./U-12.sh
 
-​./vul/U-13.sh
+​./U-13.sh
 
-​./vul/U-14.sh
+​./U-14.sh
 
-​./vul/U-15.sh
+​./U-15.sh
 
-​./vul/U-16.sh
+​./U-16.sh
 
-​./vul/U-17.sh
+​./U-17.sh
 
-​./vul/U-18.sh
+​./U-18.sh
 
-​./vul/U-19.sh
+​./U-19.sh
 
-​./vul/U-20.sh
+​./U-20.sh
 
-​./vul/U-21.sh
+​./U-21.sh
 
-​./vul/U-22.sh
+​./U-22.sh
 
-​./vul/U-24.sh
+​./U-24.sh
 
-​./vul/U-28.sh
+​./U-28.sh
 
-​./vul/U-30.sh
+​./U-30.sh
 
-​./vul/U-32.sh
+​./U-32.sh
 
-​./vul/U-34.sh
+​./U-34.sh
 
-​./vul/U-35.sh
+​./U-35.sh
 
-​./vul/U-36.sh
+​./U-36.sh
 
-​./vul/U-37.sh
+​./U-37.sh
 
-​./vul/U-38.sh
+​./U-38.sh
 
-​./vul/U-39.sh
+​./U-39.sh
 
-​./vul/U-40.sh
+​./U-40.sh
 
-​./vul/U-41.sh
+​./U-41.sh
 
-​./vul/U-42.sh
+​./U-42.sh
 
-​./vul/U-43.sh
+​./U-43.sh
 
-​./vul/U-44.sh
+​./U-44.sh
 
-​./vul/U-45.sh
+​./U-45.sh
 
-​./vul/U-46.sh
+​./U-46.sh
 
-​./vul/U-47.sh
+​./U-47.sh
 
-​./vul/U-48.sh
+​./U-48.sh
 
-​./vul/U-49.sh
+​./U-49.sh
 
-​./vul/U-50.sh
+​./U-50.sh
 
-​./vul/U-51.sh
+​./U-51.sh
 
-​./vul/U-52.sh
+​./U-52.sh
 
-​./vul/U-53.sh
+​./U-53.sh
 
-​./vul/U-54.sh
+​./U-54.sh
 
-​./vul/U-55.sh
+​./U-55.sh
 
-​./vul/U-56.sh
+​./U-56.sh
 
-​./vul/U-57.sh
+​./U-57.sh
 
-​./vul/U-58.sh
+​./U-58.sh
 
-​./vul/U-59.sh
+​./U-59.sh
 
-​./vul/U-60.sh
+​./U-60.sh
 
-​./vul/U-61.sh
+​./U-61.sh
 
-​./vul/U-62.sh
+​./U-62.sh
 
-​./vul/U-63.sh
+​./U-63.sh
 
-​./vul/U-64.sh
+​./U-64.sh
 
-​./vul/U-65.sh
+​./U-65.sh
 
-​./vul/U-66.sh
+​./U-66.sh
 
-​./vul/U-67.sh
+​./U-67.sh
 
-​./vul/U-68.sh
+​./U-68.sh
 
-​./vul/U-69.sh
+​./U-69.sh
 
-​./vul/U-70.sh
+​./U-70.sh
 
-​./vul/U-71.sh
+​./U-71.sh
 
-​./vul/U-72.sh
+​./U-72.sh
 
-​./vul/U-72.sh
+​./U-72.sh
 
-​./vul/U-73.sh
+
 
 
 
