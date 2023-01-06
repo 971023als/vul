@@ -20,9 +20,9 @@ CODE [U-08] /etc/shadow 파일 소유자 및 권한 설정
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
+[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 600인 경우
 
-[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우
+[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우
 
 EOF
 
@@ -91,11 +91,11 @@ cat<< EOF >>$TMP1
 
 =======================================================================
 
-/etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우인지 점검한다.
+/etc/shadow 파일의 소유자가 root이고, 권한이 600인 경우인지 점검한다.
 
-/etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우를 점검한다.
+/etc/shadow 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우를 점검한다.
 
-ex) find /etc/ -name /etc/shadow -user root -perm -640 -ls | grep -v 'r--------'
+ex) find /etc/ -name /etc/shadow -user root -perm -600 -ls | grep -v 'r--------'
 
 =======================================================================
 
@@ -115,11 +115,11 @@ cat $TMP3 >>$TMP1
 
 if grep -w -q 'WARN' $TMP3 ; then
 
-WARN '파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우 입니다.'
+WARN '파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우 입니다.'
 
 else
 
-OK '파일의 소유자가 root이고 권한이 400인 경우 입니다.'
+OK '파일의 소유자가 root이고 권한이 600인 경우 입니다.'
 
 fi
 
