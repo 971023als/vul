@@ -24,11 +24,11 @@ BAR
 
  
 
-PASSFILE=/etc/passwd
+PASSFILE=$(/etc/passwd)
 
 #PASSFILE=passwd
 
-SHADOWFILE=/etc/shadow
+SHADOWFILE=$(/etc/shadow)
 
 #SHADOWFILE=shadow
 
