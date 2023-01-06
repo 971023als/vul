@@ -12,7 +12,7 @@ cat << EOF
   +============================================================================+  
   |                                                                            |
   |                  Linux CentOS 7.x Shell Script Programming                 |
-  |                            - project -                                     |
+  |                            -  project -                                    |
   |                                                                            |
   |                                                                            |
   |                                                                            |
@@ -147,3 +147,4 @@ elif [ $1 = 'VALUE' ] ; then
 	fi
 fi
 }
+
