@@ -130,7 +130,7 @@ EOF
 
  
 
-cat /var/log/secure | grep 'su: pam_unix(su-l:auth): authentication failure' >> $TMP1
+cat /var/log/auth.log | grep 'su: pam_unix(su-l:auth): authentication failure' >> $TMP1
 
  
 

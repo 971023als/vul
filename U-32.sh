@@ -42,9 +42,7 @@ OK SMTP서비스를 사용하지 않습니다.
 
 else
 
-grep -v '^ *#' /etc/mail/sendmail.cf | grep -i privacyoptions \
-
-| grep restrictqrun >/dev/null 2>&1
+grep -v '^ *#' /etc/mail/sendmail.cf | grep -i privacyoptions \ | grep restrictqrun >/dev/null 2>&1
 
  
 

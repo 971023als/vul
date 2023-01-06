@@ -46,7 +46,7 @@ do
 
 ls -al /home/$i \
 
-| egrep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \
+| grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \
 
 | awk '{print $3}' > $TMP2
 

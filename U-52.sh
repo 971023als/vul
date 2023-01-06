@@ -36,9 +36,9 @@ BAR
 
  
 
-# PASS_FILE=/etc/passwd
+PASS_FILE=/etc/passwd
 
-PASS_FILE=/root/scripts/passwd
+#PASS_FILE=/root/scripts/passwd
 
  
 
