@@ -30,7 +30,8 @@ BAR
 
  
 
- 
+chmod u+rw /tmp/tmp2
+
 
 TMP2=/tmp/tmp2
 
