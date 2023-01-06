@@ -125,6 +125,10 @@ echo $ReturnValue
 
 CheckEncryptedPasswd() {
 SFILE=$1
+# $1$saltkey$encrypted 숫자들은 암호화 알고리즘의 종류
+# $2a$saltkey$encrypted
+# $5$saltkey$encrypted
+# $6$saltkey$encrypted 우리는 6번을 써야함
 EncryptedPasswdField=$(grep '^root' $SFILE | awk -F: '{print $2}' | awk -F'$' '{print $2}')
 #echo $EncryptedPasswdField
 case $EncryptedPasswdField in
@@ -133,6 +137,12 @@ case $EncryptedPasswdField in
 	*) echo 'None' ;;
 esac
 }
+
+#	1) echo "암호화 방식 : MD5" ;; # 메뉴얼 확인 : man 5 shadow ; man 3 crypt
+#	2a) echo "암호화 방식 : Blowfish" ;;
+#	5) echo "암호화 방식 : SHA-256" ;;
+#	6) echo "암호화 방식 : SHA-512" ;;
+#	*) echo "암호화 방식 : None" ;;
 
 SearchValue() {
 
