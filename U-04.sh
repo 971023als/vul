@@ -38,7 +38,7 @@ SHADOWFILE=/etc/shadow
 
 if [ -f $PASSFILE -a -f $SHADOWFILE ] ; then
 
-Ret1=$(CheckEncryptedPasswd $SHADOWFILE)
+Ret1=CheckEncryptedPasswd $SHADOWFILE
 
 case $Ret1 in
 
