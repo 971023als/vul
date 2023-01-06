@@ -26,9 +26,9 @@ BAR
 
  
 
-PAM_SYSTEM_AUTH=/etc/pam.d/system-auth
+PAM_SYSTEM_AUTH=/etc/pam.d/common-auth
 
-# PAM_PASSWORD_AUTH=/etc/pam.d/password-auth
+# PAM_PASSWORD_AUTH=/etc/pam.d/common-auth
 
  
 

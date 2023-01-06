@@ -14,7 +14,7 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-05] root 홈, 패스(PATH) 디렉토리 권한 및 패스(PATH) 설정
+CODE [U-05] root 홈, 패스 디렉토리 권한 및 패스 설정
 
 cat << EOF >> $RESULT
 
