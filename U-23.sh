@@ -11,7 +11,7 @@ cat << EOF >> $RESULT
 [ 취약 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우
 EOF
 BAR
-PRINT1
+
 
 ls /etc/xinetd.d/echo* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
