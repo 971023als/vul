@@ -46,9 +46,7 @@ do
 
 ls -al /home/$i \
 
-| grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \
-
-| awk '{print $3}' > $TMP2
+| grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \ | awk '{print $3}' > $TMP2
 
 for j in `cat $TMP2`
 
