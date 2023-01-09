@@ -1,12 +1,11 @@
 #!/bin/bash
 
 . function.sh
-MAIN1
-LIST3
+
+
 BAR
 CODE [U-23] DoS 공격에 취약한 서비스 비활성화
 
-LEVEL 상
 cat << EOF >> $RESULT
 [ 양호 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스가 비활성화 된 경우
 [ 취약 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우
@@ -28,7 +27,7 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-LINE
+
 
 ls /etc/xinetd.d/discard* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -44,7 +43,7 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-LINE
+
 
 ls /etc/xinetd.d/daytime* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -60,7 +59,6 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-LINE
 
 ls /etc/xinetd.d/chargen* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
