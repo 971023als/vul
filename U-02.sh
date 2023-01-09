@@ -94,7 +94,17 @@ EOF
 
  
 
- 
+FindPatternReturnValue() {
+# $1 : File name
+# $2 : Find Pattern
+if egrep -v '^#|^$' $1 | grep -q $2 ; then # -q = 출력 내용 없도록
+	ReturnValue=$(egrep -v '^#|^$' $1 | grep $2 | awk -F= '{print $2}')
+else
+	ReturnValue=None
+fi
+echo $ReturnValue
+}
+
 
 PWQUALITY_CONF=/etc/security/pwquality.conf.copy
 
