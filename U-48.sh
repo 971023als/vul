@@ -24,7 +24,19 @@ EOF
 
 BAR
 
- 
+ SearchValue() {
+
+SEARCH=$(egrep -v '^#|^$' $2 | sed 's/#.*//' | grep -w $3)
+if [ -z "$SEARCH" ] ; then
+	echo FALSE
+else
+	if [ $1 = 'KEYVALUE' ] ; then
+	echo $SEARCH
+elif [ $1 = 'VALUE' ] ; then
+	echo "$SEARCH" | awk '{print $2}'
+	fi
+fi
+}
 
 LOGINDEFSFILE=/etc/login.defs
 
