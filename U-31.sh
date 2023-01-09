@@ -32,7 +32,7 @@ FILE=/etc/mail/sendmail.cf
 
  
 
-ps -ef | grep sendmail | grep -v grep > $TMP1
+ps -ef | grep sendmail  > $TMP1
 
  
 
