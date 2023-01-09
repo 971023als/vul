@@ -28,7 +28,7 @@ TMP1=$(mktemp)
 
 TMP2=$(mktemp)
 
-FILE=/etc/mail/sendmail.cf
+FILE=/etc/mail/sendmail.mc
 
  
 
