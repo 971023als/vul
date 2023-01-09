@@ -40,6 +40,6 @@ OK "$FPermNum : $FName ($GoodPerm)" >> $Result
 fi
 fi
 done
-[출처] 프로젝트) Linux 서버 취약점 점검 스크립트 제작|작성자 takudaddy
+
 
  
