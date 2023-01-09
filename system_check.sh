@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-. functions.sh
+. function.sh
 
 
 # 1) 변수 설정 및 초기화
