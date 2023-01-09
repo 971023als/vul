@@ -36,13 +36,15 @@ INFO_FILE=$(cat /etc/login.defs | egrep -v '^#|^$' | grep PASS_MIN_LEN )
 
 CHECK_FILE=$(cat /etc/login.defs | egrep -v '^#|^$' | grep PASS_MIN_LEN | awk '{print $2}')
 
+num=8
+
  
 
  
 
 # echo $CHECK_FILE
 
-if [ $CHECK_FILE -gt 8 ] ; then
+if [ $CHECK_FILE -lt $num ] ; then
 
 WARN '패스워드 최소 길이가 8자 미만으로 설정되어 있는 경우 입니다.'
 
