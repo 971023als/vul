@@ -5,8 +5,8 @@
 
 
 # 1) 변수 설정 및 초기화
-PermList=/root/scripts/perm.list # 점검 대상 파일 목록
-Result=/root/scripts/report2.txt # 점검 결과
+PermList=perm.list # 점검 대상 파일 목록
+Result=report2.txt # 점검 결과
 TMP1=/tmp/tmp1
 
 > $Result # 파일 실행 시 점검 결과 초기화
