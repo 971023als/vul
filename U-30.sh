@@ -48,7 +48,7 @@ QUIT | telnet localhost 25 > $TMP2 2>&1
 
 VERSION=`cat $TMP2 | grep Sendmail | awk '{print $5}' | awk -F/ '{print $1}'`
 
-if [ $VERSION == 8.13.8 ] ; then
+if [ $VERSION -ge 8.13.8 ] ; then
 
 OK Sendmail $VERSION 사용중입니다.
 
