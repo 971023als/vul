@@ -28,7 +28,7 @@ CHECK=`cat /etc/passwd | grep ^ftp | awk -F: '{print $7}' `
 
  
 
-if [ $CHECK = '/bin/false' -o $CHECK = '/sbin/nologin' ] ; then
+if [ $CHECK = "/bin/false" -o $CHECK = "/sbin/nologin" ] ; then
 
 OK ftp 계정에 쉘이 부여되어 있지 않습니다. 
 
