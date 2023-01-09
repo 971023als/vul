@@ -34,7 +34,7 @@ QUIT () { sleep 1 ; echo "quit"; }
 
  
 
-ps -ef | grep sendmail | grep -v grep > $TMP1
+ps -ef | grep sendmail   > $TMP1
 
  
 
