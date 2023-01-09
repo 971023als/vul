@@ -33,7 +33,20 @@ SHADOWFILE=/etc/shadow
 #SHADOWFILE=shadow
 
  
-
+CheckEncryptedPasswd() {
+SFILE=$1
+# $1$saltkey$encrypted 숫자들은 암호화 알고리즘의 종류
+# $2a$saltkey$encrypted
+# $5$saltkey$encrypted
+# $6$saltkey$encrypted 우리는 6번을 써야함
+EncryptedPasswdField=$(grep '^root' $SFILE | awk -F: '{print $2}' | awk -F'$' '{print $2}')
+#echo $EncryptedPasswdField
+case $EncryptedPasswdField in
+	1|2a|5) echo WarnTrue ;;
+	6) echo TrueTrue ;;
+	*) echo 'None' ;;
+esac
+}
  
 
 if [ -f $PASSFILE -a -f $SHADOWFILE ] ; then
