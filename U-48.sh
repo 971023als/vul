@@ -24,7 +24,7 @@ EOF
 
 BAR
 
- SearchValue() {
+SearchValue() {
 
 SEARCH=$(egrep -v '^#|^$' $2 | sed 's/#.*//' | grep -w $3)
 if [ -z "$SEARCH" ] ; then
