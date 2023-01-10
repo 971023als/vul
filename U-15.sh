@@ -28,7 +28,7 @@ TMP2=$(mktemp)
 
 
 # 전역에서 쓸 수 있는 파일 검색
-writable_files=$(sudo find / -type f -perm -0002)
+writable_files=$(sudo find / ! \( -path '/proc*' -o -path '/sys/fs*' -o -path '/usr/local*' -prune \) -perm -2 -type f -exec ls -al {} \;)
 
 # 전역 쓰기 가능한 파일이 발견된 경우
 if [ -n "$writable_files" ]

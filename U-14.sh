@@ -44,7 +44,7 @@ for i in `cat $TMP1`
 
 do
 
-ls -al /home/$i \ | grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.netrc|.bash_logout)' \ | awk '{print $3}' > $TMP2
+ls -al /home/$i \ | grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc|.bash_logout)' \ | awk '{print $3}' > $TMP2
 
 for j in `cat $TMP2`
 

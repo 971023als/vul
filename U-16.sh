@@ -4,11 +4,6 @@
 
 . function.sh
 
- 
-
-TMP1=./log/`SCRIPTNAME`.log
-
-> $TMP1
 
  
 
