@@ -28,111 +28,54 @@ BAR
 
  
 
-TMP1=$(mktemp)
+HECK_FILE=/etc/hosts.equiv
 
-TMP2=$(mktemp)
+CHOWN=$(ls -l /etc/hosts.equiv | awk '{print $3}')
 
+CHECK_PERM=$(find /etc/hosts.equiv -type f -perm -600 -ls | grep -v rw-r--r-- | awk '{print $3}')
 
- 
-
-cat /etc/passwd | awk -F: ' $3>=500 && $3<60000 {print $1}' > $TMP1
-
-sed -i 's\^\/home/\g' $TMP1
-
-echo root >> $TMP1
+CHECK_PERM2=$(ls -l /etc/hosts.equiv | awk '{print $1}')
 
  
 
-ls -al /etc/hosts.equiv >$TMP2 2>/dev/null
+if [ -f $CHECK_FILE ] ; then
 
- 
+INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
 
-if [ $? -eq 0 ] ; then
+if [ $CHOWN = 'root' ] ; then
 
-LINE1=`cat $TMP2 | awk '{print $3}'`
+OK "파일의 소유자가 root 입니다."
 
-LINE2=`cat /etc/hosts.equiv | grep + `
+if [ $CHECK_PERM2 > 600 ] ; then
 
-if [ -n $LINE2 -o $LINE1 != root ] ; then
+WARN "파일의 권한이 600 이상으로 되어 있습니다."
 
-WARN /etc/hosts.equiv 파일의 소유자 및 '+'설정을 점검하십시오. 
+echo
 
-TUREFALSE=0
+echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
+
+INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
+
+else
+
+OK "파일의 권한이 600 이하로 되어 있습니다."
 
 fi
 
-find /etc/hosts.equiv -perm -600 | grep -v 'rw-------' >/dev/null 2>&1
+else
 
-if [ $? -eq 0 ] ; then
-
-WARN /etc/hosts.equiv 파일의 퍼미션을 점검하십시오. 
-
-TUREFALSE=0
+WARN "파일의 소유자가 root가 아닙니다."
 
 fi
 
-fi 
+else
 
- 
-
->$TMP2
-
- 
-
-for i in `cat $TMP1`
-
-do
-
-ls -al $i/.rhosts >> $TMP2 2>/dev/null
-
-done
-
- 
-
-if [ -s $TMP2 ] ; then
-
-for i in `cat $TMP1`
-
-do
-
-LINE1=`cat $TMP2 | awk '{print $3}'`
-
-LINE2=`cat $i/.rhosts | grep + `
-
-if [ $LINE1 != $i -o $LINE1 != root -o -n $LINE2 ] ; then
-
-WARN $i/.rhosts 파일의 소유자 및 '+'설정을 점검하십시오. 
-
-TUREFALSE=0
-
-fi 
-
-find $i/.rhosts -perm -600 | grep -v 'rw-------' >/dev/null 2>&1
-
-if [ $? -eq 0 ] ; then
-
-WARN $i/.rhosts 파일의 퍼미션을 점검하십시오. 
-
-TUREFALSE=0
+INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-done
 
-fi
+cat $RESULT
 
- 
-
-if [ $TUREFALSE -eq 1 ] ; then
-
-OK /etc/hosts.equiv 및 사용자의 .rhosts 파일 설정이 양호합니다.
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
-
+echo ; echo
  
