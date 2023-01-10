@@ -35,13 +35,13 @@ TMP2=$(mktemp)
 #!/bin/bash
 
 # 전역에서 쓸 수 있는 파일 검색
-writable_files=$(find / -type f -perm -0002)
+writable_files=$(sudo find / -type f -perm -0002)
 
 # 전역 쓰기 가능한 파일이 발견된 경우
 if [ -n "$writable_files" ]
 then
   # 전역 쓰기 가능 파일에 대한 사용 권한 수정
-  find / -type f -perm -0002 -exec chmod o-w {} \;
+  sudo find / -type f -perm -0002 -exec chmod o-w {} \;
 
   # 고정 파일 출력 목록
   echo "다음 파일에 대한 고정 권한:"
