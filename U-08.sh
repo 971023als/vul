@@ -43,13 +43,7 @@ TMP3=/tmp/tmp3
 
  
 
-PERMFILE=perm.list
 
- 
-
- 
-
-cat $PERMFILE | while read FILE1 OWNER1 PERM1 PERM2
 
 do
 

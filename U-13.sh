@@ -6,9 +6,7 @@
 
  
 
-TMP1=./log/`SCRIPTNAME`.log
 
-> $TMP1
 
  
 
@@ -32,7 +30,7 @@ find / -xdev -user root -type f -perm -4000 -o -perm -2000 -exec ls -al {} \; > 
 
  
 
-INFO $TMP1 를 확인하십시오. 
+
 
  
 

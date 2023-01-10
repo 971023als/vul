@@ -32,37 +32,25 @@ TMP2=$(mktemp)
 
  
 
-find / -perm -2 -ls 2>/dev/null | egrep -v '(/proc|lrwx|/tmp)' >$TMP2
+#!/bin/bash
 
- 
+# 전역에서 쓸 수 있는 파일 검색
+writable_files=$(find / -type f -perm -0002)
 
-cat $TMP2 | while read INUM1 NUM1 PERM1 OTHER
+# 전역 쓰기 가능한 파일이 발견된 경우
+if [ -n "$writable_files" ]
+then
+  # 전역 쓰기 가능 파일에 대한 사용 권한 수정
+  find / -type f -perm -0002 -exec chmod o-w {} \;
 
-do
-
-echo $PERM1 | egrep -v '(^s|^d|^c|^b|t$)' > /dev/null 2>&1
-
-if [ $? -eq 0 ] ; then
-
-echo $PERM1 $OTHER >> $TMP1
-
-fi
-
-done
-
- 
-
-if [ -s $TMP1 ] ; then
-
-WARN world writable 파일이 존재합니다.
-
-INFO $TMP1을 확인하십시오.
-
+  # 고정 파일 출력 목록
+  echo "Fixed permissions for the following files:"
+  echo "$writable_files"
 else
-
-OK world writable 파일이 존재하지 않습니다.
-
+  # 전역 쓰기 가능한 파일을 찾을 수 없습니다
+  echo "No world-writable files found"
 fi
+
 
  
 

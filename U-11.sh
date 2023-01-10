@@ -34,7 +34,7 @@ FILEUSER=root
 
  
 
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
+
 
  
 

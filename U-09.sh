@@ -32,7 +32,7 @@ BAR
 
  
 
-FILE=perm.list
+
 
 # cat herm.list
 
@@ -54,7 +54,7 @@ TMP3=/tmp/tmp3
 
  
 
-cat $FILE | while read FILE1 OWNER1 PERM1 PERM2
+
 
 do
 
