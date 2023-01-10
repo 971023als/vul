@@ -29,11 +29,11 @@ CHECK_PERM=`find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -0200
 
 
 if [ $CHECK_PERM = 0 ]; then
-    ehco "[양호] SETUID, SETGID, Sticky Bit가 설정된 파일이 없습니다."
+    OK "[양호] SETUID, SETGID, Sticky Bit가 설정된 파일이 없습니다."
 else
-    echo "[취약] SETUID, SETGID, Sticky Bit가 설정된 파일이 $CHECK_PERM개 존재합니다."
+    WARN "[취약] SETUID, SETGID, Sticky Bit가 설정된 파일이 $CHECK_PERM개 존재합니다."
     find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' >> SUIDGIDSB.txt
-    echo "SUIDGIDSB.txt파일을 참조하십시오."
+    INFO "SUIDGIDSB.txt파일을 참조하십시오."
 fi
 
 
