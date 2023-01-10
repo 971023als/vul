@@ -26,17 +26,21 @@ BAR
 
  
 
-cat $LOG | while read PERM FILENAME2
+CHECK1=$(find / -user root -type f \( -perm 4000 -o -perm -2000 \) >> /root/linuxs/U-13.txt 2>&1)
 
+for i in /sbin/dump /sbin/restore /sbin/unix_chkpwd /usr/bin/at /usr/bin/lpq /usr/bin/lpq-lpd /usr/bin/lpr /usr/bin/lpr-lpd /usr/bin/lprm /usr/bin/lprm-lqp /usr/bin/newgrp /usr/sbin/lpc /usr/sbin/lpc-lpd /usr/sbin/traceroute
 do
+	cat /root/linuxs/U-13.txt | grep $i >> /root/linuxs/U-13_1.txt 
+done
 
-if [ `echo $PERM | egrep '(s|t)' >/dev/null` ]; then
+CHECK3=$(cat /root/linuxs/U-13_1.txt | wc -l )
 
-echo PASS $FILENAME2은 특수 권한이 설정되어 있습니다.
-
+if [ $CHECK3 = 0 ] ; then
+	OK "주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우"
 else
+	VULN "주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우"
+fi
 
-echo NOT $FILENAME2은 특수 권한이 설정되어 있지 않습니다.
 
 
 
