@@ -27,14 +27,13 @@ BAR
 writable_files=$(find / ! \( -path '/proc*' -o -path '/sys/fs*' -o -path '/usr/local*' -prune \) -perm -2 -type f -exec ls -al {} \;)
 
 # 전역 쓰기 가능한 파일이 발견된 경우
-if [ -n "$writable_files" ]
-then
+if [ -n "$writable_files" ] ; then
   # 고정 파일 출력 목록
-  echo "다음 파일에 대한 고정 권한:"
-  echo "$writable_files"
+  WARN echo "전역 쓰기 가능한 파일을 찾았습니다:"
+  INFO echo "$writable_files"
 else
   # 전역 쓰기 가능한 파일을 찾을 수 없습니다
-  echo "전역 쓰기 가능한 파일을 찾을 수 없습니다"
+  OK echo "전역 쓰기 가능한 파일을 찾을 수 없습니다"
 fi
 
 

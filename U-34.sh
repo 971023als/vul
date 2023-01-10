@@ -24,10 +24,6 @@ BAR
 
  
 
-TMP=./log/`SCRIPTNAME`.log
-
-> $TMP
-
  
 
 ps -ef | grep named | grep -v grep >/dev/null 2>&1
