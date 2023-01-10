@@ -32,7 +32,7 @@ BAR
 
  
 
-FILE=hperm.list
+FILE=perm.list
 
 # cat herm.list
 

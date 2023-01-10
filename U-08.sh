@@ -43,7 +43,7 @@ TMP3=/tmp/tmp3
 
  
 
-PERMFILE=sperm.list
+PERMFILE=perm.list
 
  
 

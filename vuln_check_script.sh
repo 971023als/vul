@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. check_perm.sh
+
 . U-01.sh
 
 . U-02.sh
@@ -131,5 +133,4 @@
 . U-71.sh
 
 . U-72.sh
-
 
