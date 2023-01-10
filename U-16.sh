@@ -21,22 +21,27 @@ EOF
 
 BAR
 
-cd /tmp
+ 
 
-wget https://sourceforge.net/projects/rkhunter/files/rkhunter/1.4.6/rkhunter-1.4.6.tar.gz
+find /dev -type f -exec ls -l {} \; > $TMP1
 
-tar zxvf rkhunter-1.4.6.tar.gz
+ 
 
-cd rkhunter-1.4.6
+if [ -s $TMP1 ] ; then
 
-sudo ./installer.sh --layout custom /usr/local --install
+WARN 파일이 존재합니다. 
 
-PATH=$PATH:/usr/local/bin
+INFO $TMP1를 확인하십시오.
 
-sudo /usr/local/bin/rkhunter --propupd
+else
 
-sudo /usr/local/bin/rkhunter --update
+OK 파일이 존재하지 않습니다. 
 
-rkhunter -c
+fi
 
-cat /var/log/rkhunter.log
+ 
+
+echo >>$RESULT
+
+echo >>$RESULT
+
