@@ -38,91 +38,51 @@ BAR
 
  
 
-PEM_FILE=filepem.list #상대경로
+CHECK_FILE=/usr/bin/crontab
 
-TMP2=/tmp/tmp2
+CHOWN=$(ls -l /usr/bin/crontab | awk '{print $3}')
 
-> $TMP2
+CHECK_PERM=$(find /usr/bin/crontab -type f -perm -644 -ls | grep -v rw-r--r-- | awk '{print $3}')
 
-TMP3=/tmp/tmp3
-
-> $TMP3
+CHECK_PERM2=$(ls -l /usr/bin/crontab | awk '{print $1}')
 
  
 
-cat $PEM_FILE | while read FILE1 OWNER1 PERM1 PERM2
+if [ -f $CHECK_FILE ] ; then
 
-do
+INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
 
-# echo "$FILE1 $OWNER1 $PERM1 $PERM2"
+if [ $CHOWN = 'root' ] ; then
 
-FILENAME=$(basename $FILE1)
+OK "파일의 소유자가 root 입니다."
 
-if [ -f $FILE1 ] ; then
+if [ $CHECK_PERM2 > 640 ] ; then
 
-FILE_ATTR=$(ls -l $FILE1 | awk '{print $1, $3, $4}')
+WARN "파일의 권한이 640 이상으로 되어 있습니다."
 
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
+echo
 
--ls | grep -v $PERM2 > $TMP2
+echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
 
-if [ -s $TMP2 ] ; then
-
-echo "[ WARN ] $FILE1 ($FILE_ATTR)" >> $TMP3
+INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
 
 else
 
-echo "[ OK ] $FILE1 ($FILE_ATTR)" >> $TMP3
+OK "파일의 권한이 640 이하로 되어 있습니다."
 
 fi
 
 else
 
-echo "[ OK ] $FILE1 존재하지 않습니다." >> $TMP3
+WARN "파일의 소유자가 root가 아닙니다."
 
 fi
-
-done
-
- 
-
-cat << EOF >> $TMP1
-
-=======================================================================
-
-/etc/cron.allow 파일이 존재하면서, root 사용자 소유이고, 권한이 640 이하인지 점검한다.
-
-/etc/cron.deny 파일이 존재하면서, root 사용자 소유이고, 권한이 640 이하인지 점검한다.
-
-ex) find /etc/ -name /etc/cron.deny -user root -perm -640 -ls | grep -v 'rw-r-----'
-
-=======================================================================
-
-EOF
-
- 
-
-cat $TMP3 >> $TMP1
-
- 
-
-if grep -w -q 'WARN' $TMP3 ; then
-
-WARN 'cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우'
 
 else
 
-OK 'cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우 입니다'
+INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
-
-INFO "자세한 정보는 $TMP1 파일을 참고해 주세요."
-
- 
-
- 
-
-# 오류나는 부분에 ; read 추가해 bash -x 디버깅 모드로 돌려 검사
 
 cat $RESULT
 
