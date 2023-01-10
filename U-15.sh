@@ -44,11 +44,11 @@ then
   find / -type f -perm -0002 -exec chmod o-w {} \;
 
   # 고정 파일 출력 목록
-  echo "Fixed permissions for the following files:"
+  echo "다음 파일에 대한 고정 권한:"
   echo "$writable_files"
 else
   # 전역 쓰기 가능한 파일을 찾을 수 없습니다
-  echo "No world-writable files found"
+  echo "전역 쓰기 가능한 파일을 찾을 수 없습니다"
 fi
 
 
