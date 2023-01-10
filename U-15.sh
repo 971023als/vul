@@ -29,11 +29,11 @@ writable_files=$(find / ! \( -path '/proc*' -o -path '/sys/fs*' -o -path '/usr/l
 # 전역 쓰기 가능한 파일이 발견된 경우
 if [ -n "$writable_files" ] ; then
   # 고정 파일 출력 목록
-  WARN echo "전역 쓰기 가능한 파일을 찾았습니다:"
-  INFO echo "$writable_files"
+  WARN  "전역 쓰기 가능한 파일을 찾았습니다:"
+  INFO  "$writable_files"
 else
   # 전역 쓰기 가능한 파일을 찾을 수 없습니다
-  OK echo "전역 쓰기 가능한 파일을 찾을 수 없습니다"
+  OK  "전역 쓰기 가능한 파일을 찾을 수 없습니다"
 fi
 
 
