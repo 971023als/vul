@@ -26,19 +26,18 @@ BAR
 
  
 
-CHECK1=$(find / -user root -type f \( -perm 4000 -o -perm -2000 \) >> /root/linuxs/U-13.txt 2>&1)
+find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' > SUIDGIDSB.txt
 
-for i in /sbin/dump /sbin/restore /sbin/unix_chkpwd /usr/bin/at /usr/bin/lpq /usr/bin/lpq-lpd /usr/bin/lpr /usr/bin/lpr-lpd /usr/bin/lprm /usr/bin/lprm-lqp /usr/bin/newgrp /usr/sbin/lpc /usr/sbin/lpc-lpd /usr/sbin/traceroute
-do
-	cat /root/linuxs/U-13.txt | grep $i >> /root/linuxs/U-13_1.txt 
-done
+CHECK_PERM=`find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' | wc -l`
 
-CHECK3=$(cat /root/linuxs/U-13_1.txt | wc -l )
 
-if [ $CHECK3 = 0 ] ; then
-	OK "주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우"
+
+if [ $CHECK_PERM = 0 ]; then
+    ehco "[양호] SETUID, SETGID, Sticky Bit가 설정된 파일이 없습니다."
 else
-	VULN "주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우"
+    echo "[취약] SETUID, SETGID, Sticky Bit가 설정된 파일이 $CHECK_PERM개 존재합니다."
+    find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' >> SUIDGIDSB.txt
+    echo "SUIDGIDSB.txt파일을 참조하십시오."
 fi
 
 
