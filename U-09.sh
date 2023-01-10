@@ -34,104 +34,51 @@ BAR
 
 
 
-# cat herm.list
+CHECK_FILE=/etc/hosts
 
-#/etc/hosts root 600 rw-------
+CHOWN=$(ls -l /etc/hosts | awk '{print $3}')
 
- 
+CHECK_PERM=$(find /etc/hosts -type f -perm -600 -ls | grep -v rw-r--r-- | awk '{print $3}')
 
- 
-
-TMP2=/tmp/tmp2
-
->$TMP2
-
-TMP3=/tmp/tmp3
-
->$TMP3
+CHECK_PERM2=$(ls -l /etc/hosts | awk '{print $1}')
 
  
 
- 
+if [ -f $CHECK_FILE ] ; then
 
+INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
 
+if [ $CHOWN = 'root' ] ; then
 
+OK "파일의 소유자가 root 입니다."
 
-# echo $FILE1 $OWNER1 $PERM1 $PERM2
+if [ $CHECK_PERM2 > 600 ] ; then
 
-FILENAME=$(basename $FILE1)
+WARN "파일의 권한이 600 이상으로 되어 있습니다."
 
-if [ -f $FILE1 ] ; then
+echo
 
-FILE_CHECK=$(ls -l $FILE1 | awk '{print $1, $3}')
+echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
 
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
-
--ls | grep -v $PERM2 > $TMP2 
-
-if [ -s $TMP2 ] ; then
-
-echo "[ CHECK ] $FILE1 ($FILE_CHECK)" >>$TMP3
+INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
 
 else
 
-echo "[ WARN ] $FILE1 ($FILE_CHECK)" >>$TMP3
+OK "파일의 권한이 600 이하로 되어 있습니다."
 
 fi
 
 else
 
-INFO $FILE1 파일이 존재하지 않습니다. >> $TMP3
+WARN "파일의 소유자가 root가 아닙니다."
 
 fi
-
-done
-
- 
-
-cat << EOF >> $TMP1
-
-=========================================================================
-
-(1) /etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우인지 확인 하세요!
-
-(2) /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우인지 확인 하세요!
-
- 
-
-ex) find /etc/ -name hosts -user root -perm -600 -ls | grep -v 'rw-------'
-
-=========================================================================
-
- 
-
-EOF
-
- 
-
- 
-
-cat $TMP3 >> $TMP1
-
- 
-
- 
-
- 
-
-if grep -w -q WARN $TMP3 ; then
-
-WARN "/etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우"
 
 else
 
-OK "etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우"
+INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
-
-INFO "자세한 내용은 $TMP1 파일을 확인 하세요."
-
- 
 
 cat $RESULT
 

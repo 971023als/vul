@@ -20,9 +20,9 @@ CODE [U-08] /etc/shadow 파일 소유자 및 권한 설정
 
 cat << EOF >> $RESULT
 
-[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 600인 경우
+[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
 
-[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우
+[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우
 
 EOF
 
@@ -31,95 +31,51 @@ BAR
  
 
 
-TMP2=/tmp/tmp2
+CHECK_FILE=/etc/shadow
 
->$TMP2
+CHOWN=$(ls -l /etc/shadow | awk '{print $3}')
 
-TMP3=/tmp/tmp3
+CHECK_PERM=$(find /etc/shadow -type f -perm -400 -ls | grep -v rw-r--r-- | awk '{print $3}')
 
->$TMP3
-
- 
+CHECK_PERM2=$(ls -l /etc/shadow | awk '{print $1}')
 
  
 
+if [ -f $CHECK_FILE ] ; then
 
+INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
 
-# echo $FILE1 $OWNER1 $PERM1 $PERM2
+if [ $CHOWN = 'root' ] ; then
 
-FILENAME=$(basename $FILE1)
+OK "파일의 소유자가 root 입니다."
 
-if [ -f $FILE1 ] ; then
+if [ $CHECK_PERM2 > 400 ] ; then
 
-FILE_ATTR=$(ls -l $FILE1 | awk '{print $1, $3}') 
+WARN "파일의 권한이 400 이상으로 되어 있습니다."
 
-find /etc -name $FILENAME -type f -user $OWNER1 -perm -$PERM1 \
+echo
 
--ls | grep -v $PERM2 > $TMP2 
+echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
 
-if [ -s $TMP2 ] ; then
-
-echo "[ WARN ] $FILE1 ($FILE_ATTR)" >> $TMP3
+INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
 
 else
 
-echo "[ OK ] $FILE1 ($FILE_ATTR)" >> $TMP3
+OK "파일의 권한이 400 이하로 되어 있습니다."
 
 fi
 
 else
 
-"[ INFO ] $FILE1 가 존재하지 않습니다." >> $TMP3
+WARN "파일의 소유자가 root가 아닙니다."
 
 fi
-
-done
-
- 
-
- 
-
-cat<< EOF >>$TMP1
-
-=======================================================================
-
-/etc/shadow 파일의 소유자가 root이고, 권한이 600인 경우인지 점검한다.
-
-/etc/shadow 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우를 점검한다.
-
-ex) find /etc/ -name /etc/shadow -user root -perm -600 -ls | grep -v 'r--------'
-
-=======================================================================
-
- 
-
-EOF
-
- 
-
- 
-
-cat $TMP3 >>$TMP1
-
- 
-
- 
-
-if grep -w -q 'WARN' $TMP3 ; then
-
-WARN '파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우 입니다.'
 
 else
 
-OK '파일의 소유자가 root이고 권한이 600인 경우 입니다.'
+INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
-
-INFO "자세한 정보는 $TMP1 파일을 참고해 주세요."
-
- 
-
- 
 
 cat $RESULT
 

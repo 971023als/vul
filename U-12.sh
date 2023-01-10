@@ -22,20 +22,52 @@ BAR
 
  
 
-FILE=/etc/services
+CHECK_FILE=/etc/services
 
-PERM1=644
+CHOWN=$(ls -l /etc/services | awk '{print $3}')
 
-PERM2=rw-r--r--
+CHECK_PERM=$(find /etc/services -type f -perm -644 -ls | grep -v rw-r--r-- | awk '{print $3}')
 
-FILEUSER=root
-
- 
-
-
+CHECK_PERM2=$(ls -l /etc/services | awk '{print $1}')
 
  
 
-echo >>$RESULT
+if [ -f $CHECK_FILE ] ; then
 
-echo >>$RESULT
+INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
+
+if [ $CHOWN = 'root' ] ; then
+
+OK "파일의 소유자가 root 입니다."
+
+if [ $CHECK_PERM2 > 644 ] ; then
+
+WARN "파일의 권한이 644 이상으로 되어 있습니다."
+
+echo
+
+echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
+
+INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
+
+else
+
+OK "파일의 권한이 644 이하로 되어 있습니다."
+
+fi
+
+else
+
+WARN "파일의 소유자가 root가 아닙니다."
+
+fi
+
+else
+
+INFO "$CHECK_FILE 이 존재하지 않습니다."
+
+fi
+
+cat $RESULT
+
+echo ; echo
