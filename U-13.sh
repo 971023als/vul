@@ -26,13 +26,19 @@ BAR
 
  
 
-find / -user root -type f \( -perm -4000 -o -perm -2000 \) -exec ls -al {} \; > $TMP1
+cat $LOG | while read PERM FILENAME2
 
- 
-INFO $TMP1 를 확인하십시오. 
+do
+
+if [ `echo $PERM | egrep '(s|t)' >/dev/null` ]; then
+
+echo PASS $FILENAME2은 특수 권한이 설정되어 있습니다.
+
+else
+
+echo NOT $FILENAME2은 특수 권한이 설정되어 있지 않습니다.
 
 
- 
 
 echo >>$RESULT
 
