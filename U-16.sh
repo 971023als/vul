@@ -23,7 +23,7 @@ BAR
 
  
 
-find /dev –type f –exec ls –l {} \; > $TMP1
+find /dev -type f -exec ls -l {} \; > $TMP1
 
  
 
