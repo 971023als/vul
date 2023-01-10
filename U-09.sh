@@ -56,7 +56,6 @@ TMP3=/tmp/tmp3
 
 
 
-do
 
 # echo $FILE1 $OWNER1 $PERM1 $PERM2
 

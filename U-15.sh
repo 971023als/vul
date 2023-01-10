@@ -6,10 +6,6 @@
 
  
 
-TMP1=./log/`SCRIPTNAME`.log
-
-> $TMP1
-
  
 
 BAR
