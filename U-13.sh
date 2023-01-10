@@ -6,10 +6,6 @@
 
  
 
-
-
- 
-
 BAR
 
 CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
@@ -43,8 +39,8 @@ fi
 
 
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo
 
  
