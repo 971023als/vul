@@ -32,7 +32,6 @@ TMP1=$(mktemp)
 
 TMP2=$(mktemp)
 
-TUREFALSE=1
 
  
 

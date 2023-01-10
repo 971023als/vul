@@ -40,11 +40,3 @@ sudo /usr/local/bin/rkhunter --update
 rkhunter -c
 
 cat /var/log/rkhunter.log
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
