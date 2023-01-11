@@ -22,19 +22,18 @@ EOF
 
 BAR
 
- 
+
+
 # Set the Apache2 configuration file path
-config_file="/etc/apache2/apache2.conf"
+config_file="/etc/apache2/sites-enabled/*"
 
-# Use grep to check if the LimitRequestBody, LimitXMLRequestBody and LimitUploadSize options are enabled in the configuration file
-upload_result=$(grep -E "^[ \t]*LimitRequestBody" $config_file)
-download_result=$(grep -E "^[ \t]*LimitXMLRequestBody" $config_file)
-upload_size_result=$(grep -E "^[ \t]*LimitUploadSize" $config_file)
+# Use grep to check if the DocumentRoot directive is defined in the configuration file
+result=$(grep -E "^[ \t]*DocumentRoot[ \t]+" $config_file)
 
-if [ -n "$upload_result" ] || [ -n "$download_result" ] || [ -n "$upload_size_result" ] ; then
-    echo "Apache2에서 파일 업로드 및 다운로드가 제한됩니다"
+if [ -n "$result" ]; then
+    OK "Apache2 DocumentRoot는 구성 파일에 정의되어 있습니다."
 else
-    echo "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
+    WARN "Apache2 DocumentRoot가 구성 파일에 정의되어 있지 않습니다."
 fi
 
 cat $RESULT

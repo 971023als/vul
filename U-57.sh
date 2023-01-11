@@ -23,59 +23,20 @@ EOF
 BAR
 
  
+# Use the umask command to check the current umask value
+current_umask=$(umask)
 
-TMP1=$(mktemp)
-
-TMP2=$(mktemp)
-
-TUREFALSE=1
-
- 
-
-cat /etc/passwd | awk -F: '$3 >= 500 && $3 <60000 {print $1,$6}' > $TMP1
-
- 
-
-cat $TMP1 | while read USERNAME HOMEDIR
-
-do
-
-LIST1=`ls -ald $HOMEDIR | awk '{print $3}'`
-
-LIST2=`ls -ald $HOMEDIR | awk '{print $1}'`
-
-find $HOMEDIR -type d -perm -600 -ls | grep -v drwx------ | grep $HOMEDIR$ > $TMP2
-
-if [ -s $TMP2 ] ; then
-
-WARN $USERNAME 사용자의 홈 디렉터리 $HOMEDIR 권한을 확인 하십시오.
-
-TUREFALSE=0
-
+# Compare the current umask value to 022 or higher
+if [[ "$current_umask" -ge 22 ]]; then
+    OK "UMASK 값이 022 이상으로 설정됨"
+else
+    WARN "UMASK 값이 022 이상으로 설정되지 않음"
 fi
 
-if [ $USERNAME != $LIST1 ] ; then
 
-WARN $USERNAME 사용자의 홈 디렉터리 $HOMEDIR 소유자를 확인 하십시오.
+cat $RESULT
 
-TUREFALSE=0
+echo ; echo 
 
-fi
-
-done
-
- 
-
-if [ $TUREFALSE -eq 1 ] ; then
-
-OK 사용자의 홈 디렉터리 소유자와 권한 설정이 양호합니다. 
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
 
  

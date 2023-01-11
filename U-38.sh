@@ -35,10 +35,10 @@ find $dir_path -mindepth 1 -type f -atime +30 -exec ls -alh {} + > /tmp/unnecess
 find $dir_path -mindepth 1 -type d -atime +30 -exec ls -alh {} + >> /tmp/unnecessary_files.txt
 
 if [ -s /tmp/unnecessary_files.txt ]; then
-    echo "Apache2에서 만든 불필요한 파일과 디렉터리가 제거되지 않았습니다. 다음 파일을 검토하십시오"
-    cat /tmp/unnecessary_files.txt
+    WARN "Apache2에서 만든 불필요한 파일과 디렉터리가 제거되지 않았습니다. 다음 파일을 검토하십시오"
+    INFO cat /tmp/unnecessary_files.txt
 else
-    echo "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
+    OK "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
 fi
 
 cat $RESULT

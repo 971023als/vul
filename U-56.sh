@@ -23,25 +23,21 @@ EOF
 BAR
 
  
+#!/bin/bash
 
-UMASK=`umask`
+# Use the umask command to check the current umask value
+current_umask=$(umask)
 
- 
-
-if [ $UMASK -le 0022 ] ; then
-
-OK UMASK 값이 022 이하로 설정되어 있습니다.
-
+# Compare the current umask value to 022 or higher
+if [[ "$current_umask" -ge 22 ]]; then
+    OK "UMASK 값이 022 이상으로 설정됨"
 else
-
-WARN UMASK 값이 022 이하로 설정되어 있지 않습니다.
-
-INFO /etc/bashrc 파일을 수정하십시오.
-
+    WARN "UMASK 값이 022 이상으로 설정되지 않음"
 fi
 
+
+cat $RESULT
+
+echo ; echo 
+
  
-
-echo >>$RESULT
-
-echo >>$RESULT

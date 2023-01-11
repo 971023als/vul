@@ -33,9 +33,9 @@ download_result=$(grep -E "^[ \t]*LimitXMLRequestBody" $config_file)
 upload_size_result=$(grep -E "^[ \t]*LimitUploadSize" $config_file)
 
 if [ -n "$upload_result" ] || [ -n "$download_result" ] || [ -n "$upload_size_result" ] ; then
-    echo "Apache2에서 파일 업로드 및 다운로드가 제한됩니다"
+    OK "Apache2에서 파일 업로드 및 다운로드가 제한됩니다"
 else
-    echo "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
+    WARN "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
 fi
 
 cat $RESULT

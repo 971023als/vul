@@ -30,9 +30,9 @@ symlink_result=$(grep -E "^[ \t]*Options[ \t]+FollowSymLinks" $config_file)
 alias_result=$(grep -E "^[ \t]*Options[ \t]+SymLinksIfOwnerMatch" $config_file)
 
 if [ -n "$symlink_result" ] && [ -n "$alias_result" ]; then
-    echo "Apache2에서 심볼릭 링크 및 별칭이 허용됨"
+    WARN "Apache2에서 심볼릭 링크 및 별칭이 허용됨"
 else
-    echo "Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다."
+    OK "Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다."
 fi
 
  

@@ -22,22 +22,32 @@ EOF
 
 BAR
 
- 
 
-INFO 1.다음 사이트에서 해당 버전을 찾는다.
+# Set the log file path
+log_file="/var/log/patch.log"
 
-INFO http://www.redhat.com/security/updates/
+# Check if the patch log file exists
+if [ ! -f $log_file ]; then
+    WARN "패치 로그 파일을 찾을 수 없습니다. 패치 관리가 수행되지 않을 수 있습니다."
+else
+    # Check if the patch log file is updated within the last 30 days
+    if test $(find $log_file -mtime -30); then
+        OK "패치 로그 파일이 최근 30일 이내에 업데이트되고 패치 관리가 수행됩니다"
+    else
+        WARN "패치 로그 파일이 최근 30일 이내에 업데이트되지 않아 패치 관리가 수행되지 않을 수 있습니다."
+    fi
 
-INFO http://www.redhat.com/security/updates/eol/ -Red Hat Linux 9 이하 버전
+    # Use grep to check if patch-related contents are applied without checking
+    result=$(grep -E "^[ \t]*Patch applied without checking" $log_file)
 
-INFO 2.발표된 Update 중 현재 사용 중인 보안 관련 Update 찾아 해당 Update Download
+    if [ -n "$result" ]; then
+        WARN "패치 관련 내용은 확인 없이 적용, 확인하는 것이 좋다"
+    fi
+fi
 
-INFO 3.Update 설치
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
  

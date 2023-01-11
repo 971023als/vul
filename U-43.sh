@@ -22,18 +22,34 @@ EOF
 
 BAR
 
- 
 
-INFO 1. 정기적인 로그 검토 및 분석 주기 수립
+# Set the log file path
+log_file="/var/log/system.log"
 
-INFO 2. 로그 분석에 대한 결과 보고서 작성 
+# Check if the log file exists
+if [ ! -f $log_file ]; then
+    WARN "시스템 로그 파일을 찾을 수 없습니다"
+else
+    # Check if the log file is updated within the last 7 days
+    if test $(find $log_file -mtime -7); then
+        OK "시스템 로그 파일이 최근 7일 이내에 업데이트되고 로그 기록이 정기적으로 검토되고 있습니다."
+    else
+        WARN "지난 7일 이내에 시스템 로그 파일이 업데이트되지 않았습니다. 로그 기록이 정기적으로 검토되지 않을 수 있습니다."
+    fi
 
-INFO 3. 로그 분석 결과보고서 보고 체계 수립 
+    # Use grep to check if log analysis and reporting is performed
+    result=$(grep -E "^[ \t]*Log analysis and reporting performed" $log_file)
 
- 
+    if [ -n "$result" ]; then
+        OK "로그 분석 및 보고 수행했습니다."
+    else
+        WARN "로그 분석 및 보고가 수행되지 않을 수 있습니다"
+    fi
+fi
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo 
+
 
  
