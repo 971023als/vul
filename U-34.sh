@@ -24,36 +24,32 @@ BAR
 
  
 
- 
+installed_dns=$(ps -ef | grep named | grep -v grep)
+FILE1=/etc/named.conf
+# FILE2=/etc/named.rfc1912.zones
 
-ps -ef | grep named | grep -v grep >/dev/null 2>&1
 
- 
+# 활성화 여부 확인
 
-if [ $? -eq 0 ] ; then
-
-cat /etc/named.* | egrep -v '(^#|^$|^//)'| grep allow-transfer > $TMP 2>&1
-
-if [ -s $TMP ] ; then
-
-OK Zone Transfer 설정 되어있습니다. 
-
-INFO $TMP 파일을 확인하십시오.
-
+if  [-s $installed_dns] ; then
+    WARN "DNS 서비스를 사용 중입니다."
 else
-
-WARN Zone Transfer 설정이 되어 있지 않습니다.
-
+    OK "DNS 서비스를 사용 중입니다."
 fi
 
-else 
+# 활성화 여부 확인
 
-OK DNS 서비스를 사용하고 있지 않습니다.
+if  [-f $FILE1] ; then # 파일 유무 확인
+    cat $FILE1 | grep 'allow-transfer' >/dev/null # 허용범위 확인
+    if [$? == 0 ] ; then
+        OK "Zone Transfer를 허가된 사용자에게만 허용하고 있습니다."
+    else
+        WARN " Zone Transfer를 허가된 사용자에게만 허용하고 있습니다."
+    fi
+else
+    WARN "$FILE1이 존재하지 있습니다."
 
-fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo

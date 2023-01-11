@@ -13,64 +13,17 @@ EOF
 BAR
 
 
-ls /etc/xinetd.d/echo* >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
-else
-for i in `ls /etc/xinetd.d/echo*`
+services=( "echo" "discard" "daytime" "chargen" "ntp" "snmp" )
+
+for service in "${services[@]}"
 do
-WARN $i 파일이 존재합니다.
-if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
-OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
-else
-WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
-fi
+    if systemctl is-active --quiet "$service"; then
+        WARN "$service 가 DoS 공격에 취약한 서비스가 실행 중입니다"
+    else
+        OK "$service 가 DoS 공격에 취약한 서비스가 실행되고 있지 않습니다"
+    fi
 done
-fi
 
+cat $RESULT
 
-ls /etc/xinetd.d/discard* >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
-else
-for i in `ls /etc/xinetd.d/discard*`
-do
-WARN $i 파일이 존재합니다.
-if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
-OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
-else
-WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
-fi
-done
-fi
-
-
-ls /etc/xinetd.d/daytime* >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
-else
-for i in `ls /etc/xinetd.d/daytime*`
-do
-WARN $i 파일이 존재합니다.
-if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
-OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
-else
-WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
-fi
-done
-fi
-
-ls /etc/xinetd.d/chargen* >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
-else
-for i in `ls /etc/xinetd.d/chargen*`
-do
-WARN $i 파일이 존재합니다.
-if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
-OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
-else
-WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
-fi
-done
-fi
+echo ; echo

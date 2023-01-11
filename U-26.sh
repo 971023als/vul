@@ -24,22 +24,15 @@ BAR
 
  
 
-ps -ef | grep automount |  grep autofs
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN  automountd 서비스가 활성화 되어 있습니다.
-
+if systemctl is-active --quiet automount; then
+    WARN "automountd 실행 중입니다"
 else
-
-OK automountd 서비스가 비활성화 되어 있습니다. 
-
+    OK "automountd 실행되고 있지 않습니다"
 fi
 
+
  
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo

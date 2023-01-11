@@ -14,9 +14,9 @@ CODE [U-30] Sendmail 버전 점검
 
 cat << EOF >> $RESULT
 
-[양호]: Sendmail 버전이 8.13.8 이상인 경우
+[양호]: Sendmail 버전이 최신버전인 경우 
 
-[취약]: Sendmail 버전이 8.13.8 이상이 아닌 경우
+[취약]: Sendmail 버전이 최신버전이 아닌 경우
 
 EOF
 
@@ -24,46 +24,17 @@ BAR
 
  
 
-TMP1=$(mktemp)
+installed_version=$(sendmail -d0.1 -bv | head -n 1 | awk '{print $4}')
+latest_version=$(curl -s https://www.sendmail.com/sm/open_source/download/ | grep -oP '(?<=Current version: )[^<]+')
 
-TMP2=$(mktemp)
-
- 
-
-QUIT () { sleep 1 ; echo "quit"; }
-
- 
-
-ps -ef | grep sendmail   > $TMP1
-
- 
-
-if [ -z $TMP1 ] ; then
-
-OK sendmail을 사용하지 않습니다.
-
+if [ "$installed_version" != "$latest_version" ]; then
+    WARN "Sendmail version $installed_version이 최신 버전 $latest_version이 아닙니다."
 else
-
-QUIT | telnet localhost 25 > $TMP2 2>&1
-
-VERSION=`cat $TMP2 | grep Sendmail | awk '{print $5}' | awk -F/ '{print $1}'`
-
-if [ $VERSION == 8.13.8 ] ; then
-
-OK Sendmail $VERSION 사용중입니다.
-
-else
-
-WARN Sendmail $VERSION 사용중입니다. 8.13.8 버전으로 업데이트 하십시오.
-
+    OK "Sendmail version $installed_version이 최신 버전입니다"
 fi
 
-fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
-
+echo ; echo
  

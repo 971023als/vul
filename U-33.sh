@@ -21,24 +21,24 @@ EOF
 
 BAR
 
- 
 
-ps -ef | grep named
+installed_version=$(named -v | awk '{print $3}')
+latest_version=$(curl -s https://www.isc.org/downloads/ | grep -oP '(?<=BIND<\/a><\/td><td class="version">)[^<]+')
 
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN  DNS 서비스가 활성화 되어 있습니다.
-
+if [ "$installed_version" != "$latest_version" ]; then
+    WARN "최신 버전 $installed_version이 최신 버전 $timeout_version이 아닙니다."
 else
-
-OK DNS 서비스가 비활성화 되어 있습니다. 
-
+    OK "최신 버전 $installed_version이 최신 버전입니다"
 fi
 
- 
+patch_count=$(yum list --security bind | grep "bind" | awk '{print $1}' | wc -l)
 
-echo >>$RESULT
+if [ $patch_count -gt 0 ]; then
+    WARN "바인드에 사용할 수 있는 패치가 $patch_count 있습니다."
+else
+    OK "바인드에 사용할 수 있는 패치가 없습니다."
+fi
 
-echo >>$RESULT
+cat $RESULT
+
+echo ; echo

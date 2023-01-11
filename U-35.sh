@@ -22,40 +22,21 @@ EOF
 
 BAR
 
- 
 
-TMP1=$(mktemp)
 
-FILE=/etc/apache2/apache2.conf
+# Set the Apache2 configuration file path
+config_file="/etc/apache2/apache2.conf"
 
- 
+# Use grep to check if the directory listing is enabled in the configuration file
+result=$(grep -E "^[ \t]*Options[ \t]+Indexes" $config_file)
 
-ps -ef | grep apache | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-cat $FILE | grep -w Options | grep -v '^#' | grep Indexes > $TMP1
-
-if [ -z $TMP1 ] ; then
-
-OK 디렉터리 검색 기능을 사용하지 않습니다.
-
+if [ -n "$result" ]; then
+    WARN "Apache2 서버에서 디렉터리 목록이 사용 가능합니다."
 else
-
-WARN 디렉터리 검색 기능을 사용하고 있습니다. $FILE의 Indexes 옵션을 제거 하십시오.
-
+    OK "Apache2 서버에서 디렉터리 목록이 사용 가능하지 않습니다."
 fi
 
-else
 
-OK Apache서버를 사용하지 않습니다. 
+cat $RESULT
 
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo

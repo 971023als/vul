@@ -23,51 +23,18 @@ EOF
 BAR
 
  
+services=( "tftp" "talk" "ntalk" )
 
-TMP=$(mktemp)
-
-cat << EOF >> $TMP
-
-tftp
-
-talk
-
-ntalk
-
-EOF
-
- 
-
-cat $TMP | while read DAEMON
-
+for service in "${services[@]}"
 do
-
-ls -l /etc/xinetd.d/$DAEMON >/dev/null 2>&1
-
-if [ $? -ne 0 ] ; then
-
-OK $DAEMON 이 비활성화 되어 있습니다.
-
-else
-
-CHECK=`cat /etc/xinet.d/$DAEMON | grep disable | awk -F= '{print $2}'`
-
-if [ $CHECK == 'yes' ] ; then
-
-OK $DAEMON이 비활성화 되어 있습니다.
-
-else
-
-WARN $DAEMON이 활성화 되어 있습니다.
-
-fi
-
-fi
-
+    if systemctl is-active --quiet "$service"; then
+        WARN "$service 가 실행 중입니다"
+    else
+        OK "$service 가 실행 중이 아닙니다"
+    fi
 done
 
+cat $RESULT
+
+echo ; echo
  
-
-echo >>$RESULT
-
-echo >>$RESULT

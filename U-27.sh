@@ -23,20 +23,15 @@ BAR
 
  
 
-FILE=/etc/xinetd.conf
+if systemctl is-active --quiet rpcbind; then
+    WARN "불필요한 RPC 서비스가 실행 중입니다"
+else
+    OK "불필요한 RPC 서비스가 실행되고 있지 않습니다"
+fi
 
-PERM1=600
-
-PERM2=rw-------
-
-FILEUSER=root
-
- 
-
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
 
  
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo

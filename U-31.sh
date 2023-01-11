@@ -22,46 +22,14 @@ EOF
 
 BAR
 
- 
 
-TMP1=$(mktemp)
-
-TMP2=$(mktemp)
-
-FILE=/etc/mail/sendmail.mc
-
- 
-
-ps -ef | grep sendmail  > $TMP1
-
- 
-
-if [ -z $TMP1 ] ; then
-
-OK SMTP서비스를 사용하지 않습니다.
-
+if grep -q "^relay_domains =" /etc/postfix/main.cf; then
+    WARN "SMTP 서비스를 사용하며 릴레이하도록 구성되었습니다"
 else
-
-cat $FILE | grep "R$\*" | grep "Relaying denied">$TMP2
-
-CHECK=`cut -c 1 $TMP2`
-
-if [ $CHECK == "#" ] ; then
-
-WARN SMTP 릴레이 제한이 설정되어 있지 않습니다. 
-
-INFO $FILE 의 Relaying denied 주석을 제거 하고 /etc/mail/access에 지정하십시오.
-
-else
-
-OK SMTP 릴레이 제한이 설정되어 있습니다.
-
+    OK "SMTP 서비스를 사용하며 릴레이하도록 구성되지 않았습니다."
 fi
 
-fi
+cat $RESULT
 
+echo ; echo
  
-
-echo >>$RESULT
-
-echo >>$RESULT

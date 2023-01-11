@@ -22,32 +22,15 @@ EOF
 
 BAR
 
- 
 
-ps -ef | grep yp | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN NFS 서비스가 활성화 되어 있습니다.
-
-INFO 서비스 정지 /usr/lib/netsvc/yp/ypstop
-
-INFO rm -r /var/yp/blue.org
-
-INFO rm /etc/ethers /etc/netgroup /etc/timezone /etc/bootparams
-
-INFO vi /etc/nsswitch.conf
-
+if systemctl is-active --quiet nfs; then
+    WARN "불필요한 NFS 서비스가 실행 중입니다"
 else
-
-OK NFS 서비스가 비활성화 되어 있습니다. 
-
+    OK "불필요한 NFS 서비스가 실행되고 있지 않습니다"
 fi
 
+
  
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo

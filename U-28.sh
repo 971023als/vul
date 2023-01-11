@@ -24,34 +24,17 @@ BAR
 
  
 
-TMP=$(mktemp)
-
- 
-
-ps -ef | egrep "ypserv|ypbind|ypxfrd|rpc.yppasswdd|rpc.ypupdated" | grep -v grep | awk '{print $2,$6}'> $TMP
-
- 
-
-if [ -n $TMP ] ; then
-
-OK NIS 서비스가 비활성화 되어있습니다.
-
+if systemctl is-active --quiet ypbind; then
+    WARN "NIS 서비스가 실행 중입니다"
 else
-
-cat $TMP | while read PID PROCESS
-
-do
-
-WARN $PID / $PROCESS 가 구동중 입니다. 
-
-done
-
+    OK "NIS 서비스가 실행되고 있지 않습니다"
 fi
 
+cat $RESULT
+
+echo ; echo
  
 
-echo >>$RESULT
 
-echo >>$RESULT
 
  

@@ -23,31 +23,15 @@ EOF
 BAR
 
  
+#!/bin/bash
 
-ps -ef | grep yp | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN NFS 서비스가 활성화 되어 있습니다.
-
-INFO 서비스 정지 /usr/lib/netsvc/yp/ypstop
-
-INFO rm -r /var/yp/blue.org
-
-INFO rm /etc/ethers /etc/netgroup /etc/timezone /etc/bootparams
-
-INFO vi /etc/nsswitch.conf
-
+if grep -q -E '^[^#].*\s+everyone(?!.*no_root_squash)' /etc/exports; then
+    WARN "NFS는 '모두' 그룹에 대한 제한 없이 수출을 공유하고 있습니다"
 else
-
-OK NFS 서비스가 비활성화 되어 있습니다. 
-
+    OK "NFS는 '모두' 그룹에 대한 제한 없이 수출을 공유하지 않습니다."
 fi
 
- 
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo

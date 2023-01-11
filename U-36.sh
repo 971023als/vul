@@ -24,52 +24,19 @@ BAR
 
  
 
-FILE=/etc/apache2/apache2.conf
+# Use ps to check the process status and grep to filter the Apache process
+result=$(ps -ef | grep -E 'httpd|apache2' | grep -v grep | awk '{print $1}' | grep -w "root")
 
- 
-
-APACHEUSER=`cat $FILE | grep ^User | awk '{print $2}'`
-
-APACHEGROUP=`cat $FILE | grep ^Group| awk '{print $2}'` 
-
- 
-
-TRUEFLASE=1
-
- 
-
-if [ $APACHEUSER = "root" ] ; then
-
-TRUEFLASE=0
-
-fi
-
- 
-
-if [ $APACHEGROUP = "root" ] ; then
-
-TRUEFLASE=0
-
-fi
-
- 
-
-if [ -z $TRUEFLASE ] ; then
-
-WARN Apache 데몬이 root의 권한으로 구동되고 있습니다.
-
-INFO $FILE의 User와 Group의 계정을 root가 아닌 사용자로 바꾸십시오.
-
+if [ -n "$result" ]; then
+    WARN "Apache 데몬이 루트 권한으로 실행되고 있습니다."
 else
-
-OK Apache 데몬이 root의 권한으로 구동되지 않습니다.
-
+    OK "Apache 데몬이 루트 권한으로 실행되고 있지 않습니다."
 fi
 
- 
 
-echo >>$RESULT
 
-echo >>$RESULT
+cat $RESULT
+
+echo ; echo
 
  
