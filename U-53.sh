@@ -82,6 +82,6 @@ fi
 
  
 
-cat $TMP1
+cat $result
 
 echo ; echo

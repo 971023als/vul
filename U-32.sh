@@ -37,7 +37,7 @@ else
     WARN "일반 사용자의 sendmail 실행 방지가 설정되어 있습니다"
 fi
 
-cat $TMP1 
+cat $result
 
 echo ; echo
  

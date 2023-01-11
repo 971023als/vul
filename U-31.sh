@@ -31,7 +31,7 @@ else
     OK "SMTP 서비스를 사용하며 릴레이하도록 구성되지 않았습니다."
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo
  

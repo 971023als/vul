@@ -86,6 +86,6 @@ fi
 
 INFO $TMP1 '파일의 내용을 참고합니다.'
 
-cat $TMP1
+cat $result
 
 echo ; echo

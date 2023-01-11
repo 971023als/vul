@@ -40,6 +40,6 @@ else
     WARN "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo

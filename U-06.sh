@@ -53,7 +53,6 @@ OK 소유자가 존재하지 않은 파일 및 디렉토리가 없습니다.
 fi
 
  
-
-cat $TMP1
+cat $result
 
 echo ; echo

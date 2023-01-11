@@ -44,7 +44,7 @@ else
     INFO "$file 을 찾을 수 없습니다."
 fi
 
-cat $TMP1  
+cat $result
 
 echo ; echo
  

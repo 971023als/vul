@@ -11,9 +11,6 @@ TMP1=$(SCRIPTNAME).log
 > $TMP1
 
  
-
- 
-
 BAR
 
 CODE [U-02] 패스워드 복잡성 설정
@@ -148,6 +145,6 @@ fi
 
  
 
-cat $TMP1
+cat $result
 
-echo 
+echo ; echo

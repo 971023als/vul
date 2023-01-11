@@ -41,6 +41,6 @@ else
     OK "바인드에 사용할 수 있는 패치가 없습니다."
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo

@@ -138,7 +138,3 @@ TMP1=`SCRIPTNAME`.log
 
 . U-72.sh
 
-
-cat $TMP1
-
-echo ; echo 

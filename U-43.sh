@@ -49,9 +49,9 @@ else
     fi
 fi
 
-cat $TMP1
+cat $result
 
-echo ; echo 
+echo ; echo
 
 
  

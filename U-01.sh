@@ -3,6 +3,10 @@
 . function.sh
 
 
+TMP1=$(SCRIPTNAME).log
+
+> $TMP1
+
 BAR
 
 CODE [U-01] root 계정 원격 접속 제한

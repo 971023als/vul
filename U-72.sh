@@ -50,7 +50,7 @@ for policy in "${policies[@]}"; do
 done
 
 
-cat $TMP1
+cat $result
 
 echo ; echo 
 

@@ -46,7 +46,7 @@ for account in $accounts; do
 done
 
 
-cat $TMP1
+cat $result
 
-echo ; echo 
+echo ; echo
 

@@ -53,7 +53,7 @@ for directory in $hidden_directories; do
   fi
 done
 
-cat $TMP1
+cat $result
 
 echo ; echo 
 

@@ -39,6 +39,6 @@ else
     WARN "Server Signature 설정이 Off로 설정이 안 되어 있습니다"
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo 

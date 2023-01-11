@@ -43,6 +43,6 @@ else
     OK "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo

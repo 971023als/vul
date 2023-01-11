@@ -136,6 +136,6 @@ cat /var/log/auth.log | grep 'su: pam_unix(su-l:auth): authentication failure' >
 
  
 
-cat $TMP1
+cat $result
 
 echo ; echo

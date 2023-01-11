@@ -74,6 +74,6 @@ rm -f $TMP2
 
  
 
-cat $TMP1
+cat $result
 
 echo ; echo

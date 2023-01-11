@@ -82,6 +82,6 @@ cat $TMP2
 
  
 
-cat $TMP1
+cat $result
 
 echo ; echo

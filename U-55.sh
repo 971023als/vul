@@ -70,6 +70,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo

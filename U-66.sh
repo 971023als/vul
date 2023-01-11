@@ -33,8 +33,8 @@ else
     echo "SNMP 서비스가 활성화되지 않았습니다."
 fi
 
-cat $TMP1 
+cat $result
 
-echo ; echo 
+echo ; echo
  
 
