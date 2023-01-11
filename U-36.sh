@@ -31,7 +31,6 @@ then
     echo "아파치 데몬(httpd)이 실행 중입니다.."
 else
     echo "아파치 데몬(httpd)이 실행되고 있지 않습니다.."
-    exit 1
 fi
 
 # Get the user and group of the httpd process
