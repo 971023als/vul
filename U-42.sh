@@ -40,9 +40,9 @@ else
     fi
 
     # Use grep to check if patch-related contents are applied without checking
-    result=$(grep -E "^[ \t]*Patch applied without checking" $log_file)
+    Result=$(grep -E "^[ \t]*Patch applied without checking" $log_file)
 
-    if [ -n "$result" ]; then
+    if [ -n "$Result" ]; then
         WARN "패치 관련 내용은 확인 없이 적용, 확인하는 것이 좋다"
     fi
 fi

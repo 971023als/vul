@@ -30,9 +30,9 @@ BAR
 config_file="/etc/apache2/sites-enabled/*"
 
 # Use grep to check if the DocumentRoot directive is defined in the configuration file
-result=$(grep -E "^[ \t]*DocumentRoot[ \t]+" $config_file)
+Result=$(grep -E "^[ \t]*DocumentRoot[ \t]+" $config_file)
 
-if [ -n "$result" ]; then
+if [ -n "$Result" ]; then
     OK "Apache2 DocumentRoot는 구성 파일에 정의되어 있습니다."
 else
     WARN "Apache2 DocumentRoot가 구성 파일에 정의되어 있지 않습니다."

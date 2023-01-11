@@ -40,9 +40,9 @@ else
     fi
 
     # Use grep to check if log analysis and reporting is performed
-    result=$(grep -E "^[ \t]*Log analysis and reporting performed" $log_file)
+    Result=$(grep -E "^[ \t]*Log analysis and reporting performed" $log_file)
 
-    if [ -n "$result" ]; then
+    if [ -n "$Result" ]; then
         OK "로그 분석 및 보고 수행했습니다."
     else
         WARN "로그 분석 및 보고가 수행되지 않을 수 있습니다"

@@ -30,9 +30,9 @@ BAR
 config_file="/etc/apache2/apache2.conf"
 
 # Use grep to check if the directory listing is enabled in the configuration file
-result=$(grep -E "^[ \t]*Options[ \t]+Indexes" $config_file)
+Result=$(grep -E "^[ \t]*Options[ \t]+Indexes" $config_file)
 
-if [ -n "$result" ]; then
+if [ -n "$Result" ]; then
     WARN "Apache2 서버에서 디렉터리 목록이 사용 가능합니다."
 else
     OK "Apache2 서버에서 디렉터리 목록이 사용 가능하지 않습니다."

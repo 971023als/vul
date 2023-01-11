@@ -25,15 +25,25 @@ EOF
 
 BAR
 
- 
-
-# Use ps to check the process status and grep to filter the Apache process
-result=$(ps -ef | grep -E 'httpd|apache2' | grep -v grep | awk '{print $1}' | grep -w "root")
-
-if [ -n "$result" ]; then
-    WARN "Apache 데몬이 루트 권한으로 실행되고 있습니다."
+# Check if httpd process is running
+if pgrep -x "httpd" > /dev/null
+then
+    echo "아파치 데몬(httpd)이 실행 중입니다.."
 else
-    OK "Apache 데몬이 루트 권한으로 실행되고 있지 않습니다."
+    echo "아파치 데몬(httpd)이 실행되고 있지 않습니다.."
+    exit 1
+fi
+
+# Get the user and group of the httpd process
+httpd_user=$(ps -o user= -p $(pgrep -x "httpd"))
+httpd_group=$(ps -o group= -p $(pgrep -x "httpd"))
+
+# Check if the httpd process is running as root
+if [[ $httpd_user == "root" || $httpd_group == "root" ]]
+then
+    echo "Apache 데몬(httpd)이 루트 권한으로 실행되고 있습니다"
+else
+    echo "Apache 데몬(httpd)이 루트 권한으로 실행되고 있습니다"
 fi
 
 

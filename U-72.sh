@@ -34,18 +34,18 @@ policies=("log all authentication attempts" "log all system-level access" "log a
 # Check if log recording policies have been established
 for file in "${log_files[@]}"; do
     if [ ! -f $file ]; then
-        echo "$file에 대해 설정된 로그 기록 정책이 없습니다"
+        WARN "$file에 대해 설정된 로그 기록 정책이 없습니다"
     else
-        echo "$file에 대해 설정된 로그 기록 정책이 있습니다"
+        OK "$file에 대해 설정된 로그 기록 정책이 있습니다"
     fi
 done
 
 # Check if logs are being left in compliance with established security policies
 for policy in "${policies[@]}"; do
     if grep -q "$policy" /etc/rsyslog.conf; then
-        echo "로그가 $policy를 준수하도록 남겨지고 있습니다."
+        WARN "로그가 $policy를 준수하도록 남겨지고 있습니다."
     else
-        echo "로그가 $policy를 준수하여 남아 있지 않습니다."
+        OK "로그가 $policy를 준수하여 남아 있지 않습니다."
     fi
 done
 
