@@ -22,52 +22,28 @@ EOF
 
 BAR
 
- 
 
-FILE1=/etc/at.allow
 
-FILE2=/etc/at.deny
-
-PERM1=640
-
-PERM2=rw-r-----
-
-FILEUSER=root
-
- 
-
-ls -l $FILE1 >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-./check_perm.sh $FILE1 $PERM1 $PERM2 $FILEUSER
-
+# Check if the at command is available
+if command -v at >/dev/null; then
+    echo "at 명령을 사용할 수 있습니다."
 else
-
-WARN $FILE1이 없습니다.
-
+    echo "at 명령을 사용할 수 없습니다."
 fi
 
- 
-
-ls -l $FILE2 >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-./check_perm.sh $FILE2 $PERM1 $PERM2 $FILEUSER
-
+# Check the permission of the at related file
+at_dir="/etc/at.allow"
+if [ -f $at_dir ]; then
+    permission=$(stat -c %a $at_dir)
+    if [ $permission -ge 640 ]; then
+        echo "관련 파일의 권한이 640 이상입니다."
+    else
+        echo "관련 파일의 권한이 640 미만입니다."
+    fi
 else
-
-WARN $FILE2가 없습니다. 
-
+    echo "관련 파일이 존재하지 않습니다"
 fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 

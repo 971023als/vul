@@ -20,44 +20,25 @@ EOF
 
 BAR
 
- 
 
-FILE=/etc/snmp/snmpd.conf
 
-TMP=$(mktemp)
+# Set the path of the SNMP configuration file
+snmp_conf_file="/etc/snmp/snmpd.conf"
 
- 
-
-ps -ef | grep snmp | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-cat $FILE | grep com2sec | grep -v '^#' \
-
-| egrep 'default|private' >/dev/null 2>&1
-
-if [ $? -eq 0 ] ; then
-
-WARN SNMP Community 이름이 public, private로 설정되어 있습니다.
-
-INFO $FILE에서 Comunity를 변경하십시오.
-
+# Check if the SNMP configuration file exists
+if [ ! -f $snmp_conf_file ]; then
+    INFO "SNMP 구성 파일이 없습니다."
 else
-
-OK SNMP Community 이름의 설정이 양호합니다. 
-
+    # Check if the community name is public or private
+    if grep -q "public" $snmp_conf_file; then
+        WARN "SNMP 커뮤니티 이름이 공개됨"
+    elif grep -q "private" $snmp_conf_file; then
+        WARN "SNMP 커뮤니티 이름은 비공개입니다"
+    else
+        OK "SNMP 커뮤니티 이름이 공개 또는 비공개가 아닙니다"
+    fi
 fi
 
-else
+cat $RESULT
 
-OK SNMP 서비스를 사용하지 않고 있습니다.
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 

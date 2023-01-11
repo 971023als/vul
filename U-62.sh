@@ -22,26 +22,28 @@ EOF
 
 BAR
 
- 
 
-CHECK=`cat /etc/passwd | grep ^ftp | awk -F: '{print $7}' `
 
- 
+#Use the getent command to get all ftp account 
+ftp_users=$(getent passwd | grep -E "^ftp" | cut -d: -f1)
 
-if [ $CHECK = "/bin/false" -o $CHECK = "/sbin/nologin" ] ; then
+# Iterate through each ftp account
+for user in $ftp_users; do
+  # Use the getent command to get the shell of the ftp account
+  shell=$(getent passwd $user | cut -d: -f7)
 
-OK ftp 계정에 쉘이 부여되어 있지 않습니다. 
+  # Check if the ftp account has a /bin/false shell
+  if [ "$shell" != "/bin/false" ]; then
+    OK "ftp 계정 $user에 /bin/false 셸이 없습니다"
+  else
+    WARN "ftp 계정 $user에 /bin/false 셸이 있습니다."
+  fi
+done
 
-else
 
-WARN ftp 계정에 쉘이 부여되어 있습니다.
 
-fi
+cat $RESULT
 
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
  

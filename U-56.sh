@@ -22,8 +22,6 @@ EOF
 
 BAR
 
- 
-#!/bin/bash
 
 # Use the umask command to check the current umask value
 current_umask=$(umask)

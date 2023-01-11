@@ -27,17 +27,34 @@ EOF
 BAR
 
  
+# Set the target directory path
+target_dir="/"
 
-find / -name '.*' > $TMP1
+# Use the find command to search for hidden files and directories
+hidden_files=$(find $target_dir -name ".*" -type f)
+hidden_directories=$(find $target_dir -name ".*" -type d)
 
- 
+# Iterate through each hidden file and directory
+for file in $hidden_files; do
+  # check if the hidden file is unnecessary or suspicious
+  if [[ "$file" =~ .*/.*/.bash_history ]]; then
+    WARN "숨겨진 파일 $file이 불필요하거나 의심스럽다"
+  else
+    OK "숨겨진 파일 $file이 불필요하거나 의심스러운 경우가 없습니다"
+  fi
+done
 
-INFO "$TMP1 (숨김파일 목록) 파일 참고하시기 바랍니다. "
+for directory in $hidden_directories; do
+  # check if the hidden directory is unnecessary or suspicious
+  if [[ "$directory" =~ .*/.*/.ssh ]]; then
+    WARN "숨겨진 디렉토리 $directory가 불필요하거나 의심스럽다"
+  else
+    OK "숨겨진 디렉토리 $directory가 불필요하거나 의심스러운 경우가 없습니다"
+  fi
+done
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
  

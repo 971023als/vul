@@ -22,50 +22,25 @@ BAR
 
  
 
-FILE1=/etc/motd
+# Set the path of the SNMP configuration file
+snmp_conf_file="/etc/snmp/snmpd.conf"
 
-FILE2=/etc/issue.net
-
- 
-
-FILESIZE=`ls -l $FILE1 | awk '{print $5}'`
-
- 
-
-if [ -n $FILESIZE ] ; then
-
-WARN 서버 로그온 메시지가 없습니다. 
-
-INFO $FILE1에 메시지를 추가하십시오.
-
+# Check if the SNMP configuration file exists
+if [ ! -f $snmp_conf_file ]; then
+    INFO "SNMP 구성 파일이 없습니다."
 else
-
-OK 서버 로으노 메시지가 있습니다.
-
+    # Check if the community name is public or private
+    if grep -q "public" $snmp_conf_file; then
+        WARN "SNMP 커뮤니티 이름이 공개됨"
+    elif grep -q "private" $snmp_conf_file; then
+        WARN "SNMP 커뮤니티 이름은 비공개입니다"
+    else
+        OK "SNMP 커뮤니티 이름이 공개 또는 비공개가 아닙니다"
+    fi
 fi
 
- 
+cat $RESULT
 
-cat $FILE2 | egrep 'CentOS release|Kernel' >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN Telnet 로그온 메시지를 변경하십시오.
-
-INFO $FILE2에 메시지를 변경하십시오.
-
-else
-
-OK Telnet 로그온 메시지가 있습니다.
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
  

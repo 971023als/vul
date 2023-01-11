@@ -22,24 +22,16 @@ EOF
 
 BAR
 
- 
 
-ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN FTP 서비스를 사용하고 있습니다.
-
+# check if the vsftpd service is active
+if systemctl is-active --quiet vsftpd; then
+    WARN "FTP 서비스가 활성화되어 있습니다"
 else
-
-OK FTP 서비스를 사용하고 있지 않습니다. 
-
+    OK "FTP 서비스가 활성화되지 않았습니다."
 fi
 
- 
 
-echo >>$RESULT
 
-echo >>$RESULT
+cat $RESULT
+
+echo ; echo 

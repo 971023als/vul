@@ -24,22 +24,29 @@ BAR
 
  
 
-ps -ef | grep sshd | grep -v grep >/dev/null 2>&1
 
- 
+# Set the log file path
+log_file="/var/log/auth.log"
 
-if [ $? -eq 0 ] ; then
-
-OK SSH 프로토콜을 사용하고 있습니다.
-
+# Check if the log file exists
+if [ ! -f $log_file ]; then
+    OK "Auth log file is not found"
 else
-
-WARN SSH 프로토콜을 사용하고 있지 않습니다. 
-
+    # Use grep command to search for Telnet or FTP in the log file
+    telnet_count=$(grep -E "telnetd" $log_file | wc -l)
+    ftp_count=$(grep -E "ftpd" $log_file | wc -l)
+    if [ $telnet_count -ne 0 ]; then
+        INFO "Telnet 프로토콜 사용 $telnet_count times"
+    fi
+    if [ $ftp_count -ne 0 ]; then
+        INFO "FTP 프로토콜 사용 $ftp_count times"
+    fi
+    if [ $telnet_count -eq 0 ] && [ $ftp_count -eq 0 ]; then
+        WARN "안전하지 않은 프로토콜이 탐지되지 않음"
+    fi
 fi
 
- 
 
-echo >>$RESULT
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo 

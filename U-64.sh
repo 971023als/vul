@@ -22,46 +22,26 @@ EOF
 
 BAR
 
- 
 
-FILE=/etc/vsftpd/ftpusers
 
- 
-
-ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -ne 0 ] ; then
-
-OK FTP 서비스가 비활성화 되어 있습니다. 
-
-exit 1
-
+# check if the vsftpd service is active
+if ! systemctl is-active --quiet vsftpd; then
+    WARN "FTP 서비스가 활성화되지 않았습니다."
 else
+    OK "FTP 서비스 사용 중 입니다."
 
-cat $FILE | grep ^root >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-OK root 계정 접속이 차단되어 있습니다.
-
-else
-
-WARN root 계정 접속이 차단되지 않았습니다. 
-
-INFO $FILE에 root 계정을 추가 하십시오, 
-
+    # check if the ftp root login is allowed
+    if grep -q "root" /etc/vsftpd/vsftpd.conf; then
+        WARN "루트 계정 액세스가 허용됨"
+    else
+        OK "루트 계정 액세스가 허용되지 않음"
+    fi
 fi
 
-fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
+echo ; echo 
 
-echo >>$RESULT
 
  

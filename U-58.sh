@@ -22,52 +22,29 @@ EOF
 
 BAR
 
- 
 
-TMP1=$(mktemp)
 
-FILE1=/etc/passwd
+# Set the target home directory path
+home_dir="/home"
 
-TRUEFALSE=1
+# Use the cat command to get the list of all accounts
+accounts=$(cat /etc/passwd | cut -d':' -f1)
 
- 
+# Iterate through each account
+for account in $accounts; do
+  # Use the getent command to get the home directory of the account
+  home_directory=$(getent passwd $account | cut -d':' -f6)
 
-cat /etc/passwd | awk -F: '$3 >= 500 && $3 <60000 {print $1,$6}' > $TMP1
-
- 
-
-cat $TMP1 | while read USERNAME HOMEDIR
-
-do
-
-if [ -z $HOMEDIR ] ; then
-
-WARN $HOMENAME 의 홈디렉터리가 존재하지 않습니다. 
-
-TRUEFALSE=0
-
-fi
-
-if [ $HOMEDIR == '/' ] ; then
-
-WARN $HOMENAME 의 홈디렉터리가 /로 설정되어 있습니다.
-
-TRUEFALSEs=0
-
-fi
-
+  # Check if the home directory exists
+  if [ ! -d "$home_directory" ]; then
+    OK "계정 $account 에 홈 디렉토리가 없습니다."
+  else
+    WARN "계정 $account 에 홈 디렉토리가 있습니다."
+  fi
 done
 
- 
 
-if [ $TRUEFALSE -eq 1 ] ; then
+cat $RESULT
 
-OK 사용자의 홈디렉터리 설정이 양호합니다. 
+echo ; echo 
 
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
