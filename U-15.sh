@@ -22,19 +22,20 @@ BAR
 
  
 
+search_dir="/path/to/search"
 
-# 전역에서 쓸 수 있는 파일 검색
-writable_files=$(find / ! \( -path '/proc*' -o -path '/sys/fs*' -o -path '/usr/local*' -prune \) -perm -2 -type f -exec ls -al {} \;)
-
-# 전역 쓰기 가능한 파일이 발견된 경우
-if [ -n "$writable_files" ] ; then
-  # 고정 파일 출력 목록
-  WARN  "전역 쓰기 가능한 파일을 찾았습니다:"
-  INFO  "$writable_files"
+if [ -d "$search_dir" ]; then
+    files=$(find "$search_dir" -type f -perm -0002)
+    if [ -z "$files" ]; then
+        OK "$search_dir 에서 전역 쓰기 가능 파일을 찾을 수 없습니다."
+    else
+        WARN " $search_dir 에서 찾은 전역 쓰기 가능 파일: "
+        INFO "$files"
+    fi
 else
-  # 전역 쓰기 가능한 파일을 찾을 수 없습니다
-  OK  "전역 쓰기 가능한 파일을 찾을 수 없습니다"
+    INFO " $search_dir 디렉터리를 찾을 수 없습니다"
 fi
+
 
 
  

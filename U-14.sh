@@ -26,62 +26,22 @@ BAR
 
  
 
- 
 
-TMP1=$(mktemp)
+file=$(eval echo ~)/.*profile
 
-TMP2=$(mktemp)
-
-TRUEFALSE=1
-
- 
-
-cat /etc/passwd | awk -F: '$3 >= 500 && $3 < 60000 {print $1}' > $TMP1
-
- 
-
-for i in `cat $TMP1`
-
-do
-
-ls -al /home/$i \ | grep '(.profile|.kshrc|.cshrc|.bashrc|.bash_profile|.login|.exrc)' \ | awk '{print $3}' > $TMP2
-
-for j in `cat $TMP2`
-
-do
-
-case $j in
-
-$i) : ;;
-
-root) : ;;
-
-*) 
-
-WARN 환경변수의 소유자가 다른 계정으로 지정되어 있습니다. 
-
-INFO /home/$i의 환경 파일을 확인하십시오
-
-TRUEFALSE=0 ;;
-
-esac
-
-done
-
-done
-
- 
-
-if [ $TRUEFALSE -eq 1 ] ; then
-
-OK 환경 변수의 소유자 설정이 양호합니다. 
-
+if [ -f "$file" ]; then
+    owner=$(ls -l "$file" | awk '{print $3}')
+    permissions=$(ls -l "$file" | awk '{print $1}')
+    if [ "$owner" = "root" ] && [ "$permissions" = "-rw-------" ]; then
+        OK "$file 의 소유자 및 권한이 올바르게 설정되어 있습니다.."
+    else
+        WARN "$file 의 소유자 또는 권한이 잘못되었습니다"
+    fi
+else
+    INFO "$file 을 찾을 수 없습니다."
 fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
-
+echo ; echo
  
