@@ -5,14 +5,17 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1
+ 
  
 
 BAR
 
 CODE [U-30] Sendmail 버전 점검
 
-cat << EOF >> $U30
+cat << EOF >> $TMP1
 
 [양호]: Sendmail 버전이 최신버전인 경우 
 
@@ -34,7 +37,7 @@ else
 fi
 
 
-cat $U30
+cat $TMP1
 
 echo ; echo
  

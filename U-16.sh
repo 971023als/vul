@@ -5,13 +5,16 @@
 . function.sh
 
 
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
  
 
 BAR
 
 CODE [U-16] /dev에 존재하지 않는 device 파일 점검
 
-cat << EOF >> $U16
+cat << EOF >> $TMP1  
 
 [양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우
 
@@ -41,7 +44,7 @@ fi
 
  
 
-echo >>$U16
+cat $TMP1  
 
-echo >>$U16
+echo ; echo
 

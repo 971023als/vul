@@ -4,14 +4,16 @@
 
 . function.sh
 
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-39] Apache 링크 사용 금지 
 
-cat << EOF >> $U39
+cat << EOF >> $TMP1
 
 [양호]: 심볼릭 링크, aliases 사용을 제한한 경우
 
@@ -36,7 +38,7 @@ else
 fi
 
  
-cat $U39
+cat $TMP1
 
 echo ; echo
 

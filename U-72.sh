@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-72] 정책에 따른 시스템 로깅 설정
 
-cat << EOF >> $U72
+cat << EOF >> $TMP1
 
 [양호]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있는 경우
 
@@ -48,7 +50,7 @@ for policy in "${policies[@]}"; do
 done
 
 
-cat $U72
+cat $TMP1
 
 echo ; echo 
 

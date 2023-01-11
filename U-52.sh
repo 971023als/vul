@@ -24,7 +24,7 @@ BAR
 
 CODE [U-52] 동일한 UID 금지
 
-cat << EOF >> $U52
+cat << EOF >> $TMP1
 
 양호: 동일한 UID로 설정된 사용자 계정이 존재하지 않는 경우
 
@@ -82,6 +82,6 @@ cat $TMP2
 
  
 
-cat $U52
+cat $TMP1
 
 echo ; echo

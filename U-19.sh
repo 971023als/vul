@@ -4,13 +4,15 @@
 
 . function.sh
 
- 
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
 
 BAR
 
 CODE [U-19] finger 서비스 비활성화
 
-cat << EOF >> $U19
+cat << EOF >> $TMP1  
 
 [양호]: Finger 서비스가 비활성화 되어 있는 경우
 
@@ -56,6 +58,6 @@ fi
 
  
 
-cat $U19
+cat $TMP1  
 
 echo ; echo

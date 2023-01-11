@@ -4,13 +4,16 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1  
 
 BAR
 
 CODE [U-67] SNMP 서비스 Community String의 복잡성 설정
 
-cat << EOF >> $U67
+cat << EOF >> $TMP1
 
 [양호]: SNMP Community 이름이 public, private 이 아닌 경우
 
@@ -39,6 +42,6 @@ else
     fi
 fi
 
-cat $U67
+cat $TMP1
 
 echo ; echo 

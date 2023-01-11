@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-62] ftp 계정 shell 제한
 
-cat << EOF >> $U62
+cat << EOF >> $TMP1
 
 [양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
 
@@ -42,7 +44,7 @@ done
 
 
 
-cat $U62
+cat $TMP1
 
 echo ; echo 
 

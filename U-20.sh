@@ -6,7 +6,7 @@
 
 TMP1=`SCRIPTNAME`.log
 
-> $TMP1
+>$TMP1  
 
  
 
@@ -16,7 +16,7 @@ BAR
 
 CODE [U-20] Anonymous FTP 비활성화
 
-cat << EOF >> $U20
+cat << EOF >> $TMP1
 
 [양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우
 
@@ -78,6 +78,6 @@ INFO 'FTP 서비스가 존재하지 않습니다'
 
 fi
 
-cat $U20
+cat $TMP1
 
 echo ; echo

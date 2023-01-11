@@ -4,13 +4,16 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1    
 
 BAR
 
 CODE [U-18] 접속 IP 및 포트 제한 
 
-cat << EOF >> $U18
+cat << EOF >> $TMP1
 
 [양호]: /etc/hosts.deny 파일에 ALL Deny 설정후
 
@@ -42,6 +45,6 @@ fi
 
  
 
-echo >>$U18
+cat $TMP1  
 
-echo >>$U18
+echo ; echo

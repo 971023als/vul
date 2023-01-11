@@ -14,7 +14,7 @@ BAR
 
 CODE [U-22] cron 파일 소유자 및 권한 설정
 
-cat << EOF >> $U22
+cat << EOF >> $TMP1
 
 [양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우
 
@@ -84,6 +84,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $U22
+cat $TMP1
 
 echo ; echo

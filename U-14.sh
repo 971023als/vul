@@ -4,13 +4,16 @@
 
 . function.sh
 
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
  
 
 BAR
 
 CODE [U-14] 사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정 
 
-cat << EOF >> $U14
+cat << EOF >> $TMP1  
 
 [양호]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고 
 
@@ -41,7 +44,7 @@ else
     INFO "$file 을 찾을 수 없습니다."
 fi
 
-cat $U14
+cat $TMP1  
 
 echo ; echo
  

@@ -7,12 +7,15 @@
 . function.sh
 
  
+ TMP1=`SCRIPTNAME`.log
+
+> $TMP1
 
 BAR
 
 CODE [U-04] 패스워드 파일 보호
 
-cat << EOF >> $U04
+cat << EOF >> $TMP1
 
 [양호]: 쉐도우 패스워드를 사용하거나, 패스워드를 암호화하여 저장하는 경우
 
@@ -75,6 +78,6 @@ fi
 
  
 
-cat $U04
+cat $TMP1
 
 echo ; echo

@@ -4,7 +4,9 @@
 
 . function.sh
 
- 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1  
 
  
 
@@ -12,7 +14,7 @@ BAR
 
 CODE [U-35] Apache 디렉터리 리스팅 제거
 
-cat << EOF >> $U35
+cat << EOF >> $TMP1
 
 [양호]: 디렉터리 검색 기능을 사용하지 않는 경우
 
@@ -37,6 +39,6 @@ else
 fi
 
 
-cat $U35
+cat $TMP1
 
 echo ; echo

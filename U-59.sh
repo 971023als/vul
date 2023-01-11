@@ -6,9 +6,9 @@
 
  
 
-TMP1=./log/`SCRIPTNAME`.log
+TMP1=`SCRIPTNAME`.log
 
-> $TMP1
+> $TMP1  
 
  
 
@@ -16,7 +16,7 @@ BAR
 
 CODE [U-59] 숨겨진 파일 및 디렉터리 검색 및 제거
 
-cat << EOF >> $U59
+cat << EOF >> $TMP1
 
 [양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
 
@@ -53,7 +53,7 @@ for directory in $hidden_directories; do
   fi
 done
 
-cat $U59
+cat $TMP1
 
 echo ; echo 
 

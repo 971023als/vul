@@ -16,7 +16,7 @@ BAR
 
 CODE [U-50] 관리자 그룹에 최소한의 계정 포함
 
-cat << EOF >> $U50
+cat << EOF >> $TMP1
 
 양호: 관리자 그룹에 불필요한 계정이 등록되어 있지 않은 경우
 
@@ -74,6 +74,6 @@ rm -f $TMP2
 
  
 
-cat $U50
+cat $TMP1
 
 echo ; echo

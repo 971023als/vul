@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1  
  
 
 BAR
 
 CODE [U-58] 홈 디렉터리로 지정한 디렉터리의 존재 관리 
 
-cat << EOF >> $U58
+cat << EOF >> $TMP1
 
 [양호]: 홈 디렉터리가 존재하지 않는 계정이 발견되지 않는 경우
 
@@ -44,7 +46,7 @@ for account in $accounts; do
 done
 
 
-cat $U58
+cat $TMP1
 
 echo ; echo 
 

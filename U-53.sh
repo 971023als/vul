@@ -20,7 +20,7 @@ BAR
 
 CODE [U-53] 사용자 shell 점검
 
-cat << EOF >> $U53
+cat << EOF >> $TMP1
 
 [취약]: 로그인이 필요하지 않은 계정에 /bin/false(nologin) 쉘이 부여되어 있는 경우
 
@@ -82,6 +82,6 @@ fi
 
  
 
-cat $U53
+cat $TMP1
 
 echo ; echo

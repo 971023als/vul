@@ -1,5 +1,25 @@
 #!/bin/bash
 
+. function.sh
+
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
+
+BAR
+
+CODE [U-0] 취약점 진단 시작
+
+cat << EOF >> $TMP1
+
+[양호]: 양호합니다.
+
+[취약]: 취약점 조치 스크립트 시작하십시오
+
+EOF
+
+BAR
+
 . U-01.sh
 
 . U-02.sh
@@ -131,3 +151,8 @@
 . U-71.sh
 
 . U-72.sh
+
+
+cat $TMP1
+
+echo ; echo 

@@ -4,13 +4,16 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
 
 BAR
 
 CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
 
-cat << EOF >> $U13
+cat << EOF >> $TMP1
 
 [양호]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우
 
@@ -39,7 +42,7 @@ fi
 
 
 
-cat $U13
+cat $TMP1
 
 echo ; echo
 

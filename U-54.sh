@@ -16,7 +16,7 @@ BAR
 
 CODE [U-54] Session Timeout 설정
 
-cat << EOF >> $U54
+cat << EOF >> $TMP1
 
 [양호]: Session Timeout이 600초(10분) 이하로 설정되어 있는 경우
 
@@ -86,6 +86,6 @@ fi
 
 INFO $TMP1 '파일의 내용을 참고합니다.'
 
-cat $U54
+cat $TMP1
 
 echo ; echo

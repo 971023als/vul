@@ -4,7 +4,10 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
  
 
@@ -12,7 +15,7 @@ BAR
 
 CODE [U-56] UMASK 설정 관리 
 
-cat << EOF >> $U56
+cat << EOF >> $TMP1
 
 [양호]: UMASK 값이 022 이하로 설정된 경우
 
@@ -34,7 +37,7 @@ else
 fi
 
 
-cat $U56
+cat $TMP1
 
 echo ; echo 
 

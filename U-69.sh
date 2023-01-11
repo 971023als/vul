@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1   
  
 
 BAR
 
 CODE [U-69] NFS 설정파일 접근권한
 
-cat << EOF >> $U69
+cat << EOF >> $TMP1
 
 [양호]: NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하인 경우
 
@@ -40,7 +42,7 @@ fi
 
 
 
-cat $U69
+cat $TMP1
 
 echo ; echo 
 

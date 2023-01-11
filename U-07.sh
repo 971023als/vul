@@ -10,7 +10,7 @@ BAR
 
 CODE [U-07] /etc/passwd 파일 소유자 및 권한 설정
 
-cat << EOF >> $U07
+cat << EOF >> $TMP1
 
 [ 양호 ] : /etc/passwd 파일의 소유자가 root이고, 권한이 644 이하인 경우
 
@@ -68,6 +68,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $U07
+cat $TMP1
 
 echo ; echo

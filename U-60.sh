@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1  
  
 
 BAR
 
 CODE [U-60] ssh 원격접속 허용
 
-cat << EOF >> $U60
+cat << EOF >> $TMP1
 
 [양호]: 원격 접속 시 SSH 프로토콜을 사용하는 경우
 
@@ -47,6 +49,6 @@ else
 fi
 
 
-cat $U60
+cat $TMP1
 
 echo ; echo 

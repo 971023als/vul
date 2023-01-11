@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-65] at 파일 소유자 및 권한 설정
 
-cat << EOF >> $U65
+cat << EOF >> $TMP1
 
 [양호]: at 접근제어 파일의 소유자가 root이고, 권한이 640 이하인 경우
 
@@ -44,6 +46,6 @@ else
     echo "관련 파일이 존재하지 않습니다"
 fi
 
-cat $U65
+cat $TMP1
 
 echo ; echo 

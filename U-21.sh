@@ -20,7 +20,7 @@ BAR
 
 CODE [U-21] r 계열 서비스 비활성화
 
-cat << EOF >> $U21
+cat << EOF >> $TMP1
 
 [양호]: r 계열 서비스가 비활성화 되어 있는 경우
 
@@ -74,6 +74,6 @@ fi
 
  
 
-cat $U21
+cat $TMP1
 
 echo ; echo

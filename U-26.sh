@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1  
  
 
 BAR
 
 CODE [U-26] automountd 제거 '확인 필요'
 
-cat << EOF >> $U26
+cat << EOF >> $TMP1
 
 [양호]: automountd 서비스가 비활성화 되어있는 경우
 
@@ -33,6 +35,6 @@ fi
 
  
 
-cat $U26
+cat $TMP1
 
 echo ; echo

@@ -4,13 +4,16 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1   
 
 BAR
 
 CODE [U-17] $HOME/.rhosts, hosts.equiv 사용 금지 
 
-cat << EOF >> $U17
+cat << EOF >> $TMP1
 
 [양호]: login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 
 
@@ -75,7 +78,7 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 fi
 
 
-cat $U17
+cat $TMP1
 
 echo ; echo
  

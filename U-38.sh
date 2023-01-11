@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-38] Apache 불필요한 파일 제거 
 
-cat << EOF >> $U38
+cat << EOF >> $TMP1
 
 [양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
 
@@ -41,6 +43,6 @@ else
     OK "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
 fi
 
-cat $U38
+cat $TMP1
 
 echo ; echo

@@ -4,13 +4,16 @@
 
 . function.sh
 
- 
+
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1  
 
 BAR
 
 CODE [U-47] 패스워드 최대 사용기간 설정
 
-cat << EOF >> $U47
+cat << EOF >> $TMP1
 
 [양호]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우
 
@@ -21,10 +24,6 @@ EOF
 BAR
 
  
-
-TMP1=$(SCRIPTNAME).log
-
->$TMP1
 
  
 
@@ -60,6 +59,6 @@ fi
 
  
 
-cat $U47
+cat $TMP1
 
 echo ; echo

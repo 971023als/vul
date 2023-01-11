@@ -18,7 +18,7 @@ BAR
 
 CODE [U-08] /etc/shadow 파일 소유자 및 권한 설정
 
-cat << EOF >> $U08
+cat << EOF >> $TMP1
 
 [양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
 
@@ -77,6 +77,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $U08
+cat $TMP1
 
 echo ; echo

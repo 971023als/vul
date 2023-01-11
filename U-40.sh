@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-40] Apache 파일 업로드 및 다운로드 제한 
 
-cat << EOF >> $U40
+cat << EOF >> $TMP1
 
 [양호]: 파일 업로드 및 다운로드를 제한한 경우
 
@@ -38,6 +40,6 @@ else
     WARN "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
 fi
 
-cat $U40
+cat $TMP1
 
 echo ; echo

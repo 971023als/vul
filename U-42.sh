@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
  
 
 BAR
 
 CODE [U-42] 최신 보안패치 및 벤더 권고사항 적용
 
-cat << EOF >> $U42
+cat << EOF >> $TMP1
 
 [양호]: 패치 적용 정책을 수립하여 주기적으로 패치를 관리하고 있는 경우
 
@@ -46,7 +48,7 @@ else
 fi
 
 
-cat $U42
+cat $TMP1
 
 echo ; echo 
 

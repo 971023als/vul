@@ -4,7 +4,9 @@
 
 . function.sh
 
- 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
  
 
@@ -12,7 +14,7 @@ BAR
 
 CODE [U-32] 일반사용자의 Sendmail 실행 방지
 
-cat << EOF >> $U32
+cat << EOF >> $TMP1 
 
 [양호]: SMTP 서비스 미사용 또는, 일반 사용자의 Sendmail 실행 방지가 설정된 경우
 
@@ -35,7 +37,7 @@ else
     WARN "일반 사용자의 sendmail 실행 방지가 설정되어 있습니다"
 fi
 
-cat $U32
+cat $TMP1 
 
 echo ; echo
  

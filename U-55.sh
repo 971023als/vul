@@ -5,14 +5,16 @@
 . function.sh
 
  
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1
  
 
 BAR
 
 CODE [U-55] hosts.lpd 파일 소유자 및 권한 설정
 
-cat << EOF >> $U55
+cat << EOF >> $TMP1
 
 [양호]: 파일의 소유자가 root이고 권한이 600인 경우
 
@@ -68,6 +70,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $U55
+cat $TMP1
 
 echo ; echo
