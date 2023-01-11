@@ -12,7 +12,7 @@ BAR
 
 CODE [U-64] ftpusers 파일 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U64
 
 [양호]: FTP 서비스가 비활성화 되어 있거나, 활성 시 root 계정 접속을 차단한 경우
 
@@ -39,7 +39,7 @@ else
 fi
 
 
-cat $RESULT
+cat $U64
 
 echo ; echo 
 

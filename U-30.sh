@@ -12,7 +12,7 @@ BAR
 
 CODE [U-30] Sendmail 버전 점검
 
-cat << EOF >> $RESULT
+cat << EOF >> $U30
 
 [양호]: Sendmail 버전이 최신버전인 경우 
 
@@ -34,7 +34,7 @@ else
 fi
 
 
-cat $RESULT
+cat $U30
 
 echo ; echo
  

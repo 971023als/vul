@@ -12,7 +12,7 @@ BAR
 
 CODE [U-57] 홈 디렉터리 소유자 및 권한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U57
 
 [양호]: 홈 디렉터리 소유자가 해당 계정이고, 일반 사용자 쓰기 권한이 제거된 경우
 
@@ -48,7 +48,7 @@ done
 
 
 
-cat $RESULT
+cat $U57
 
 echo ; echo 
 

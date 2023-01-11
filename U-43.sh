@@ -12,7 +12,7 @@ BAR
 
 CODE [U-43] 로그의 정기적 검토 및 보고
 
-cat << EOF >> $RESULT
+cat << EOF >> $U43
 
 [양호]: 로그 기록의 검토, 분석, 리포트 작성 및 보고 등이 정기적으로 이루어지는 경우
 
@@ -47,7 +47,7 @@ else
     fi
 fi
 
-cat $RESULT
+cat $U43
 
 echo ; echo 
 

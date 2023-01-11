@@ -12,7 +12,7 @@ BAR
 
 CODE [U-41] Apache 웹 서비스 영역의 분리 
 
-cat << EOF >> $RESULT
+cat << EOF >> $U41
 
 [양호]: DocumentRoot를 별도의 디렉터리로 지정한 경우
 
@@ -36,6 +36,6 @@ else
     WARN "Apache2 DocumentRoot가 구성 파일에 정의되어 있지 않습니다."
 fi
 
-cat $RESULT
+cat $U41
 
 echo ; echo

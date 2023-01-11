@@ -16,7 +16,7 @@ BAR
 
 CODE [U-59] 숨겨진 파일 및 디렉터리 검색 및 제거
 
-cat << EOF >> $RESULT
+cat << EOF >> $U59
 
 [양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
 
@@ -53,7 +53,7 @@ for directory in $hidden_directories; do
   fi
 done
 
-cat $RESULT
+cat $U59
 
 echo ; echo 
 

@@ -18,7 +18,7 @@ BAR
 
 CODE [U-02] 패스워드 복잡성 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U02
 
 [양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.
 
@@ -148,6 +148,6 @@ fi
 
  
 
-cat $RESULT
+cat $U02
 
 echo 

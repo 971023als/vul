@@ -14,7 +14,7 @@ BAR
 
 CODE [U-48] 패스워드 최소 사용기간 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U48
 
 [양호]: 패스워드 최소 사용기간이 1일(1주)로 설정되어 있는 경우
 
@@ -68,6 +68,6 @@ fi
 
  
 
-cat $RESULT
+cat $U48
 
 echo ; echo

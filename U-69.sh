@@ -12,7 +12,7 @@ BAR
 
 CODE [U-69] NFS 설정파일 접근권한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U69
 
 [양호]: NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하인 경우
 
@@ -40,7 +40,7 @@ fi
 
 
 
-cat $RESULT
+cat $U69
 
 echo ; echo 
 

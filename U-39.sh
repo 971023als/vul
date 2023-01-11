@@ -11,7 +11,7 @@ BAR
 
 CODE [U-39] Apache 링크 사용 금지 
 
-cat << EOF >> $RESULT
+cat << EOF >> $U39
 
 [양호]: 심볼릭 링크, aliases 사용을 제한한 경우
 
@@ -36,7 +36,7 @@ else
 fi
 
  
-cat $RESULT
+cat $U39
 
 echo ; echo
 

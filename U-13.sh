@@ -10,7 +10,7 @@ BAR
 
 CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
 
-cat << EOF >> $RESULT
+cat << EOF >> $U13
 
 [양호]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우
 
@@ -39,7 +39,7 @@ fi
 
 
 
-cat $RESULT
+cat $U13
 
 echo ; echo
 

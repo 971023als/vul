@@ -11,7 +11,7 @@ BAR
 
 CODE [U-16] /dev에 존재하지 않는 device 파일 점검
 
-cat << EOF >> $RESULT
+cat << EOF >> $U16
 
 [양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우
 
@@ -41,7 +41,7 @@ fi
 
  
 
-echo >>$RESULT
+echo >>$U16
 
-echo >>$RESULT
+echo >>$U16
 

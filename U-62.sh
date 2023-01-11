@@ -12,7 +12,7 @@ BAR
 
 CODE [U-62] ftp 계정 shell 제한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U62
 
 [양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
 
@@ -42,7 +42,7 @@ done
 
 
 
-cat $RESULT
+cat $U62
 
 echo ; echo 
 

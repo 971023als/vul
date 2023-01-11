@@ -12,7 +12,7 @@ BAR
 
 CODE [U-28] NIS, NIS+ 점검 
 
-cat << EOF >> $RESULT
+cat << EOF >> $U28
 
 [양호]: NIS 서비스가 비활성화 되어 있거나. 필요 시 NIS+를 사용하는 경우
 
@@ -30,7 +30,7 @@ else
     OK "NIS 서비스가 실행되고 있지 않습니다"
 fi
 
-cat $RESULT
+cat $U28
 
 echo ; echo
  

@@ -16,7 +16,7 @@ BAR
 
 CODE [U-06] 파일 및 디렉토리 소유자 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U06
 
 [양호]: 소유자가 존재하지 않은 파일 및 디렉터리가 존재하지 않는 경우
 
@@ -54,6 +54,6 @@ fi
 
  
 
-cat $RESULT
+cat $U06
 
 echo ; echo

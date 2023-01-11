@@ -12,7 +12,7 @@ BAR
 
 CODE [U-71] Apache 웹서비스 정보 숨김
 
-cat << EOF >> $RESULT
+cat << EOF >> $U71
 
 [양호]: ServerTokens 지시자에 Prod 옵션이 설정되어 있는 경우
 
@@ -37,6 +37,6 @@ else
     WARN "Server Signature 설정이 Off로 설정이 안 되어 있습니다"
 fi
 
-cat $RESULT
+cat $U71
 
 echo ; echo 

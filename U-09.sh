@@ -18,7 +18,7 @@ BAR
 
 CODE [U-09] /etc/hosts 파일 소유자 및 권한 설정.
 
-cat << EOF >> $RESULT
+cat << EOF >> $U09
 
 [양호]: /etc/hosts 파일의 소유자가 root이고, 권한이 600인 경우
 
@@ -80,6 +80,6 @@ INFO "$CHECK_FILE 이 존재하지 않습니다."
 
 fi
 
-cat $RESULT
+cat $U09
 
 echo ; echo

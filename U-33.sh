@@ -10,7 +10,7 @@ BAR
 
 CODE [U-33]  DNS 보안 버전 패치 '확인 필요'
 
-cat << EOF >> $RESULT
+cat << EOF >> $U33
 
 [양호]: DNS 서비스를 사용하지 않거나 주기적으로 패치를 관리하고 있는 경우
 
@@ -39,6 +39,6 @@ else
     OK "바인드에 사용할 수 있는 패치가 없습니다."
 fi
 
-cat $RESULT
+cat $U33
 
 echo ; echo

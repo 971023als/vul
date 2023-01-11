@@ -12,7 +12,7 @@ BAR
 
 CODE [U-70] expn, vrfy 명령어 제한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U70
 
 [양호]: SMTP 서비스 미사용 또는, noexpn, novrfy 옵션이 설정되어 있는 경우
 
@@ -50,6 +50,6 @@ else
 fi
     
 
-cat $RESULT
+cat $U70
 
 echo ; echo 

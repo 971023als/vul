@@ -12,7 +12,7 @@ BAR
 
 CODE [U-04] 패스워드 파일 보호
 
-cat << EOF >> $RESULT
+cat << EOF >> $U04
 
 [양호]: 쉐도우 패스워드를 사용하거나, 패스워드를 암호화하여 저장하는 경우
 
@@ -75,6 +75,6 @@ fi
 
  
 
-cat $RESULT
+cat $U04
 
 echo ; echo

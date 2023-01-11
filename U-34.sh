@@ -12,7 +12,7 @@ BAR
 
 CODE [U-34] DNS Zone Transfer 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U34
 
 [양호]: DNS 서비스 미사용 또는, Zone Transfer를 허가된 사용자에게만 허용한 경우
 
@@ -34,6 +34,6 @@ else
 fi
 
 
-cat $RESULT
+cat $U34
 
 echo ; echo

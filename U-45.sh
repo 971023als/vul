@@ -6,7 +6,7 @@ BAR
 
 CODE [U-45] root 계정 su 제한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U45
 
 [양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
 
@@ -52,6 +52,6 @@ fi
 
  
 
-cat $RESULT
+cat $U45
 
 echo ; echo

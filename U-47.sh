@@ -10,7 +10,7 @@ BAR
 
 CODE [U-47] 패스워드 최대 사용기간 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U47
 
 [양호]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우
 
@@ -60,6 +60,6 @@ fi
 
  
 
-cat $RESULT
+cat $U47
 
 echo ; echo

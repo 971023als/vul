@@ -18,7 +18,7 @@ BAR
 
 CODE [U-49] 불필요한 계정 제거
 
-cat << EOF >> $RESULT
+cat << EOF >> $U49
 
 [양호]: 불필요한 계정이 존재하지 않는 경우
 
@@ -136,6 +136,6 @@ cat /var/log/auth.log | grep 'su: pam_unix(su-l:auth): authentication failure' >
 
  
 
-cat $RESULT
+cat $U49
 
 echo ; echo

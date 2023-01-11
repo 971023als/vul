@@ -6,7 +6,7 @@
 BAR
 CODE [U-23] DoS 공격에 취약한 서비스 비활성화
 
-cat << EOF >> $RESULT
+cat << EOF >> $U23
 [ 양호 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스가 비활성화 된 경우
 [ 취약 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우
 EOF
@@ -24,6 +24,6 @@ do
     fi
 done
 
-cat $RESULT
+cat $U23
 
 echo ; echo

@@ -14,7 +14,7 @@ BAR
 
 CODE [U-03] 계정 잠금 임계값 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U03
 
 [양호]: 계정 잠금 임계값이 5이하의 값으로 설정되어 있는 경우
 
@@ -58,7 +58,7 @@ fi
 
  
 
-cat $RESULT
+cat $U03
 
 echo ; echo
 

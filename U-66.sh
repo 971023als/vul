@@ -12,7 +12,7 @@ BAR
 
 CODE [U-66] SNMP 서비스 구동 점검
 
-cat << EOF >> $RESULT
+cat << EOF >> $U66
 
 [양호]: SNMP 서비스를 사용하지 않는 경우
 
@@ -30,7 +30,7 @@ else
     echo "SNMP 서비스가 활성화되지 않았습니다."
 fi
 
-cat $RESULT
+cat $U66
 
 echo ; echo 
  

@@ -12,7 +12,7 @@ BAR
 
 CODE [U-26] automountd 제거 '확인 필요'
 
-cat << EOF >> $RESULT
+cat << EOF >> $U26
 
 [양호]: automountd 서비스가 비활성화 되어있는 경우
 
@@ -33,6 +33,6 @@ fi
 
  
 
-cat $RESULT
+cat $U26
 
 echo ; echo

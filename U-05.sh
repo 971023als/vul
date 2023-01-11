@@ -16,7 +16,7 @@ BAR
 
 CODE [U-05] root 홈, 패스 디렉토리 권한 및 패스 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U05
 
 [양호]: PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않은 경우
 
@@ -56,6 +56,6 @@ fi
 
  
 
-cat $RESULT
+cat $U05
 
 echo ; echo

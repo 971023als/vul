@@ -10,7 +10,7 @@ BAR
 
 CODE [U-46] 패스워드 최소 길이 설정
 
-cat << EOF >> $RESULT
+cat << EOF >> $U46
 
 [양호]: 패스워드 최소 길이가 8자 이상으로 설정되어 있는 경우
 
@@ -58,6 +58,6 @@ fi
 
  
 
-cat $RESULT
+cat $U46
 
 echo ; echo

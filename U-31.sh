@@ -12,7 +12,7 @@ BAR
 
 CODE [U-31] 스팸 메일 릴레이 제한
 
-cat << EOF >> $RESULT
+cat << EOF >> $U31
 
 [양호]: SMTP 서비스를 사용하지 않거나 릴레이 제한이 설정되어 있는 경우
 
@@ -29,7 +29,7 @@ else
     OK "SMTP 서비스를 사용하며 릴레이하도록 구성되지 않았습니다."
 fi
 
-cat $RESULT
+cat $U31
 
 echo ; echo
  

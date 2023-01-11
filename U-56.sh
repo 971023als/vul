@@ -12,7 +12,7 @@ BAR
 
 CODE [U-56] UMASK 설정 관리 
 
-cat << EOF >> $RESULT
+cat << EOF >> $U56
 
 [양호]: UMASK 값이 022 이하로 설정된 경우
 
@@ -34,7 +34,7 @@ else
 fi
 
 
-cat $RESULT
+cat $U56
 
 echo ; echo 
 

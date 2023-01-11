@@ -14,7 +14,7 @@ BAR
 
 CODE [U-44] root 이외의 UID가 '0' 금지
 
-cat << EOF >> $RESULT
+cat << EOF >> $U44
 
 [양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
 
@@ -46,6 +46,6 @@ fi
 
  
 
-cat $RESULT
+cat $U44
 
 echo ; echo
