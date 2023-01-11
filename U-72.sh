@@ -24,62 +24,22 @@ BAR
 
  
 
-FILE=/etc/syslog.conf
-
-FILE1=./log/`SCRIPTNAME`.log
-
-> $FILE1
-
- 
-
-cat << EOF >> $FILE1
-
-*.info;mail.none;authpriv.none;cron.none /var/log/messages
-
-authpriv.* /var/log/secure
-
-mail.* /var/log/maillog
-
-cron.* /var/log/cron
-
-*.alert /dev/console
-
-*.emerg *
-
-EOF
-
- 
-
-FILE2=$(mktemp)
-
- 
-
-cat $FILE | egrep -v '^#|^$' >$FILE2
-
- 
-
-diff -b $FILE1 $FILE2 | grep '<' /dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-OK 로그 기록 정책 설정이 양호합니다.
-
+# Check Server Tokens setting
+if grep -q "ServerTokens Prod" /etc/apache2/conf-enabled/security.conf; then
+    OK "서버 토큰 설정이 Prod로 설정되어 있습니다."
 else
-
-WARN 로그 기록 정책 설정이 취약합니다. 
-
-INFO $FILE에 $FILE1 내용을 추가/변경 하십시오.
-
+    WARN "서버 토큰 설정이 Prod로 설정이 안 되어 있습니다"
 fi
 
- 
+# Check Server Signature setting
+if grep -q "ServerSignature Off" /etc/apache2/conf-enabled/security.conf; then
+    OK "Server Signature 설정이 Off로 설정되어 있습니다"
+else
+    WARN "Server Signature 설정이 Off로 설정이 안 되어 있습니다"
+fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
  

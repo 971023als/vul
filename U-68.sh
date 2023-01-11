@@ -20,24 +20,43 @@ EOF
 
 BAR
 
- 
 
-# Set the path of the SNMP configuration file
-snmp_conf_file="/etc/snmp/snmpd.conf"
 
-# Check if the SNMP configuration file exists
-if [ ! -f $snmp_conf_file ]; then
-    INFO "SNMP 구성 파일이 없습니다."
+# Check if log on messages are not set for the server
+if [ ! -f /etc/motd ]; then
+    WARN "로그온 메시지가 서버에 대해 설정되지 않았습니다."
 else
-    # Check if the community name is public or private
-    if grep -q "public" $snmp_conf_file; then
-        WARN "SNMP 커뮤니티 이름이 공개됨"
-    elif grep -q "private" $snmp_conf_file; then
-        WARN "SNMP 커뮤니티 이름은 비공개입니다"
-    else
-        OK "SNMP 커뮤니티 이름이 공개 또는 비공개가 아닙니다"
-    fi
+    OK "로그온 메시지가 서버에 대해 설정되어 있습니다."
 fi
+
+# Check if log on messages are not set for Telnet service
+if [ ! -f /etc/issue.net ]; then
+    WARN "로그온 메시지가 텔넷 서비스에 대해 설정되지 않았습니다."
+else
+    OK "로그온 메시지가 텔넷 서비스에 대해 설정되어 있습니다."
+fi
+
+# Check if log on messages are not set for FTP service
+if [ ! -f /etc/ftpbanner ]; then
+    WARN "로그온 메시지가 FTP 서비스에 대해 설정되지 않았습니다."
+else
+    OK "로그온 메시지가 FTP 서비스에 대해 설정되어 있습니다."
+fi
+
+# Check if log on messages are not set for SMTP service
+if [ ! -f /etc/postfix/smtpd_banner ]; then
+    WARN "로그온 메시지가 SMTP 서비스에 대해 설정되지 않았습니다."
+else
+    OK "로그온 메시지가 SMTP 서비스에 대해 설정되어 있습니다."
+fi
+
+# Check if log on messages are not set for DNS service
+if [ ! -f /etc/named.conf ]; then
+    WARN "로그온 메시지가 DNS 서비스에 대해 설정되지 않았습니다."
+else
+    OK "로그온 메시지가 DNS 서비스에 대해 설정되어 있습니다."
+fi
+
 
 cat $RESULT
 

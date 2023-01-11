@@ -22,38 +22,21 @@ EOF
 
 BAR
 
- 
 
-FILE=/etc/httpd/conf/httpd.conf
-
- 
-
-ps -ef | grep httpd | grep -v grep >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-CHECK=`cat $FILE | grep -i servertokens | awk '{print $2}'`
-
-if [ $CHECK = 'Prod' ] ; then
-
-OK Apache 웹 서비스 정보가 숨겨져 있습니다.
-
+# Check Server Tokens setting
+if grep -q "ServerTokens Prod" /etc/apache2/conf-enabled/security.conf; then
+    OK "서버 토큰 설정이 Prod로 설정되어 있습니다."
 else
-
-WARN Apache 웹 서비스 정보가 노출되고 있습니다. 
-
+    WARN "서버 토큰 설정이 Prod로 설정이 안 되어 있습니다"
 fi
 
+# Check Server Signature setting
+if grep -q "ServerSignature Off" /etc/apache2/conf-enabled/security.conf; then
+    OK "Server Signature 설정이 Off로 설정되어 있습니다"
 else
-
-OK Apache 웹 서비스를 사용하지 않습니다. 
-
+    WARN "Server Signature 설정이 Off로 설정이 안 되어 있습니다"
 fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 

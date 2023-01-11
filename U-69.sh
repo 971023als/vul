@@ -22,23 +22,25 @@ EOF
 
 BAR
 
- 
 
-FILE=/etc/exports
 
-PERM1=644
+# Check file owner
+if [ "$(stat -c %U /etc/exports)" != "root" ]; then
+    OK "파일 소유자가 루트가 아닙니다"
+else
+    WARN "파일 소유자가 루트입니다"
+fi
 
-PERM2=rw-r--r--
+# Check file permissions
+if [ "$(stat -c %a /etc/exports)" -lt 644 ]; then
+    OK "파일 권한이 644 미만입니다."
+else
+    WARN "파일 권한이 644 이상입니다."
+fi
 
-FILEUSER=root
 
- 
 
-./check_perm.sh $FILE $PERM1 $PERM2 $FILEUSER
+cat $RESULT
 
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo 
 
