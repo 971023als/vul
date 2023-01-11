@@ -22,32 +22,16 @@ EOF
 
 BAR
 
- 
 
-installed_dns=$(ps -ef | grep named | grep -v grep)
-FILE1=/etc/named.conf
-# FILE2=/etc/named.rfc1912.zones
+DOMAIN=example.com
 
-
-# 활성화 여부 확인
-
-if  [-s $installed_dns] ; then
-    WARN "DNS 서비스를 사용 중입니다."
+# Use nslookup to check if zone transfer is allowed
+nslookup -q=axfr $DOMAIN | grep -q "Transfer failed"
+if [ $? -eq 0 ]; then
+    echo "Zone transfer is not allowed for $DOMAIN"
 else
-    OK "DNS 서비스를 사용 중입니다."
+    echo "Zone transfer is allowed for $DOMAIN"
 fi
-
-# 활성화 여부 확인
-
-if  [-f $FILE1] ; then # 파일 유무 확인
-    cat $FILE1 | grep 'allow-transfer' >/dev/null # 허용범위 확인
-    if [$? == 0 ] ; then
-        OK "Zone Transfer를 허가된 사용자에게만 허용하고 있습니다."
-    else
-        WARN " Zone Transfer를 허가된 사용자에게만 허용하고 있습니다."
-    fi
-else
-    WARN "$FILE1이 존재하지 있습니다."
 
 
 cat $RESULT
