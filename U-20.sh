@@ -16,7 +16,7 @@ BAR
 
 CODE [U-20] Anonymous FTP 비활성화
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우
 

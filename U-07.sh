@@ -10,7 +10,7 @@ BAR
 
 CODE [U-07] /etc/passwd 파일 소유자 및 권한 설정
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [ 양호 ] : /etc/passwd 파일의 소유자가 root이고, 권한이 644 이하인 경우
 

@@ -12,7 +12,7 @@ BAR
 
 CODE [U-33]  DNS 보안 버전 패치 '확인 필요'
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: DNS 서비스를 사용하지 않거나 주기적으로 패치를 관리하고 있는 경우
 

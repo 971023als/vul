@@ -18,7 +18,7 @@ BAR
 
 CODE [U-08] /etc/shadow 파일 소유자 및 권한 설정
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
 

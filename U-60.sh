@@ -14,7 +14,7 @@ BAR
 
 CODE [U-60] ssh 원격접속 허용
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 원격 접속 시 SSH 프로토콜을 사용하는 경우
 

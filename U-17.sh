@@ -13,7 +13,7 @@ BAR
 
 CODE [U-17] $HOME/.rhosts, hosts.equiv 사용 금지 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 
 

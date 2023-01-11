@@ -14,7 +14,7 @@ BAR
 
 CODE [U-40] Apache 파일 업로드 및 다운로드 제한 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 파일 업로드 및 다운로드를 제한한 경우
 

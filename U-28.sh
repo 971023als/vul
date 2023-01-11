@@ -14,7 +14,7 @@ BAR
 
 CODE [U-28] NIS, NIS+ 점검 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: NIS 서비스가 비활성화 되어 있거나. 필요 시 NIS+를 사용하는 경우
 

@@ -11,7 +11,7 @@ BAR
 
 CODE [U-01] root 계정 원격 접속 제한
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 원격 서비스를 사용하지 않거나 사용시 직접 접속을 차단한 경우
 
@@ -63,6 +63,6 @@ OK Remote Service is deactivated.
 
 fi
 
-cat $TMP1
+cat $result
 
 echo ; echo

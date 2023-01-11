@@ -14,7 +14,7 @@ BAR
 
 CODE [U-41] Apache 웹 서비스 영역의 분리 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: DocumentRoot를 별도의 디렉터리로 지정한 경우
 

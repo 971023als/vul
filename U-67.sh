@@ -13,7 +13,7 @@ BAR
 
 CODE [U-67] SNMP 서비스 Community String의 복잡성 설정
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: SNMP Community 이름이 public, private 이 아닌 경우
 

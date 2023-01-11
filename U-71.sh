@@ -14,7 +14,7 @@ BAR
 
 CODE [U-71] Apache 웹서비스 정보 숨김
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: ServerTokens 지시자에 Prod 옵션이 설정되어 있는 경우
 

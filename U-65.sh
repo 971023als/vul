@@ -14,7 +14,7 @@ BAR
 
 CODE [U-65] at 파일 소유자 및 권한 설정
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: at 접근제어 파일의 소유자가 root이고, 권한이 640 이하인 경우
 

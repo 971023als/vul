@@ -15,7 +15,7 @@ BAR
 
 CODE [U-56] UMASK 설정 관리 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: UMASK 값이 022 이하로 설정된 경우
 

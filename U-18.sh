@@ -13,7 +13,7 @@ BAR
 
 CODE [U-18] 접속 IP 및 포트 제한 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: /etc/hosts.deny 파일에 ALL Deny 설정후
 

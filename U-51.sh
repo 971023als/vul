@@ -20,7 +20,7 @@ BAR
 
 CODE [U-51] 계정이 존재하지 않는 GID 금지
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 양호: 존재하지 않는 계정에 GID 설정을 금지한 경우
 

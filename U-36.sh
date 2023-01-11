@@ -15,7 +15,7 @@ BAR
 
 CODE [U-36] Apache 웹 프로세스 권한 제한 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: Apache 데몬이 root 권한으로 구동되지 않는 경우
 

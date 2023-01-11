@@ -12,7 +12,7 @@ BAR
 
 CODE [U-15] world writable 파일 점검
 
-cat << EOF >> $TMP1  
+cat << EOF >> $result  
 
 [양호]: world writable 파일이 존재하지 않거나, 존재 시 설정 이유를 확인하고 있는 경우
 

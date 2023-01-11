@@ -14,7 +14,7 @@ BAR
 
 CODE [U-25] NFS 서비스 접근 통제 '확인 필요'
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 불필요한 NFS 서비스가 비활성화 되어있는 경우
 

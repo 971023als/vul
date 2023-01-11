@@ -18,7 +18,7 @@ BAR
 
 CODE [U-49] 불필요한 계정 제거
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 불필요한 계정이 존재하지 않는 경우
 

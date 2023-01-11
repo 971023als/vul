@@ -13,7 +13,7 @@ BAR
 
 CODE [U-27]  RPC 서비스 확인 '확인 필요'
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 불필요한 RPC 서비스가 비활성화 되어 있는 경우
 

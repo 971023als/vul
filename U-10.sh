@@ -13,7 +13,7 @@ BAR
 
 CODE [U-10] /etc/xinetd.conf 파일 소유자 및 권한 설정 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: /etc/xinetd.conf 파일의 소유자가 root이고, 권한이 600인 경우
 

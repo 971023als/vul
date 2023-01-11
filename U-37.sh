@@ -14,7 +14,7 @@ BAR
 
 CODE [U-37] Apache 상위 디렉터리 접근 금지 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 상위 디렉터리에 이동제한을 설정한 경우
 

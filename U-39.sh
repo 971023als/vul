@@ -13,7 +13,7 @@ BAR
 
 CODE [U-39] Apache 링크 사용 금지 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 심볼릭 링크, aliases 사용을 제한한 경우
 

@@ -14,7 +14,7 @@ BAR
 
 CODE [U-35] Apache 디렉터리 리스팅 제거
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 디렉터리 검색 기능을 사용하지 않는 경우
 

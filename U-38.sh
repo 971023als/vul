@@ -14,7 +14,7 @@ BAR
 
 CODE [U-38] Apache 불필요한 파일 제거 
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
 

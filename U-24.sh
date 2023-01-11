@@ -14,7 +14,7 @@ BAR
 
 CODE [U-24] NFS 서비스 비활성화 '확인 필요'
 
-cat << EOF >> $TMP1
+cat << EOF >> $result
 
 [양호]: 불필요한 NFS 서비스가 비활성화 되어있는 경우
 
