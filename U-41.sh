@@ -23,29 +23,20 @@ EOF
 BAR
 
  
+# Set the Apache2 configuration file path
+config_file="/etc/apache2/apache2.conf"
 
-FILE=/etc/apache2/apache2.conf
+# Use grep to check if the LimitRequestBody, LimitXMLRequestBody and LimitUploadSize options are enabled in the configuration file
+upload_result=$(grep -E "^[ \t]*LimitRequestBody" $config_file)
+download_result=$(grep -E "^[ \t]*LimitXMLRequestBody" $config_file)
+upload_size_result=$(grep -E "^[ \t]*LimitUploadSize" $config_file)
 
-TMP=$(mktemp)
-
- 
-
-cat $FILE | grep DocumentRoot | grep -v '^#' | grep '/usr/local/apache/htdocs' >$TMP
-
- 
-
-if [ -n $TMP ] ; then
-
-OK DocumentRoot 설정이 양호 합니다.
-
+if [ -n "$upload_result" ] || [ -n "$download_result" ] || [ -n "$upload_size_result" ] ; then
+    echo "Apache2에서 파일 업로드 및 다운로드가 제한됩니다"
 else
-
-WARN $FILE의 DocumentRoot가 기본 디렉터리로 지정되어 있습니다.
-
+    echo "Apache2에서 파일 업로드 및 다운로드가 제한되지 않습니다."
 fi
 
- 
+cat $RESULT
 
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo

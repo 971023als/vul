@@ -24,52 +24,23 @@ BAR
 
  
 
-FILE=/etc/httpd
+#!/bin/bash
 
-TRUEFLASE=0
+# Set the Apache2 Document Root directory to check
+dir_path=$(grep -E "^[ \t]*DocumentRoot[ \t]+" /etc/apache2/sites-enabled/* | awk '{print $2}')
 
- 
+# Use find command to check all files and directories within the given path
+# and use stat command to check the last accessed time
+find $dir_path -mindepth 1 -type f -atime +30 -exec ls -alh {} + > /tmp/unnecessary_files.txt
+find $dir_path -mindepth 1 -type d -atime +30 -exec ls -alh {} + >> /tmp/unnecessary_files.txt
 
-ls -ld $FILE/htdocs/manual >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN $FILE/htdocs/manual이 존재합니다. 
-
+if [ -s /tmp/unnecessary_files.txt ]; then
+    echo "Apache2에서 만든 불필요한 파일과 디렉터리가 제거되지 않았습니다. 다음 파일을 검토하십시오"
+    cat /tmp/unnecessary_files.txt
 else
-
-TRUEFLASE=1
-
+    echo "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
 fi
 
- 
+cat $RESULT
 
-ls -ld $FILE/manual >/dev/null 2>&1
-
- 
-
-if [ $? -eq 0 ] ; then
-
-WARN $FILE/manual이 존재합니다.
-
-else
-
-TRUEFLASE=1
-
-fi
-
- 
-
-if [ -n $TUREFLASE ] ; then
-
-OK 매뉴얼 파일 및 디렉터리가 존재하지 않습니다.
-
-fi
-
- 
-
-echo >>$RESULT
-
-echo >>$RESULT
+echo ; echo
