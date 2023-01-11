@@ -1,7 +1,7 @@
 LOG=check.log
-RESULT=result.log
+result=result.log
 > $LOG
-> $RESULT
+> $result
 
 #
 # (1) Operating System 
@@ -56,19 +56,19 @@ echo '[INFO] : Information 파일을 보고, 고객과 상의'
 
 OK() {
 echo -e '\033[32m'"[ 양호 ] : $*"'\033[0m'
-} >> $RESULT
+} >> $result
 
 WARN() {
 echo -e '\033[31m'"[ 취약 ] : $*"'\033[0m'
-} >> $RESULT
+} >> $result
 
 INFO() { 
 echo -e '\033[35m'"[ 정보 ] : $*"'\033[0m'
-} >> $RESULT
+} >> $result
 
 CODE(){
 echo -e '\033[36m'$*'\033[0m' 
-} >> $RESULT
+} >> $result
 
 SCRIPTNAME() {
 basename $0 | awk -F. '{print $1}' 
