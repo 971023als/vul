@@ -37,7 +37,6 @@ communities=$(grep -E '^community' $snmpd_config_file | cut -d ' ' -f 2)
 for community in $communities; do
   if [ $community == "public" ] || [ $community == "private" ]; then
     echo "Community name $community는 허용되지 않습니다."
-    exit 1
   fi
 done
 
