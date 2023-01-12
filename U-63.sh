@@ -26,27 +26,6 @@ BAR
 
  
 
-# Set the path of the ftpusers file
-ftpusers_file="/etc/ftpusers"
-
-# Check if the ftpusers file exists
-if [ ! -f $ftpusers_file ]; then
-    echo "ftpusers 파일이 존재하지 않습니다."
-else
-    # Use the stat command to get the owner and permission of the ftpusers file
-    owner=$(stat -c %U $ftpusers_file)
-    permission=$(stat -c %a $ftpusers_file)
-
-    # Check if the owner is not root
-    if [ "$owner" != "root" ]; then
-        echo "ftp users 파일의 소유자가 루트가 아닙니다."
-    fi
-
-    # Check if the permission is not set to 640 or less
-    if [ $permission -gt 640 ]; then
-        echo "ftp 사용자 파일의 권한이 640 이하로 설정되지 않았습니다."
-    fi
-fi
 
 
 

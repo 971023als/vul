@@ -30,73 +30,22 @@ EOF
 
 BAR
 
- 
 
-GROUPFILE=/etc/group
+# Define a list of necessary groups
+necessary_groups=("root" "sudo" "sys" "adm" "wheel" "daemon")
 
-/bin/cp $GROUPFILE $TMP2
+# Search for groups that are not in the list of necessary groups
+unnecessary_groups=$(getent group | awk -F: '{if (!($1 in necessary_groups)) { print $1 } }')
 
-for i in $(cat $GROUPFILE | awk -F: '{print $4}')
-
-do
-
-if [ ! -z "$i" ] ; then
-
-sed -i "/:${i}/d" $TMP2
-
+# Check if any unnecessary groups were found
+if [ -n "$unnecessary_groups" ]; then
+  WARN "Error: 불필요한 그룹이 발견되었습니다. $unequired_groups"
 fi
 
-done
+# If the script reaches this point, no unnecessary groups were found
+OK "불필요한 그룹을 찾을 수 없습니다."
 
- 
 
-awk -F: '{print $4}' /etc/passwd > $TMP3
-
-for j in $(cat $TMP2)
-
-do
-
-NUM=$(echo $j | awk -F: '{print $3}')
-
-if grep -wq $NUM $TMP3; then
-
-:
-
-else
-
-echo $j >> $TMP4
-
-fi
-
-done
-
- 
-
-if [ -s $TMP4 ] ; then
-
-WARN 존재하지 않는 계정에 GID 설정이 되어 있습니다.
-
-INFO $TMP1 파일을 참고합니다.
-
-cat << EOF >> $TMP1
-
-==================================================================
-
-1. 사용자가 포함되지 않은 그룹 이름의 목록을 /etc/group에서 검색하였습니다.
-
- 
-
-$(cat $TMP4)
-
-==================================================================
-
-EOF
-
-else
-
-OK 존재하지 않는 계정에 GID 설정을 금지 되어 있습니다.
-
-fi
 
  
 

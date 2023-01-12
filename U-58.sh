@@ -26,24 +26,23 @@ BAR
 
 
 
-# Set the target home directory path
-home_dir="/home"
+# Get a list of all accounts
+accounts=`cat /etc/passwd | cut -d: -f1`
 
-# Use the cat command to get the list of all accounts
-accounts=$(cat /etc/passwd | cut -d':' -f1)
-
-# Iterate through each account
+# Loop through all accounts
 for account in $accounts; do
-  # Use the getent command to get the home directory of the account
-  home_directory=$(getent passwd $account | cut -d':' -f6)
 
-  # Check if the home directory exists
-  if [ ! -d "$home_directory" ]; then
-    OK "계정 $account 에 홈 디렉토리가 없습니다."
-  else
-    WARN "계정 $account 에 홈 디렉토리가 있습니다."
+  # Get the home directory of the account
+  home=`cat /etc/passwd | grep $account | cut -d: -f6`
+
+  # Check if the home directory is empty
+  if [ -z "$home" ]; then
+    WARN "Account $account 홈 디렉토리가 없습니다."
   fi
 done
+
+echo "모든 계정에는 홈 디렉토리가 있습니다"
+
 
 
 cat $result

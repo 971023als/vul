@@ -26,32 +26,28 @@ EOF
 
 BAR
 
- 
-# Set the target directory path
-target_dir="/"
 
-# Use the find command to search for hidden files and directories
-hidden_files=$(find $target_dir -name ".*" -type f)
-hidden_directories=$(find $target_dir -name ".*" -type d)
+rootdir="/path/to/scan"
 
-# Iterate through each hidden file and directory
+# List all hidden files and directories
+hidden_files=$(find "$rootdir" -type f -name ".*" ! -name ".*.swp")
+hidden_dirs=$(find "$rootdir" -type d -name ".*" ! -name ".*.swp")
+
+# Check if any unwanted or suspicious files or directories exist
 for file in $hidden_files; do
-  # check if the hidden file is unnecessary or suspicious
-  if [[ "$file" =~ .*/.*/.bash_history ]]; then
-    WARN "숨겨진 파일 $file이 불필요하거나 의심스럽다"
-  else
-    OK "숨겨진 파일 $file이 불필요하거나 의심스러운 경우가 없습니다"
+  if [[ $(basename $file) =~ "unwanted-file" ]]; then
+    WARN "원하지 않는 파일 발견: $file"
   fi
 done
 
-for directory in $hidden_directories; do
-  # check if the hidden directory is unnecessary or suspicious
-  if [[ "$directory" =~ .*/.*/.ssh ]]; then
-    WARN "숨겨진 디렉토리 $directory가 불필요하거나 의심스럽다"
-  else
-    OK "숨겨진 디렉토리 $directory가 불필요하거나 의심스러운 경우가 없습니다"
+for dir in $hidden_dirs; do
+  if [[ $(basename $dir) =~ "suspicious-dir" ]]; then
+    WARN "의심스러운 디렉토리를 찾았습니다: $dir"
   fi
 done
+
+OK "원하지 않거나 의심스러운 숨겨진 파일 또는 디렉터리를 찾을 수 없습니다."
+
 
 cat $result
 

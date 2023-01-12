@@ -26,65 +26,16 @@ EOF
 
 BAR
 
- 
 
-PASS_FILE=/etc/passwd
 
-TMP2=/tmp/tmp2
+timeout=`grep -i "session.timeout" /path/to/config/file`
 
-> $TMP2
-
- 
-
-awk -F: '$3 >= 1000 && $3 <= 60000 {print $1}' $PASS_FILE > $TMP2
-
- 
-
-for Saram in $(cat $TMP2)
-
-do
-
-#echo $Saram
-
-TMOUT_USER=$Saram
-
-TMOUT_OUTPUT=$(su - $TMOUT_USER -c 'echo $TMOUT')
-
-# echo $TMOUT_PUTPUT
-
-if [ -z $TMOUT_OUTPUT ] ; then
-
-echo "[ WARN ] $TMOUT_USER : not configured" >> $TMP1
-
+if [[ $timeout -le 600 ]]; then
+  WARN "세션 시간 초과가 $timeout seconds로 설정되었으며, 이는 허용 가능합니다."
 else
-
-if [ $TMOUT_OUTPUT -le 600 ] ; then
-
-echo "[ OK ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
-
-else
-
-echo "[ WARN ] $TMOUT_USER : $TMOUT_OUTPUT" >> $TMP1
-
+  OK "세션 시간 초과가 $timeout seconds로 설정되었습니다. 이는 너무 깁니다. 10분 이내로 조정해 주세요."
 fi
 
-fi
-
-done
-
- 
-
-if grep -q -w WARN $TMP1 ; then
-
-WARN 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되지 않은 경우'
-
-else
-
-OK 'Session TimeOut 이 없거나 600초(10분) 이하로 설정되어 있는 경우'
-
-fi
-
-INFO $TMP1 '파일의 내용을 참고합니다.'
 
 cat $result
 

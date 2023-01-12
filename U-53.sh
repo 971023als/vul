@@ -32,53 +32,21 @@ BAR
 
  
 
- 
 
-# PASSFILE=/etc/passwd
+# Get a list of accounts that do not require login
+nologin_accounts=$(grep -E 'nologin$|false$' /etc/passwd | awk -F: '{print $1}')
 
-PASSFILE=passwd
+# Check if any accounts that do not require login were not granted a nologin shell
+for account in $nologin_accounts; do
+  shell=$(grep "^$account:" /etc/passwd | awk -F: '{print $NF}')
+  if [[ "$shell" != "/sbin/nologin" && "$shell" != "/bin/false" ]]; then
+    WARN "Error: 로그인이 필요 없는 계정 $account가 로그인 셸을 사용하지 않습니다. 현재 $shell 사용 중"
+  fi
+done
 
- 
+# If the script reaches this point, all accounts that do not require login are using a nologin shell
+OK "로그인이 필요하지 않은 모든 계정은 nologin 셸을 사용하고 있습니다."
 
- 
-
-# (1) 점검해야 하는 사용자 목록 생성
-
-awk -F: '$3 < 1000 || $3 > 60000 {print $0}' /etc/passwd | egrep -v '^root:' | awk -F: '{print $1, $7}' > $TMP2
-
- 
-
- 
-
-if [ -s $TMP2 ] ; then
-
-WARN 로그인이 필요하지 않은 계정에 로그인 쉘이 부여되어 있습니다.
-
-INFO $TMP1 파일의 내용을 참고하십시오.
-
-cat << EOF >> $TMP1
-
-====================================================================
-
-1. 다음 같은 조건을 가진, 로그인 가능 쉘이 부여된 사용자 목록입니다.
-
-* UID 번호가 1 ~ 299 사용자 중 로그인 가능 쉘이 부여된 사용자 목록
-
-* UID 번호가 60001 ~ 65535 사용자 중 로그인 가능 쉘이 부여된 사용자 목록
-
- 
-
-$(cat $TMP2)
-
-====================================================================
-
-EOF
-
-else
-
-OK 로그인이 필요하지 않은 계정에 로그인 쉘이 부여되어 있지 않습니다.
-
-fi
 
  
 
