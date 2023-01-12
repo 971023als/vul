@@ -26,23 +26,6 @@ BAR
 
  
 
-PASSFILE=passwd
-
-awk -F: '$3 == "0" {print $1}' $PASSFILE >> $TMP1
-
-UIDZEROCNT=$(wc -l < $TMP1)
-
-if [ $UIDZEROCNT -ge 2 ] ; then
-
-WARN 'root 계정과 동일한 UID를 갖는 계정이 존재합니다'
-
-INFO $TMP1 참고 하십시오
-
-else
-
-OK 'root 계정과 동일한 UID를 갖는 계정은 없습니다.'
-
-fi
 
  
 

@@ -24,22 +24,28 @@ EOF
 BAR
 
 
-installed_version=$(named -v | awk '{print $3}')
-latest_version=$(curl -s https://www.isc.org/downloads/ | grep -oP '(?<=BIND<\/a><\/td><td class="version">)[^<]+')
-
-if [ "$installed_version" != "$latest_version" ]; then
-    WARN "최신 버전 $installed_version이 최신 버전 $timeout_version이 아닙니다."
-else
-    OK "최신 버전 $installed_version이 최신 버전입니다"
+# Check if the DNS service is running
+if ! systemctl is-active --quiet named; then
+  WARN "Error: DNS 서비스가 실행되고 있지 않습니다."
 fi
 
-patch_count=$(yum list --security bind | grep "bind" | awk '{print $1}' | wc -l)
+# Get the version of the currently running DNS service
+version=$(named -v | awk '{print $4}')
 
-if [ $patch_count -gt 0 ]; then
-    WARN "바인드에 사용할 수 있는 패치가 $patch_count 있습니다."
-else
-    OK "바인드에 사용할 수 있는 패치가 없습니다."
+# Check if the version is less than a specified minimum version
+if [[ "$(printf '%s\n' "$version" "$minimum_version" | sort -V | head -n1)" == "$version" ]]; then
+  WARN "Error: DNS 서비스(이름 지정) 버전이 최신 버전이 아닙니다. 설치된 버전: $version. 최소 허용 버전: $minimum_version"
 fi
+
+# Check if there are any available updates for the DNS service
+updates=$(yum check-update bind)
+if [ -n "$updates" ]; then
+  WARN "Error: DNS 서비스에 사용할 수 있는 업데이트가 있습니다. 최신 패치로 업데이트하십시오"
+fi
+
+# If the script reaches this point, the DNS service is running and up to date
+OK "DNS 서비스(이름 지정)가 실행 중이며 최신 상태입니다. 설치된 버전: $version"
+
 
 cat $result
 

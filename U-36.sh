@@ -25,27 +25,25 @@ EOF
 
 BAR
 
-# Check if apache2 process is running
-if pgrep -x "apache2" > /dev/null
+# Check if httpd process is running
+if pgrep -x "httpd" > /dev/null
 then
-    echo "Apache 데몬(apache2)이 실행 중입니다."
+    INFO "아파치 데몬(httpd)이 실행 중입니다.."
 else
-    echo "Apache 데몬(apache2)이 실행되고 있지 않습니다."
+    INFO "아파치 데몬(httpd)이 실행되고 있지 않습니다.."
 fi
 
-# Get the parent process id of the apache2 process
-parent_pid=$(ps -o ppid= -p $(pgrep -x "apache2"))
+# Get the user and group of the httpd process
+httpd_user=$(ps -o user= -p $(pgrep -x "httpd"))
+httpd_group=$(ps -o group= -p $(pgrep -x "httpd"))
 
-# Check if the parent process of apache2 is owned by root
-parent_user=$(ps -o user= -p $parent_pid)
-
-if [[ $parent_user == "root" ]]
+# Check if the httpd process is running as root
+if [[ $httpd_user == "root" || $httpd_group == "root" ]]
 then
-    echo "Apache 데몬(apache2)이 루트에 의해 실행되었습니다."
+    WARN "Apache 데몬(httpd)이 루트 권한으로 실행되고 있습니다"
 else
-    echo "Apache 데몬(apache2)이 루트에 의해 실행되지 않았습니다."
+    OK "Apache 데몬(httpd)이 루트 권한으로 실행이 안되고 있습니다"
 fi
-
 
 
 
