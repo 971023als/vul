@@ -25,7 +25,7 @@ EOF
 BAR
 
 # Check if Server Tokens is set to "Prod"
-result=`grep "ServerTokens" /etc/httpd/conf/httpd.conf`
+result=`grep "ServerTokens" /etc/apache2/apache2.conf`
 if [[ $result == *"Prod"* ]]; then
   OK "Server Tokens이 Prod로 설정됨"
 else
@@ -33,7 +33,7 @@ else
 fi
 
 # Check if Server Signature is set to "Off"
-result=`grep "ServerSignature" /etc/httpd/conf/httpd.conf`
+result=`grep "ServerSignature" /etc/apache2/apache2.conf`
 if [[ $result == *"Off"* ]]; then
   OK "Server Signature가 Off로 설정됨"
 else

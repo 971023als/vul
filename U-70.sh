@@ -31,13 +31,21 @@ if [ $service != "active" ]; then
   INFO "SMTP 서비스가 실행되고 있지 않습니다."
 fi
 
-# Check if the noexpn and novrfy options are set
-options=`postconf | grep "smtpd_discard_ehlo_keywords"`
-if [ -z "$options" ]; then
-  WARN "noexpn 및 novrfy 옵션이 설정되지 않았습니다."
+# Path to Postfix main configuration file
+CONF_FILE=/etc/postfix/main.cf
+
+# Check if 'smtpd_recipient_restrictions' is present in configuration file
+if grep -q "smtpd_recipient_restrictions" "$CONF_FILE"; then
+  # Check if 'noexpn' and 'novrfy' are not present
+  if ! grep -q "noexpn" "$CONF_FILE" && ! grep -q "novrfy" "$CONF_FILE"; then
+    WARN "noexpn 및 novrfy 옵션이 설정되지 않았습니다."
+  else
+    WARN "noexpn 및 novrfy 옵션이 설정되었습니다."
+  fi
+else
+  OK "구성 파일에서 esxd_disclusions를 찾을 수 없습니다."
 fi
 
-OK "SMTP 서비스가 실행 중이고 noexpn, novrfy 옵션이 설정되었습니다."
 
 
     
