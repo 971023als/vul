@@ -21,17 +21,23 @@ EOF
 BAR
 
 
+vulnerable_services=("echo-dgram" "echo-stream" "chargen-dgram" "chargen-stream")
+running_services=()
 
-services=( "echo" "discard" "daytime" "chargen" "ntp" "snmp" )
-
-for service in "${services[@]}"
-do
-    if systemctl is-active --quiet "$service"; then
-        WARN "$service 가 DoS 공격에 취약한 서비스가 실행 중입니다"
-    else
-        OK "$service 가 DoS 공격에 취약한 서비스가 실행되고 있지 않습니다"
+for service in "${vulnerable_services[@]}"; do
+    if systemctl is-active "$service" > /dev/null; then
+        running_services+=($service)
+    elif systemctl is-enabled "$service" > /dev/null; then
+        running_services+=($service)
     fi
 done
+
+if [ ${#running_services[@]} -gt 0 ]; then
+    WARN "다음 취약한 서비스가 실행 중이거나 사용하도록 설정되었습니다. ${running_services[@]}" | mail -s "Vulnerable services running or enabled" 
+else
+    OK "모든 취약한 서비스가 실행되고 있지 않거나 사용하도록 설정되어 있지 않습니다."
+fi
+
 
 cat $result
 

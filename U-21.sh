@@ -30,47 +30,24 @@ EOF
 
 BAR
 
- 
 
- 
+unnecessary_services=("rsh-server" "rlogin" "rexec")
+running_services=()
 
- 
-
-SERVICE_LIST='rlogin.socket rexec.socket rsh.socket'
-
-for SERVICE in $SERVICE_LIST
-
-do
-
-#echo $SERVICE
-
-STATUS=$(systemctl is-active $SERVICE)
-
-if [ $STATUS = 'active' ] ; then
-
-echo "[ WARN ] $SERVICE is Active". >> $TMP1
-
-else
-
-echo "[ OK ] $SERVICE not configured">> $TMP1
-
-fi
-
+for service in "${unnecessary_services[@]}"; do
+    if systemctl is-active "$service" > /dev/null; then
+        running_services+=($service)
+    fi
 done
 
+if [ ${#running_services[@]} -gt 0 ]; then
+    OK "다음 불필요한 r-패밀리 서비스가 실행 중입니다: ${running_services[@]}" | mail -s "불필요한 r-패밀리 서비스가 실행 중입니다" 
+else
+    WARN "불필요한 모든 r-family 서비스가 실행되고 있지 않습니다"
+fi
+
  
 
-if grep -q WARN $TMP1 ; then
-
-WARN 'r 계열 서비스가 활성화 되어 있습니다.'
-
-INFO "$TMP1 파일의 내용을 참고 하세요."
-
-else
-
-OK 'r 계열 서비스가 비활성화 되어 있습니다.'
-
-fi
 
  
 
