@@ -28,109 +28,23 @@ EOF
 
 BAR
 
- 
 
-INFO $TMP1 파일을 점검 하세요.
 
- 
+# Define a list of necessary accounts
+necessary_accounts=("root" "bin" "daemon" "adm" "lp" "sync" "shutdown" "halt" "ubuntu" "user")
 
- 
+# Search for accounts that are not in the list of necessary accounts
+unnecessary_accounts=$(awk -F: '{if (!($1 in necessary_accounts)) { print $1 }}' /etc/passwd)
 
-FILE1=/etc/passwd
+# Check if any unnecessary accounts were found
+if [ -n "$unnecessary_accounts" ]; then
+  echo "Error: 불필요한 계정이 발견되었습니다. $insequired_accounts"
+  exit 1
+fi
 
-# /etc/passwd 파일의 내용
+# If the script reaches this point, no unnecessary accounts were found
+echo "불필요한 계정을 찾을 수 없습니다."
 
-echo "[/etc/passwd 파일의 내용]" >> $TMP1
-
- 
-
-cat << EOF >> $TMP1
-
-==================================================================
-
- 
-
-(ㄱ) 시스템 사용자인데 로그인 할 수 있는 쉘을 할당 받은 경우 점검
-
-또한, 시스템 사용자의 정보를 자세하게 확인해야 한다.(악의적인 설정 점검)
-
- 
-
-(ㄴ) 일반사용자 중 최근(최근 1년간)에 로그인한 적이 없는 사용자 점검
-
-이런경우는 lastlog 명령어의 출력 결과를 확인한다.
-
- 
-
-==================================================================
-
-EOF
-
- 
-
-cat /etc/passwd >> $TMP1
-
- 
-
- 
-
-# lastlog 명령어의 출력 내용
-
-echo >> $TMP1
-
-echo "[lastlog 명령어의 출력내용]" >> $TMP1
-
- 
-
-cat << EOF >> $TMP1
-
-==================================================================
-
- 
-
-(ㄱ) 최근 1년간 로그인한적이 없는 사용자를 점검한다.
-
-(ㄴ) 이 부분은 고객과 반드시 상의해야 한다.
-
- 
-
-==================================================================
-
-EOF
-
-lastlog >> $TMP1
-
- 
-
- 
-
-# su 명령어의 실패 사용자 출력 내용
-
-echo >> $TMP1
-
-echo "[su 명령어의 실패시도 내용]" >> $TMP1
-
- 
-
-cat << EOF >> $TMP1
-
-==================================================================
-
- 
-
-(ㄱ) 빈번하게 su 명령어를 실행하는 사용자들 점검(하루에 20번 이상)
-
-(ㄴ) 일반사용자에서 root 사용자로 전환하는 경우를 중점적으로 점검한다.
-
- 
-
-==================================================================
-
-EOF
-
- 
-
-cat /var/log/auth.log | grep 'su: pam_unix(su-l:auth): authentication failure' >> $TMP1
 
  
 
