@@ -38,11 +38,11 @@ unnecessary_accounts=$(awk -F: '{if (!($1 in necessary_accounts)) { print $1 }}'
 
 # Check if any unnecessary accounts were found
 if [ -n "$unnecessary_accounts" ]; then
-  echo "Error: 불필요한 계정이 발견되었습니다. $insequired_accounts"
+  WARN "Error: 불필요한 계정이 발견되었습니다. $insequired_accounts"
 fi
 
 # If the script reaches this point, no unnecessary accounts were found
-echo "불필요한 계정을 찾을 수 없습니다."
+OK "불필요한 계정을 찾을 수 없습니다."
 
 
  

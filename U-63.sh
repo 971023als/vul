@@ -25,24 +25,19 @@ EOF
 BAR
 
 
-ftpusers_file="/path/to/ftpusers"
-
-# Check if the file exists
-if [ ! -f $ftpusers_file ]; then
-  WARN "ftpusers 파일이 없습니다. 확인해주세요."
+# Check owner of ftpusers file
+if [ "$(stat -c %U /etc/ftpusers)" != "root" ]; then
+    WARN "ftpusers file 소유자는 루트가 아닙니다."
 fi
 
-# Check owner of the file
-if [ `stat -c '%U' $ftpusers_file` == "root" ]; then
-  WARN "ftp 사용자의 소유자는 루트입니다. 이것은 허용되지 않습니다."
-fi
+# Check permissions of ftpusers file
+if [ "$(stat -c %a /etc/ftpusers)" -lt "640" ]; then
+    OK " ftpusers file의 권한이 640 미만입니다."
 
-# Check permission on the file
-if [ `stat -c '%a' $ftpusers_file` -lt 640 ]; then
-  WARN "ftp 사용자에 대한 권한이 640 미만입니다. 이것은 허용되지 않습니다."
-fi
+fi    
 
-OK "임의 사용자 파일이 있고 소유자와 권한이 예상대로입니다."
+OK "ftpusers 파일의 소유자가 root이고, 권한이 640 이하입니다"
+
  
 
 
