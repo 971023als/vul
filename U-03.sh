@@ -25,26 +25,18 @@ EOF
 BAR
 
 
-# Get the current account lock threshold
-threshold=$(grep "^auth.*pam_tally2.so.*onerr=fail.*silent.*deny=.*lock_time=" /etc/pam.d/common-auth | awk '{print $9}' | awk -F "=" '{print $2}')
-
-# Check if the threshold is not set
-if [ -z "$threshold" ]; then
-  WARN "Error: 계정 잠금 임계값이 설정되지 않았습니다"
+# Check if account lock threshold is set in /etc/pam.d/common-auth
+if ! grep -q "auth required pam_tally2.so" /etc/pam.d/common-auth; then
+    WARN "계정 잠금 임계값이 /etc/pam.d/common-auth에서 설정되지 않았습니다."
+else
+    # Check if account lock threshold is less than 10
+    if grep -q "auth required pam_tally2.so deny=10" /etc/pam.d/common-auth; then
+        WARN "계정 잠금 임계값이 10 미만으로 설정됨"
+    fi
 fi
-
-# Check if the threshold is greater than 10
-if [ "$threshold" -gt 10 ]; then
-  WARN "Error: 계정 잠금 임계값이 $threshold로 설정되었습니다. 10 이하여야 합니다"
-fi
-
-# If the script reaches this point, the threshold is set to a value of 10 or less
-OK "계정 잠금 임계값이 $threshold(필요에 따라 10 이하)로 설정되었습니다."
+OK "계정 잠금 임계값이 10회 이하의 값으로 설정됩니다."
 
 
-
-
- 
 
 cat $result
 

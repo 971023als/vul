@@ -33,39 +33,39 @@ BAR
 # Check the ownership of the /etc/hosts.equiv file
 file_owner=$(stat -c %U /etc/hosts.equiv)
 if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
-  echo "Error: /etc/hosts.equiv가 루트 또는 $(woami)에 의해 소유되지 않습니다."
+  WARN "Error: /etc/hosts.equiv가 루트 또는 $(woami)에 의해 소유되지 않습니다."
 fi
 
 # Check the permissions of the /etc/hosts.equiv file
 file_perms=$(stat -c %a /etc/hosts.equiv)
 if [ "$file_perms" -gt 600 ]; then
-  echo "Error: /etc/hosts.equiv에 잘못된 사용 권한이 있습니다. 600 이하여야 합니다."
+  WARN "Error: /etc/hosts.equiv에 잘못된 사용 권한이 있습니다. 600 이하여야 합니다."
 fi
 
 # Check if the /etc/hosts.equiv file contains the '+' setting
 if ! grep -q "+" /etc/hosts.equiv; then
-  echo "Error: /etc/hosts.equiv에 '+' 설정이 없습니다."
+  WARN "Error: /etc/hosts.equiv에 '+' 설정이 없습니다."
 fi
 
 # Check the ownership of the $HOME/.rhosts file
 file_owner=$(stat -c %U $HOME/.rhosts)
 if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
-  echo "Error: $HOME/.rhosts가 루트 또는 $(woami)에 의해 소유되지 않습니다." 
+  WARN "Error: $HOME/.rhosts가 루트 또는 $(woami)에 의해 소유되지 않습니다." 
 fi
 
 # Check the permissions of the $HOME/.rhosts file
 file_perms=$(stat -c %a $HOME/.rhosts)
 if [ "$file_perms" -gt 600 ]; then
-  echo "Error: $HOME/.rhosts에 잘못된 권한이 있습니다. 600 이하여야 합니다."
+  WARN "Error: $HOME/.rhosts에 잘못된 권한이 있습니다. 600 이하여야 합니다."
 fi
 
 # Check if the $HOME/.rhosts file contains the '+' setting
 if ! grep -q "+" $HOME/.rhosts; then
-  echo "Error: $HOME/.rhosts에 '+' 설정이 없습니다"
+  WARN "Error: $HOME/.rhosts에 '+' 설정이 없습니다"
 fi
 
 # If the script reaches this point, the ownership, permissions, and the '+' setting are correct
-echo "/etc/hosts.equiv 및 $HOME/.rhosts에 올바른 소유권, 사용 권한 및 '+' 설정이 있습니다."
+OK "/etc/hosts.equiv 및 $HOME/.rhosts에 올바른 소유권, 사용 권한 및 '+' 설정이 있습니다."
 
 
  
