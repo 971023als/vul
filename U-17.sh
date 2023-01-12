@@ -17,11 +17,11 @@ cat << EOF >> $result
 
 [양호]: login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 
 
-1. /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자가 root 또는 해당 계정인 경우 
+1. /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자가 root 또는, 해당 계정인 경우 
 
 2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 이하인 경우 
 
-3. /etc/hosts.equiv 및 $HOME/.rhosts 파일 설정에 '+'설정이 없는 경우
+3. /etc/hosts.equiv 및 $HOME/.rhosts 파일 설정에 ‘+’ 설정이 없는 경우
 
 [취약]: login, shell, exec 서비스를 사용하고, 위와 같은 설정이 적용되지 않은 경우 
 
@@ -29,53 +29,48 @@ EOF
 
 BAR
 
+
+# Check the ownership of the /etc/hosts.equiv file
+file_owner=$(stat -c %U /etc/hosts.equiv)
+if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
+  echo "Error: /etc/hosts.equiv가 루트 또는 $(woami)에 의해 소유되지 않습니다."
+fi
+
+# Check the permissions of the /etc/hosts.equiv file
+file_perms=$(stat -c %a /etc/hosts.equiv)
+if [ "$file_perms" -gt 600 ]; then
+  echo "Error: /etc/hosts.equiv에 잘못된 사용 권한이 있습니다. 600 이하여야 합니다."
+fi
+
+# Check if the /etc/hosts.equiv file contains the '+' setting
+if ! grep -q "+" /etc/hosts.equiv; then
+  echo "Error: /etc/hosts.equiv에 '+' 설정이 없습니다."
+fi
+
+# Check the ownership of the $HOME/.rhosts file
+file_owner=$(stat -c %U $HOME/.rhosts)
+if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
+  echo "Error: $HOME/.rhosts가 루트 또는 $(woami)에 의해 소유되지 않습니다." 
+fi
+
+# Check the permissions of the $HOME/.rhosts file
+file_perms=$(stat -c %a $HOME/.rhosts)
+if [ "$file_perms" -gt 600 ]; then
+  echo "Error: $HOME/.rhosts에 잘못된 권한이 있습니다. 600 이하여야 합니다."
+fi
+
+# Check if the $HOME/.rhosts file contains the '+' setting
+if ! grep -q "+" $HOME/.rhosts; then
+  echo "Error: $HOME/.rhosts에 '+' 설정이 없습니다"
+fi
+
+# If the script reaches this point, the ownership, permissions, and the '+' setting are correct
+echo "/etc/hosts.equiv 및 $HOME/.rhosts에 올바른 소유권, 사용 권한 및 '+' 설정이 있습니다."
+
+
  
 
-HECK_FILE=/etc/hosts.equiv
 
-CHOWN=$(ls -l /etc/hosts.equiv | awk '{print $3}')
-
-CHECK_PERM=$(find /etc/hosts.equiv -type f -perm -600 -ls | grep -v rw-r--r-- | awk '{print $3}')
-
-CHECK_PERM2=$(ls -l /etc/hosts.equiv | awk '{print $1}')
-
- 
-
-if [ -f $CHECK_FILE ] ; then
-
-INFO "$CHECK_FILE 파일이 존재하며 소유자와 권한을 체크합니다."
-
-if [ $CHOWN = 'root' ] ; then
-
-OK "파일의 소유자가 root 입니다."
-
-if [ $CHECK_PERM2 > 600 ] ; then
-
-WARN "파일의 권한이 600 이상으로 되어 있습니다."
-
-echo
-
-echo "$CHECK_FILE 의 권한이 $CHECK_PERM2 으로 되어 있습니다." > $TMP1
-
-INFO "권한 설정 상태는 $TMP1 파일에서 확인하세요."
-
-else
-
-OK "파일의 권한이 600 이하로 되어 있습니다."
-
-fi
-
-else
-
-WARN "파일의 소유자가 root가 아닙니다."
-
-fi
-
-else
-
-INFO "$CHECK_FILE 이 존재하지 않습니다."
-
-fi
 
 
 cat $result

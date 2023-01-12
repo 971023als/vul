@@ -25,16 +25,18 @@ EOF
 
 BAR
 
- 
 
-installed_version=$(sendmail -d0.1 -bv | head -n 1 | awk '{print $4}')
-latest_version=$(curl -s https://www.sendmail.com/sm/open_source/download/ | grep -oP '(?<=Current version: )[^<]+')
+# Get the current version of Sendmail
+version=$(sendmail -d0.1 -bv | grep "^Version" | awk '{print $2}')
 
-if [ "$installed_version" != "$latest_version" ]; then
-    WARN "Sendmail version $installed_version이 최신 버전 $latest_version이 아닙니다."
-else
-    OK "Sendmail version $installed_version이 최신 버전입니다"
+# Check if the version is less than a specified minimum version
+if [[ "$(printf '%s\n' "$version" "$minimum_version" | sort -V | head -n1)" == "$version" ]]; then
+  WARN "Error: 발송 메일 버전이 최신 버전이 아닙니다. 설치된 버전: $version. 최소 허용 버전: $minimum_version"
 fi
+
+# If the script reaches this point, the version is up to date
+OK "Sendmail 버전이 최신입니다. 설치된 버전: $version"
+
 
 
 cat $result
