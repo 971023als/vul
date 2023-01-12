@@ -26,51 +26,22 @@ EOF
 
 BAR
 
+# Define a list of necessary accounts
+necessary_accounts=("root" "Administrator" "ubuntu" "user")
+
+# Search for accounts that are not in the list of necessary accounts
+unnecessary_accounts=$(getent group Administrators | awk -F: '{split($4,a,","); for(i in a) {if (!(a[i] in necessary_accounts)) { print a[i] }}}')
+
+# Check if any unnecessary accounts were found
+if [ -n "$unnecessary_accounts" ]; then
+  WARN "Error: Administrators 그룹에서 불필요한 계정이 발견되었습니다.: $unnecessary_accounts"
+fi
+
+# If the script reaches this point, no unnecessary accounts were found in the Administrators group
+OK "Administrators 그룹에서 불필요한 계정을 찾을 수 없습니다."
  
 
-INFO $TMP1 파일을 참고하여 고객과 상의해 주세요.
 
- 
-
-GROUPFILE=/etc/group 
-
-grep -E '^(root|bin|daemon|sys|adm|tty|disk|mem|kmem|wheel):' $GROUPFILE >> $TMP2
-
- 
-
-echo
-
-cat << EOF >> $TMP1 # -E 옵션은 egrep이라고 생각하면 됨. 유닉스 쪽에도 사용가능.
-
-==================================================================
-
-1. /etc/group 파일의 내용입니다.
-
- 
-
-* 다음 사항을 점검합니다.
-
- 
-
-* - 1) root,bin,daemon,sys,adm,tty,disk,mem,kmem,wheel 그룹에 속한 사용자가 
-
-반드시 필요한지 고객과 상의한다.
-
-* - 2) 4번째 필드가 그룹에 속한 사용자 목록이다.
-
-* - 3) 사용자 목록이 없으면, 양호이다.
-
-==================================================================
-
-$(cat $TMP2)
-
-==================================================================
-
-EOF
-
- 
-
-rm -f $TMP2
 
  
 

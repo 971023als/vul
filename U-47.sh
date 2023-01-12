@@ -23,37 +23,21 @@ EOF
 
 BAR
 
- 
 
- 
+# Get the password maximum age
+max_age=$(grep -i "^password.*maximum.*age" /etc/login.defs | awk '{print $NF}')
 
-Value=$(egrep -v '^#|^$' /etc/login.defs | grep PASS_MAX_DAYS)
+#convert the value in days to weeks
+max_age_weeks=$((max_age/7))
 
-CHECK_FILE=$(egrep -v '^#|^$' /etc/login.defs | grep PASS_MAX_DAYS | awk '{print $2}')
-
-#echo $CHECK_FILE
-
-if [ $CHECK_FILE -le 90 ] ; then
-
-OK "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있습니다."
-
-else
-
-WARN "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않습니다."
-
-INFO $TMP1 파일을 참고 하세요.
-
-echo "===================================================" >> $TMP1
-
-echo "1. $LOGINDEFSFILE 파일의 내용입니다." >> $TMP1
-
-echo "" >> $TMP1
-
-echo $Value >> $TMP1
-
-echo "===================================================" >> $TMP1
-
+# Check if the password maximum age is less than 12 weeks
+if [ "$max_age_weeks" -lt 12 ]; then
+  WARN "Error: 암호 최대 사용 기간이 12주 미만: $max_age_weeks"
 fi
+
+# If the script reaches this point, the password maximum age is greater than or equal to 12 weeks
+OK "암호 최대 사용 기간이 12주 이상임: $max_age_weeks"
+
 
  
 

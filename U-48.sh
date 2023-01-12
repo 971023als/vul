@@ -24,47 +24,17 @@ EOF
 
 BAR
 
-SearchValue() {
+# Get the password minimum age
+min_age=$(grep -i "^password.*minimum.*age" /etc/login.defs | awk '{print $NF}')
 
-SEARCH=$(egrep -v '^#|^$' $2 | sed 's/#.*//' | grep -w $3)
-if [ -z "$SEARCH" ] ; then
-	echo FALSE
-else
-	if [ $1 = 'KEYVALUE' ] ; then
-	echo $SEARCH
-elif [ $1 = 'VALUE' ] ; then
-	echo "$SEARCH" | awk '{print $2}'
-	fi
+# check if the variable min_age is empty
+if [ -z "$min_age" ]; then
+  WARN "Error: 암호 최소 사용 기간이 설정되지 않았습니다"
 fi
-}
 
-LOGINDEFSFILE=/etc/login.defs
+# If the script reaches this point, the password minimum age is set
+OK "암호 최소 사용 기간이 설정됨"
 
-SEARCHVALUE=PASS_MIN_DAYS
-
-NUM=$(SearchValue VALUE $LOGINDEFSFILE $SEARCHVALUE)
-
-if [ $NUM -ge 7 ] ; then
-
-OK "패스워드 최소 사용기간이 1일(1주)로 설정 되어 있습니다."
-
-else
-
-WARN "패스워드 최소 사용기간이 1일(1주)로 설정 되어 있지 않습니다."
-
-INFO $TMP1 파일을 참고 하세요.
-
-echo "===================================================" >> $TMP1
-
-echo "1. $LOGINDEFSFILE 파일의 내용입니다." >> $TMP1
-
-echo "" >> $TMP1
-
-SearchValue KEYVALUE $LOGINDEFSFILE $SEARCHVALUE >> $TMP1
-
-echo "===================================================" >> $TMP1
-
-fi
 
  
 
