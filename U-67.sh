@@ -23,7 +23,7 @@ EOF
 
 BAR
 
-snmpd_config_file="/path/to/snmpd.conf"
+snmpd_config_file="/etc/snmp/snmpd.conf"
 
 # Check if the snmpd.conf file exists
 if [ ! -f $snmpd_config_file ]; then
