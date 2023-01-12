@@ -26,21 +26,21 @@ BAR
 
 # Check if the DNS service is running
 if ! systemctl is-active --quiet named; then
-  echo "Error: DNS service (named)가 실행되고 있지 않습니다."
+  WARN "Error: DNS service (named)가 실행되고 있지 않습니다."
 fi
 
 # Check if zone transfers are allowed for any hosts
 if ! grep -q "allow-transfer" /etc/named.conf; then
-  echo "Error: Zone transfers가 어떤 호스트에도 허용되지 않습니다."
+  WARN "Error: Zone transfers가 어떤 호스트에도 허용되지 않습니다."
 fi
 
 # Check if zone transfers are allowed for all hosts
 if ! grep -q "allow-transfer { any; };" /etc/named.conf; then
-  echo "Error: Zone transfers가 일부 호스트에 대해 영역 전송이 허용되지 않음"
+  WARN "Error: Zone transfers가 일부 호스트에 대해 영역 전송이 허용되지 않음"
 fi
 
 # If the script reaches this point, zone transfers are allowed for all hosts
-echo "모든 호스트에 대해 영역 전송이 허용됨"
+OK "모든 호스트에 대해 영역 전송이 허용됨"
 
 
 

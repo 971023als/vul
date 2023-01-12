@@ -34,8 +34,8 @@ else
 fi
 
 # Get the user and group of the httpd process
-httpd_user=$(ps -o user= -p $(pgrep -x "httpd"))
-httpd_group=$(ps -o group= -p $(pgrep -x "httpd"))
+httpd_user=$(ps -o user=-p $(pgrep -x "httpd"))
+httpd_group=$(ps -o group=-p $(pgrep -x "httpd"))
 
 # Check if the httpd process is running as root
 if [[ $httpd_user == "root" || $httpd_group == "root" ]]
