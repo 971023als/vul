@@ -27,13 +27,13 @@ BAR
 
 
 # Check for minimum password length
-min_length=$(grep "^password.*sufficient.*pam_unix.so.*minlen" /etc/pam.d/common-password | awk '{print $9}')
+min_length=$(grep "^password.*sufficient.*pam_unix.so.*minlen" /etc/login.defs | awk '{print $9}')
 if [ $min_length -lt 8 ]; then
     WARN "최소 암호 길이가 8자 미만입니다."
 fi
 
 # Check for minimum input of special characters, digits, and letters
-cracklib=$(grep "^password.*sufficient.*pam_cracklib.so.*difok" /etc/pam.d/common-password | awk '{print $9}')
+cracklib=$(grep "^password.*sufficient.*pam_cracklib.so.*difok" /etc/login.defs | awk '{print $9}')
 if [ $cracklib -lt 3 ]; then
     WARN "특수 문자, 숫자 및 문자의 최소 입력이 3 미만입니다."
 fi
