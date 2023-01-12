@@ -24,31 +24,42 @@ EOF
 
 BAR
 
+# Define log file locations
+log_files=(
+    "/var/log/secure"
+    "/var/log/messages"
+    "/var/log/audit/audit.log"
+    "/var/log/httpd/access_log"
+    "/var/log/httpd/error_log"
+)
 
-# Check if any logging policy has been established
-log=`cat /etc/rsyslog.conf`
-if [[ $log == *"log"* ]]; then
-  OK "로깅 정책이 설정되었습니다."
-else
-  WARN "로깅 정책이 설정되지 않았습니다."
-fi
+# Define log configuration file locations
+conf_files=(
+    "/etc/rsyslog.conf"
+    "/etc/syslog.conf"
+    "/etc/httpd/conf/httpd.conf"
+    "/etc/audit/auditd.conf"
+)
 
-# Check if any security policy has been set
-security=`cat /etc/security/limits.conf`
-common=`cat /etc/pam.d/common-*`
-if [[ $security == *"security"* || $common == *"security"* ]]; then
-  OK "보안 정책이 설정되었습니다"
-else
-  WARN "보안 정책이 설정되자 않았습니다"
-fi
+# Check if log files exist
+for file in "${log_files[@]}"; do
+    if [ -f $file ]; then
+        OK "$file 이 존재합니다."
+    else
+        WARN "$file 이 존재하지 않습니다"
+    fi
+done
 
-# Check if any security policy leaves a log
-rsyslog=`cat /etc/rsyslog.conf`
-if [[ $rsyslog == *"security"* ]]; then
-  OK "보안 정책이 로그를 남깁니다"
-else
-  WARN "로그를 남기는 보안 정책 없습니다."
-fi
+# Check if log configuration files exist
+for file in "${conf_files[@]}"; do
+    if [ -f $file ]; then
+        OK "$file 이 존재합니다."
+    else
+        WARN "$file 이 존재하지 않습니다"
+    fi
+done
+
+
 
 
 
