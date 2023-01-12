@@ -23,28 +23,22 @@ EOF
 
 BAR
 
-
-# Check if the DNS service is running
-if ! systemctl is-active --quiet named; then
-  WARN "Error: DNS 서비스가 실행되고 있지 않습니다."
+# Check if DNS service is running
+result=`systemctl is-active bind9`
+if [[ $result == "active" ]]; then
+  echo "DNS 서비스가 실행 중"
+else
+  echo "DNS 서비스가 실행되고 있지 않습니다."
 fi
 
-# Get the version of the currently running DNS service
-version=$(named -v | awk '{print $4}')
-
-# Check if the version is less than a specified minimum version
-if [[ "$(printf '%s\n' "$version" "$minimum_version" | sort -V | head -n1)" == "$version" ]]; then
-  WARN "Error: DNS 서비스(이름 지정) 버전이 최신 버전이 아닙니다. 설치된 버전: $version. 최소 허용 버전: $minimum_version"
+# Check if DNS service is being patched regularly
+result=$(find /var/log/apt/ -name '*.log' -type f -mtime -30 | grep "bind9")
+if [[ -n "$result" ]]; then
+  echo "DNS 서비스가 정기적으로 패치되고 있습니다."
+else
+  echo "DNS 서비스가 정기적으로 패치되지 않고 있습니다."
 fi
 
-# Check if there are any available updates for the DNS service
-updates=$(yum check-update bind)
-if [ -n "$updates" ]; then
-  WARN "Error: DNS 서비스에 사용할 수 있는 업데이트가 있습니다. 최신 패치로 업데이트하십시오"
-fi
-
-# If the script reaches this point, the DNS service is running and up to date
-OK "DNS 서비스(이름 지정)가 실행 중이며 최신 상태입니다. 설치된 버전: $version"
 
 
 cat $result

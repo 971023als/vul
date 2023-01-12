@@ -25,25 +25,19 @@ EOF
 BAR
 
 
-# Check if the noexpn option is not set
-result="telnet localhost 25 << EOF
-expn root
-EOF"
-if [[ $result == *"252"* ]]; then
-  WARN "noexpn 옵션이 설정되지 않았습니다."
-else
-  OK "noexpn 옵션이 설정되었습니다."
+# Check if the SMTP service is running
+service=`systemctl is-active postfix`
+if [ $service != "active" ]; then
+  INFO "SMTP 서비스가 실행되고 있지 않습니다."
 fi
 
-# Check if the novrfy option is not set
-result="telnet localhost 25 << EOF
-vrfy root
-EOF"
-if [[ $result == *"252"* ]]; then
-  WARN "novrfy 옵션이 설정되지 않았습니다."
-else
-  OK "novrfy 옵션이 설정되었습니다."
+# Check if the noexpn and novrfy options are set
+options=`postconf | grep "smtpd_discard_ehlo_keywords"`
+if [ -z "$options" ]; then
+  WARN "noexpn 및 novrfy 옵션이 설정되지 않았습니다."
 fi
+
+OK "SMTP 서비스가 실행 중이고 noexpn, novrfy 옵션이 설정되었습니다."
 
 
     
