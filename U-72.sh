@@ -26,25 +26,25 @@ BAR
 
 
 # Check if any logging policy has been established
-result=`cat /etc/rsyslog.conf`
-if [[ $result == *"log"* ]]; then
+log=`cat /etc/rsyslog.conf`
+if [[ $log == *"log"* ]]; then
   OK "로깅 정책이 설정되었습니다."
 else
   WARN "로깅 정책이 설정되지 않았습니다."
 fi
 
 # Check if any security policy has been set
-result=`cat /etc/security/limits.conf`
-result2=`cat /etc/pam.d/common-*`
-if [[ $result == *"security"* || $result2 == *"security"* ]]; then
+security=`cat /etc/security/limits.conf`
+common=`cat /etc/pam.d/common-*`
+if [[ $security == *"security"* || $common == *"security"* ]]; then
   OK "보안 정책이 설정되었습니다"
 else
   WARN "보안 정책이 설정되자 않았습니다"
 fi
 
 # Check if any security policy leaves a log
-result=`cat /etc/rsyslog.conf`
-if [[ $result == *"security"* ]]; then
+rsyslog=`cat /etc/rsyslog.conf`
+if [[ $rsyslog == *"security"* ]]; then
   OK "보안 정책이 로그를 남깁니다"
 else
   WARN "로그를 남기는 보안 정책 없습니다."
