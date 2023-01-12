@@ -23,20 +23,23 @@ EOF
 
 BAR
 
-# Check if DNS service is running
-result=`systemctl is-active bind9`
-if [[ $result == "active" ]]; then
-  echo "DNS 서비스가 실행 중"
-else
-  echo "DNS 서비스가 실행되고 있지 않습니다."
-fi
+ps='ps -ef | grep named | grep -v grep | wc-l'
+ver='named -v 2>dev/null | awk -F " " '{print $2}' | awk -F "ubuntu" '{print $1}' | awk -F "-" '{print $1}' | tr -d "."'
+inst='named -v 2>/dev/null | wc-l'
+version=9113
 
-# Check if DNS service is being patched regularly
-result=$(find /var/log/apt/ -name '*.log' -type f -mtime -30 | grep "bind9")
-if [[ -n "$result" ]]; then
-  echo "DNS 서비스가 정기적으로 패치되고 있습니다."
+# bind 9 서비스가 설치되어 있고 작동하는지 확인
+
+if [ $ps != 0 ] && [ $inst_chk !=0 ];then
+
+      #설정한 버전과 bind9 버전 비교
+      if [ $ver -lt $version ]; then
+            WARN " 바인드 버전이 취약한 버전입니다."
+      else
+            OK " 바인드 버전이 취약한 버전이 아닙니다."
+      fi
 else
-  echo "DNS 서비스가 정기적으로 패치되지 않고 있습니다."
+      INFO " 바인드 버전이 없습니다."
 fi
 
 
