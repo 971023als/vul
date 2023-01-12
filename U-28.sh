@@ -24,13 +24,15 @@ EOF
 
 BAR
 
- 
 
-if systemctl is-active --quiet ypbind; then
-    WARN "NIS 서비스가 실행 중입니다"
+# Check if the ypbind daemon is enabled
+if systemctl is-enabled ypbind.service; then
+    OK "NIS 서비스 사용"
 else
-    OK "NIS 서비스가 실행되고 있지 않습니다"
+    WARN "NIS 서비스 사용되지 않음"
 fi
+
+
 
 cat $result
 
