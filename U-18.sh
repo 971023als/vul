@@ -15,9 +15,7 @@ CODE [U-18] 접속 IP 및 포트 제한
 
 cat << EOF >> $result
 
-[양호]: /etc/hosts.deny 파일에 ALL Deny 설정후
-
-/etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록한 경우
+[양호]: /etc/hosts.deny 파일에 ALL Deny 설정후 /etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록한 경우
 
 [취약]: 위와 같이 설정되지 않은 경우
 
