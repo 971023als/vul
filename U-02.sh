@@ -87,61 +87,21 @@ ocredit : 패스워드 특수문자 포함 지정입니다.
 
 EOF
 
- 
-
- 
-
-FindPatternReturnValue() {
-# $1 : File name
-# $2 : Find Pattern
-if egrep -v '^#|^$' $1 | grep -q $2 ; then # -q = 출력 내용 없도록
-	ReturnValue=$(egrep -v '^#|^$' $1 | grep $2 | awk -F= '{print $2}')
+# Check the minimum password length
+min_length=$(grep "^password.*required.*pam_cracklib.so.*minlen" /etc/pam.d/common-password | awk '{print $4}')
+if [ $min_length -ge 8 ]; then
+    OK "최소 암호 길이가 8 이상으로 설정됨"
 else
-	ReturnValue=None
-fi
-echo $ReturnValue
-}
-
-
-PWQUALITY_CONF=/etc/security/pwquality.conf
-
-VALUE1=$(FindPatternReturnValue $PWQUALITY_CONF minlen)
-
-if [ $VALUE1 = None ] ; then
-
-WARN '패스워드의 최소 길이 설정이 8 글자 미만으로 되어 있음!'
-
-else
-
-if [ $VALUE1 -ge 12 ] ; then
-
-Ret1=$(IsFindPattern $PWQUALITY_CONF dcredit)
-
-Ret2=$(IsFindPattern $PWQUALITY_CONF ucredit)
-
-Ret3=$(IsFindPattern $PWQUALITY_CONF lcredit)
-
-Ret4=$(IsFindPattern $PWQUALITY_CONF ocredit)
-
-if [ $Ret1 -eq 0 -a $Ret2 -eq 0 -a $Ret3 -eq 0 -a $Ret4 -eq 0 ] ; then
-
-OK "영문 숫자 특수문가자 혼합된 8글자 이상의 패스워드를 사용하고 있습니다."
-
-else
-
-WARN "패스워드가 8글자 이상이지만 dcredit|ucredit|lcredit|ocredit 중 
-
-설정이 없는 것이 존재합니다." 
-
+    WARN "최소 암호 길이가 8 이상으로 설정되지 않음"
 fi
 
+# Check if the use of uppercase and special characters is required
+if grep -q "^password.*required.*pam_cracklib.so.*ucredit" /etc/pam.d/common-password && grep -q "^password.*required.*pam_cracklib.so.*dcredit" /etc/pam.d/common-password; then
+    ok "영문 문자, 숫자, 특수 문자의 최소 입력 기능이 설정되었습니다."
 else
-
-WARN '패스워드의 최소 길이 설정이 8글자 미만으로 되어 있음'
-
+    WARN "영문 문자, 숫자, 특수 문자의 최소 입력 기능이 설정되지 않았습니다."
 fi
 
-fi
 
  
 

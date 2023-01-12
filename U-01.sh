@@ -21,47 +21,14 @@ EOF
 
 BAR
 
- 
 
-TELNET_SERVICE=telnet.socket
-
-SECURETTY=/etc/securetty
-
-STATUS1=$(systemctl is-active $TELNET_SERVICE)
-
- 
-
-if [ $STATUS1 = 'active' ] ; then
-
-WARN 'Service is activated. You must Turn off the Service!'
-
-if [ -f $SECURETTY ] ; then
-
-INFO '/etc/securetty 파일이 존재합니다!'
-
-grep -q 'pts/' $SECURETTY # -q no output. only 0 or 1
-
-if [ $? -eq 0 ] ; then
-
-WARN '/etc/securetty 파일안에 pts/# 존재합니다'
-
+# Check if the PermitRootLogin option is set to yes in the SSH configuration file
+if grep -q "^PermitRootLogin yes" /etc/ssh/sshd_config; then
+    WARN "원격 터미널 서비스를 통해 루트 직접 액세스가 허용됨"
 else
-
-OK '/etc/securetty 파일안에 pts/# 존재하지 않습니다'
-
+    OK "원격 터미널 서비스를 통해 루트 직접 액세스가 허용되지 않음"
 fi
 
-else
-
-WARN '/etc/securetty 파일이 존재하지 않습니다'
-
-fi
-
-else
-
-OK Remote Service is deactivated.
-
-fi
 
 cat $result
 
