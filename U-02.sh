@@ -85,7 +85,7 @@ echo $ReturnValue
  
  
 
-PWQUALITY_CONF=/etc/security/pwquality.conf.copy
+PWQUALITY_CONF=/etc/login.defs
 
 VALUE1=$(FindPatternReturnValue $PWQUALITY_CONF minlen)
 
