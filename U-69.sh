@@ -24,11 +24,11 @@ EOF
 
 BAR
 
-nfs_settings_file="/path/to/nfs_settings"
+nfs_settings_file="/etc/dfs/dfstab"
 
 # Check if the file exists
 if [ ! -f $nfs_settings_file ]; then
-  WARN "nfs_settings 파일이 존재하지 않습니다. 확인해주세요.."
+  WARN "nfs_settings 파일이 존재하지 않습니다. 확인해주세요."
 fi
 
 # Check owner of the file
