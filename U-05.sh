@@ -28,29 +28,19 @@ BAR
 
  
 
-ROOTPATH=$(su - root -c 'echo $PATH')
+path="$PATH"
 
-CHECKPATH=$(echo $ROOTPATH | egrep '^:|:$|::|^.:|:.:|:.$')
-
-if [ -z $CHECKPATH ] ; then
-
-OK PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되지 않았습니다.
-
-else
-
-WARN PATH 환경변수에 "." 이 맨 앞이나 중간에 포함되어 있습니다.
-
-INFO $TMP1 파일을 참고 하십시오.
-
-echo "==================================================" >> $TMP1
-
-echo "1. root 사용자의 PATH 변수 내용입니다." >> $TMP1
-
-echo "$CHECKEDPATH" >> $TMP1
-
-echo "==================================================" >> $TMP1
-
+# check if '.' is present in the beginning of the path
+if [[ "$path" =~ ^\. ]]; then
+    WARN "Dangerous  '.' 이 PATH 변수의 시작 부분에서 발견되었습니다."
 fi
+
+# check if '.' is present in the middle of the path
+if [[ "$path" =~ :\. ]]; then
+    WARN "Dangerous '.' 이 PATH 변수의 중간에서 발견되었습니다."
+fi
+OK "PATH 변수는 안전합니다.."
+
 
  
 

@@ -26,31 +26,19 @@ EOF
 
 BAR
 
-echo "[U-17] Checking.... Please wait...."
 
-TMP2=$(mktemp)
-
-find / \( -nouser -o -nogroup \) -ls 2>/dev/null >$TMP2
-
-if [ -s $TMP2 ] ; then
-
-WARN 소유자가 존재하지 않은 파일 및 디렉토리가 있습니다.
-
-INFO $TMP1 파일의 내용을 참고합니다.
-
-echo "다음 명령어가 실행된 출력 결과입니다." >> $TMP1
-
-echo 'CMD : find / \( -nouser -o -nogroup \) -ls 2>/dev/null' >> $TMP1
-
-echo "======================================================" >> $TMP1
-
-cat $TMP2 >> $TMP1
-
+# Check if any files or directories without owners exist
+no_owner_files=( $(find / -nouser 2>/dev/null) )
+if [ ${#no_owner_files[@]} -eq 0 ]; then
+    OK "소유자가 없는 파일 또는 디렉터리를 찾을 수 없습니다."
 else
-
-OK 소유자가 존재하지 않은 파일 및 디렉토리가 없습니다.
-
+    WARN "소유자가 없는 파일 또는 디렉터리가 발견되었습니다:"
+    for file in "${no_owner_files[@]}"
+    do
+        INFO "$file"
+    done
 fi
+
 
  
 cat $result
