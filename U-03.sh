@@ -24,37 +24,17 @@ EOF
 
 BAR
 
- 
 
-PAM_SYSTEM_AUTH=/etc/pam.d/common-auth
-
-# PAM_PASSWORD_AUTH=/etc/pam.d/common-auth
-
- 
-
-Ret1=$(PAM_FindPatternReturnValue $PAM_SYSTEM_AUTH pam_tally2.so deny)
-
-Ret2=$(PAM_FindPatternReturnValue $PAM_SYSTEM_AUTH pam_tally2.so unlock_time)
-
- 
-
-if [ "$Ret1" != None -a "$Ret2" != None ] ; then
-
-if [ $Ret1 -le 5 ] ; then
-
-OK "계정 잠금 임계값이 5 이하의 값으로 설정되어 있는 경우입니다."
-
+# Check if the pam_tally2 module is in use
+if ! grep -q "pam_tally2" /etc/pam.d/common-auth; then
+    INFO "https_https2 모듈이 사용 중이 아닙니다."
+elif grep -q "^auth.*required.*pam_tally2.so.*onerr=fail.*deny=5" /etc/pam.d/common-auth; then
+    ok "계정 잠금 임계값이 5회로 설정되었습니다."
 else
-
-WARN "계정 잠금 임계값이 설정되어 있지만, 5 이상의 값으로 설정되어 있습니다."
-
+    WARN "계정 잠금 임계값이 설정되지 않았거나 5보다 큰 값으로 설정되지 않았습니다."
 fi
 
-else
 
-WARN "계정 잠금 임계값이 설정되어 있지 않거나, 5 이하의 값으로 설정되지 않은 경우 입니다."
-
-fi
 
  
 
