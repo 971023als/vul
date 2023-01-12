@@ -24,21 +24,24 @@ EOF
 
 BAR
 
+nfs_settings_file="/path/to/nfs_settings"
 
-
-# Check file owner
-if [ "$(stat -c %U /etc/exports)" != "root" ]; then
-    OK "파일 소유자가 루트가 아닙니다"
-else
-    WARN "파일 소유자가 루트입니다"
+# Check if the file exists
+if [ ! -f $nfs_settings_file ]; then
+  WARN "nfs_settings 파일이 존재하지 않습니다. 확인해주세요.."
 fi
 
-# Check file permissions
-if [ "$(stat -c %a /etc/exports)" -lt 644 ]; then
-    OK "파일 권한이 644 미만입니다."
-else
-    WARN "파일 권한이 644 이상입니다."
+# Check owner of the file
+if [ `stat -c '%U' $nfs_settings_file` == "root" ]; then
+  WARN "nfs_settings의 소유자는 루트입니다. 이것은 허용되지 않습니다."
 fi
+
+# Check permission on the file
+if [ `stat -c '%a' $nfs_settings_file` -lt 644 ]; then
+  WARN "nfs_settings에 대한 권한이 644보다 작습니다. 이것은 허용되지 않습니다."
+fi
+
+OK "https_https 파일이 있고 소유자와 권한이 예상대로입니다."
 
 
 

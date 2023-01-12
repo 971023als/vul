@@ -23,24 +23,25 @@ EOF
 
 BAR
 
+snmpd_config_file="/path/to/snmpd.conf"
 
-
-# Set the path of the SNMP configuration file
-snmp_conf_file="/etc/snmp/snmpd.conf"
-
-# Check if the SNMP configuration file exists
-if [ ! -f $snmp_conf_file ]; then
-    INFO "SNMP 구성 파일이 없습니다."
-else
-    # Check if the community name is public or private
-    if grep -q "public" $snmp_conf_file; then
-        WARN "SNMP 커뮤니티 이름이 공개됨"
-    elif grep -q "private" $snmp_conf_file; then
-        WARN "SNMP 커뮤니티 이름은 비공개입니다"
-    else
-        OK "SNMP 커뮤니티 이름이 공개 또는 비공개가 아닙니다"
-    fi
+# Check if the snmpd.conf file exists
+if [ ! -f $snmpd_config_file ]; then
+  echo "snmpd.conf 파일이 없습니다. 확인해주세요."
+  exit 1
 fi
+
+# Search for community names in the snmpd.conf file
+communities=$(grep -E '^community' $snmpd_config_file | cut -d ' ' -f 2)
+
+for community in $communities; do
+  if [ $community == "public" ] || [ $community == "private" ]; then
+    echo "Community name $community는 허용되지 않습니다."
+    exit 1
+  fi
+done
+
+echo "snmpd.conf 파일의 모든 커뮤니티 이름이 예상대로입니다."
 
 cat $result
 

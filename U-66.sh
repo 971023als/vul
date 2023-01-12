@@ -28,9 +28,9 @@ BAR
 
 # check if the snmp service is active
 if systemctl is-active --quiet snmpd; then
-    echo "SNMP 서비스가 활성되어 있습니다"
+    WARN "SNMP 서비스가 활성되어 있습니다"
 else
-    echo "SNMP 서비스가 활성화되지 않았습니다."
+    OK "SNMP 서비스가 활성화되지 않았습니다."
 fi
 
 cat $result
