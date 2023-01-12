@@ -10,7 +10,7 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-33]  DNS 보안 버전 패치 '확인 필요'
+CODE [U-33]  DNS 보안 버전 패치 
 
 cat << EOF >> $result
 
@@ -27,7 +27,7 @@ BAR
 if systemctl is-active --quiet named; then
   OK "DNS 서비스가 실행 중"
 else
-  echo "DNS 서비스가 실행되고 있지 않습니다."
+  WARN "DNS 서비스가 실행되고 있지 않습니다."
 fi
 
 # Check if automatic updates are enabled
