@@ -1,13 +1,12 @@
 #!/bin/bash
 
  
-
 . function.sh
 
  
 TMP1=`SCRIPTNAME`.log
 
-> $TMP1 
+> $TMP1   
  
 
 BAR
@@ -25,16 +24,16 @@ EOF
 BAR
 
 # Check if Server Tokens is set to "Prod"
-result=`grep "ServerTokens" /etc/apache2/apache2.conf`
-if [[ $result == *"Prod"* ]]; then
+ServerTokens=`grep "ServerTokens" /etc/apache2/apache2.conf`
+if [[ $ServerTokens == *"Prod"* ]]; then
   OK "Server Tokens이 Prod로 설정됨"
 else
   WARN "Server Tokens이 Prod로 설정되지 않음"
 fi
 
 # Check if Server Signature is set to "Off"
-result=`grep "ServerSignature" /etc/apache2/apache2.conf`
-if [[ $result == *"Off"* ]]; then
+ServerSignature=`grep "ServerSignature" /etc/apache2/apache2.conf`
+if [[ $ServerSignature == *"Off"* ]]; then
   OK "Server Signature가 Off로 설정됨"
 else
   WARN "Server Signature가 Off로 설정되어 있지 않음"
