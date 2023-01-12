@@ -23,7 +23,28 @@ cat << EOF >> $result
 EOF
 
 BAR
- 
+
+
+# Check if the noexpn option is not set
+result="telnet localhost 25 << EOF
+expn root
+EOF"
+if [[ $result == *"252"* ]]; then
+  WARN "noexpn 옵션이 설정되지 않았습니다."
+else
+  OK "noexpn 옵션이 설정되었습니다."
+fi
+
+# Check if the novrfy option is not set
+result="telnet localhost 25 << EOF
+vrfy root
+EOF"
+if [[ $result == *"252"* ]]; then
+  WARN "novrfy 옵션이 설정되지 않았습니다."
+else
+  OK "novrfy 옵션이 설정되었습니다."
+fi
+
 
     
 
