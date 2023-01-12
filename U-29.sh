@@ -24,17 +24,18 @@ EOF
 
 BAR
 
- 
-services=( "tftp" "talk" "ntalk" )
 
-for service in "${services[@]}"
+services="tftp talk ntalk"
+
+for service in $services
 do
-    if systemctl is-active --quiet "$service"; then
-        WARN "$service 가 실행 중입니다"
+    if systemctl is-enabled $service >/dev/null 2>&1; then
+        echo "$service 서비스가 사용하는 중입니다."
     else
-        OK "$service 가 실행 중이 아닙니다"
+        echo "$service 서비스가 사용하는 중입니다."
     fi
 done
+
 
 cat $result
 
