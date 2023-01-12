@@ -25,19 +25,6 @@ EOF
 
 BAR
 
-
-NFO $TMP1 파일을 점검한다
-
-echo >> $TMP1
-
-echo
-
-echo "다음은 /etc/security/pwquality.conf 파일을 해석할 때 사용하는 내용입니다"
-
-echo "=============================================================">> $TMP1
-
-cat /etc/security/pwquality.conf | egrep -v '(^$|^#)' >> $TMP1
-
  
 
  
