@@ -23,22 +23,25 @@ EOF
 
 BAR
 
-ps_chk=`ps -ef | grep named | grep -v grep | wc -l`
-ver_chk=`named -v 2>/dev/nill | awk -F " " '{print $2}' | awk -F "ubuntu" '{print $1}' | awk -F "-" '{print $1}' | tr -d "."`
-inst_chk=`named -v 2>/dev/null | wc -l`
-version=9113
-
-#bind9 서비스가 설치되어있고 작동하는지 확인.
-if [ $ps_chk != 0 ] && [ $inst_chk != 0 ];then
-
-	#설정한 버전과 bind9 버전 비교
-	if [ $ver_chk -lt $version ];then
-		echo "[-] U33. Bind version is vulnerable, Result : Vul" 
-	else
-		echo "[+] U33. Bind version is very well, Result : Good"
-	fi
+# Check if DNS service is running
+if systemctl is-active --quiet named; then
+  OK "DNS 서비스가 실행 중"
 else
-	echo "[+] U33. Bind service disable, Result : Good"
+  echo "DNS 서비스가 실행되고 있지 않습니다."
+fi
+
+# Check if automatic updates are enabled
+if grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10periodic; then
+  OK "자동 업데이트 사용"
+else
+  WARN "자동 업데이트가 활성화되지 않음"
+fi
+
+# Check if automatic security updates are enabled
+if grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/50unattended-upgrades; then
+  OK "자동 보안 업데이트 사용"
+else
+  WARN "자동 보안 업데이트가 활성화되지 않음"
 fi
 
 
