@@ -24,7 +24,7 @@ EOF
 
 BAR
 
-ftp=$(stat -c %a /etc/ftpusers)
+ftp=$(stat -c %a /etc/vsftpd/ftpusers)
 
 
 # Check owner of ftpusers file

@@ -24,7 +24,7 @@ EOF
 
 BAR
 
-nfs_settings_file="/etc/dfs/dfstab"
+nfs_settings_file="/etc/exports"
 
 # Check if the file exists
 if [ ! -f $nfs_settings_file ]; then
