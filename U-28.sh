@@ -25,20 +25,22 @@ EOF
 BAR
 
 
-# Check if the ypbind daemon is enabled
-if systemctl is-enabled ypbind.service; then
-    OK "NIS 서비스 사용"
+TMP=$(mktemp)
+ps -ef | egrep "ypserv|ypbind|ypxfrd|rpc.yppasswdd|rpc.ypupdated" | grep -v grep | awk '{print $2,$6}' > "$TMP"
+
+if [ -s "$TMP" ] ; then
+    while read PID PROCESS
+    do
+        WARN "$PID / $PROCESS가 실행 중입니다."
+    done < "$TMP"
 else
-    WARN "NIS 서비스 사용되지 않음"
+    OK "NIS 서비스가 비활성화되었습니다."
 fi
+
+
 
 
 
 cat $result
 
 echo ; echo
- 
-
-
-
- 

@@ -27,7 +27,7 @@ EOF
 BAR
 
 
-rootdir="/path/to/scan"
+rootdir="/home/user/"
 
 # List all hidden files and directories
 hidden_files=$(find "$rootdir" -type f -name ".*" ! -name ".*.swp")

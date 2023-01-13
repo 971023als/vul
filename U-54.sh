@@ -28,7 +28,7 @@ BAR
 
 
 
-timeout=`grep -i "session.timeout" /path/to/config/file`
+timeout=`grep -i "TMOUT" /etc/profile`
 
 if [[ $timeout -le 600 ]]; then
   WARN "세션 시간 초과가 $timeout seconds로 설정되었으며, 이는 허용 가능합니다."
