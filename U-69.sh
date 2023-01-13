@@ -43,7 +43,7 @@ if [[ $(stat -c '%a' $nfs_settings_file) -lt 644 ]]; then
   WARN "nfs_settings에 대한 권한이 644보다 작습니다. 이것은 허용되지 않습니다."
 fi
 
-OK "https_https 파일이 있고 소유자와 권한이 예상대로입니다."
+OK "NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하입니다."
 
 
 
