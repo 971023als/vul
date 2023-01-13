@@ -32,7 +32,7 @@ if [ ! -f $nfs_settings_file ]; then
 fi
 
 # Check owner of the file
-if [ $(stat -c '%a' $nfs_settings_file) == "root" ]; then
+if [ $(stat -c '%U' $nfs_settings_file) = "root" ]; then
   WARN "nfs_settings의 소유자는 루트입니다. 이것은 허용되지 않습니다."
 fi
 

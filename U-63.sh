@@ -24,7 +24,7 @@ EOF
 
 BAR
 
-ftp=$(stat -c %a /etc/vsftpd/ftpusers)
+ftp=$(stat -c %U /etc/vsftpd/ftpusers)
 if [ $ftp != "root" ]; then
     WARN "ftpusers file 소유자는 루트가 아닙니다."
 fi
