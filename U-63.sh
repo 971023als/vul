@@ -25,15 +25,13 @@ EOF
 BAR
 
 ftp=$(stat -c %a /etc/vsftpd/ftpusers)
-
-
-# Check owner of ftpusers file
 if [ $ftp != "root" ]; then
     WARN "ftpusers file 소유자는 루트가 아닙니다."
 fi
 
 # Check permissions of ftpusers file
-if [ $ftp -lt "640" ]; then
+dec_perms=$(printf "%d" $ftp)
+if [ $dec_perms -lt 640 ]; then
     OK " ftpusers file의 권한이 640 미만입니다."
 
 fi    
