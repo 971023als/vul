@@ -26,7 +26,7 @@ EOF
 BAR
 
 
-SI=`apt-get list installed | grep sendmail | awk '{print $1}'`
+SI=`apt list --installed | grep sendmail | awk '{print $1}'`
 
 if [ $SI ]
 	then
