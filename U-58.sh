@@ -41,7 +41,7 @@ for account in $accounts; do
   fi
 done
 
-echo "모든 계정에는 홈 디렉토리가 있습니다"
+OK "모든 계정에는 홈 디렉토리가 있습니다"
 
 
 
