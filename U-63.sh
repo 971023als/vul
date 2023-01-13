@@ -26,7 +26,8 @@ BAR
 
 ftp=$(stat -c %U /etc/vsftpd/ftpusers)
 dec_perms=$(printf "%d" $ftp)
-if [ $ftp != "root" ]; then
+if [ $ftp -ne "root" ]; then
+
     WARN "ftpusers file 소유자는 루트가 아닙니다."
 fi
 

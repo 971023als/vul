@@ -26,18 +26,19 @@ EOF
 BAR
 
 
-# Get the installed version of Sendmail
-installed_version=`dpkg-query -W -f='${Version}' sendmail`
+SI=`yum list installed | grep sendmail | awk '{print $1}'`
 
-# Get the latest version of Sendmail from the Ubuntu package repository
-latest_version=`apt-cache policy sendmail | grep "Candidate" | awk '{print $2}'`
-
-# Compare the installed version with the latest version
-if [[ "$installed_version" < "$latest_version" ]]; then
-  WARN "Sendmail이 최신 버전이 아닙니다. 설치된 버전: $installed_version 최신 버전: $latest_version"
-else
-  OK "Sendmail이 최신 상태입니다. 설치된 버전: $installed_version 최신 버전: $latest_version"
+if [ $SI ]
+	then
+		SV=`echo \$Z | /usr/lib/sendmail -bt -d0 | sed -n '1p' | awk '{print $2}'`
+		OK "    [OOOO] 설치된 sendmail의 버전은 $SV 입니다" 
+		OK "    ==> [권장] 최신 버전의 설치 및 업그레이드를 위해 sendmail 데몬의 중지가 필요하기 때문에 적절한 시간대에 수행해야 함" 
+	else
+		WARN "    [XXXX] sendmail이 설치되어 있지 않습니다 " 
 fi
+
+
+
 
 
 cat $result

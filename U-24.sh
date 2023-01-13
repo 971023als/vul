@@ -12,7 +12,7 @@ TMP1=`SCRIPTNAME`.log
 
 BAR
 
-CODE [U-24] NFS 서비스 비활성화 '확인 필요'
+CODE [U-24] NFS 서비스 비활성화 
 
 cat << EOF >> $result
 
@@ -25,25 +25,12 @@ EOF
 BAR
 
 
-# Check if the nfs daemon is enabled
-if systemctl is-enabled nfs-server.service; then
-    WARN "NFS 서버 데몬 사용"
-else
-    OK "NFS 서버 데몬 사용되지 않음"
-fi
+NC='ps -ef | egrep "nfs|statd|lockd" | grep -v kblock'
 
-# Check if the nfslock daemon is enabled
-if systemctl is-enabled nfs-lock.service; then
-    WARN "NFS 잠금 데몬 사용"
+if [ -n "$NC" ]; then
+WARN " ==> [취약] NFS 서비스가 동작 중입니다."
 else
-    OK "NFS 잠금 데몬 사용되지 않음"
-fi
-
-# Check if the rpcbind daemon is enabled
-if systemctl is-enabled rpcbind.service; then
-    WARN "RPC 바인딩 데몬 사용"
-else
-    OK "RPC 바인딩 데몬 사용되지 않음"
+OK " ==> [안전] NFS 서비스가 동작 중이지 않습니다."
 fi
 
 

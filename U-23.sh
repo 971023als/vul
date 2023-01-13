@@ -21,21 +21,67 @@ EOF
 BAR
 
 
-vulnerable_services=("echo-dgram" "echo-stream" "chargen-dgram" "chargen-stream")
-running_services=()
-
-for service in "${vulnerable_services[@]}"; do
-    if systemctl is-active "$service" > /dev/null; then
-        running_services+=($service)
-    elif systemctl is-enabled "$service" > /dev/null; then
-        running_services+=($service)
-    fi
-done
-
-if [ ${#running_services[@]} -gt 0 ]; then
-    WARN "다음 취약한 서비스가 실행 중이거나 사용하도록 설정되었습니다. ${running_services[@]}" | mail -s "Vulnerable services running or enabled" 
+ls /etc/xinetd.d/echo* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
 else
-    OK "모든 취약한 서비스가 실행되고 있지 않거나 사용하도록 설정되어 있지 않습니다."
+for i in `ls /etc/xinetd.d/echo*`
+do
+WARN $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+
+ls /etc/xinetd.d/discard* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/discard*`
+do
+WARN $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+
+ls /etc/xinetd.d/daytime* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/daytime*`
+do
+WARN $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+
+ls /etc/xinetd.d/chargen* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/chargen*`
+do
+WARN $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
 fi
 
 
