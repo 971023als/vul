@@ -30,9 +30,9 @@ services="tftp talk ntalk"
 for service in $services
 do
     if systemctl is-enabled $service >/dev/null 2>&1; then
-        echo "$service 서비스가 사용하는 중입니다."
+        WARN "$service 서비스가 사용하는 중입니다."
     else
-        echo "$service 서비스가 사용하는 중입니다."
+        OK "$service 서비스가 사용하는 중이 아닙니다."
     fi
 done
 
