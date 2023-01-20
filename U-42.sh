@@ -43,7 +43,7 @@ else
     Result=$(grep -E "^[ \t]*Patch applied without checking" $log_file)
 
     if [ -n "$Result" ]; then
-        WARN "패치 관련 내용은 확인 없이 적용, 확인하는 것이 좋다"
+        INFO "패치 관련 내용은 확인 없이 적용, 확인하는 것이 좋다"
     fi
 fi
 
