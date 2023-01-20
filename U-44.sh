@@ -33,7 +33,7 @@ matching_accounts=$(awk -F: -v uid="$root_uid" '$3 == uid { print $1 }' /etc/pas
 
 # Check if any accounts were found
 if [ -n "$matching_accounts" ]; then
-  WARN "Error: UID가 $root_uid인 계정이 발견되었습니다"
+  WARN "UID가 $root_uid인 계정이 발견되었습니다"
 fi
 
 # If the script reaches this point, no accounts were found

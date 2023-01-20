@@ -28,9 +28,9 @@ BAR
 NC='ps -ef | egrep "nfs|statd|lockd" | grep -v kblock'
 
 if [ -n "$NC" ]; then
-WARN " ==> [취약] NFS 서비스가 동작 중입니다."
+WARN " NFS 서비스가 동작 중입니다."
 else
-OK " ==> [안전] NFS 서비스가 동작 중이지 않습니다."
+OK "NFS 서비스가 동작 중이지 않습니다."
 fi
 
 

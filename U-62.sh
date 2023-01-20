@@ -40,7 +40,6 @@ for user in $ftp_users; do
   else
     WARN "ftp 계정 $user에 /bin/false 셸이 있습니다."
   fi
-done
 
 
 

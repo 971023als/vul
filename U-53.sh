@@ -40,7 +40,7 @@ nologin_accounts=$(grep -E 'nologin$|false$' /etc/passwd | awk -F: '{print $1}')
 for account in $nologin_accounts; do
   shell=$(grep "^$account:" /etc/passwd | awk -F: '{print $NF}')
   if [[ "$shell" != "/sbin/nologin" && "$shell" != "/bin/false" ]]; then
-    WARN "Error: 로그인이 필요 없는 계정 $account가 로그인 셸을 사용하지 않습니다. 현재 $shell 사용 중"
+    WARN " 로그인이 필요 없는 계정 $account가 로그인 셸을 사용하지 않습니다. 현재 $shell 사용 중"
   fi
 done
 

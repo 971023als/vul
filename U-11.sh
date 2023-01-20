@@ -28,7 +28,7 @@ BAR
 # Check the ownership of the file
 file_owner=$(stat -c %U /etc/syslog.conf)
 if [[ "$file_owner" != "root" && "$file_owner" != "bin" && "$file_owner" != "sys" ]]; then
-  WARN "Error: /etc/syslog.conf가 루트(또는 bin, sys)에 의해 소유되지 않습니다."
+  WARN " /etc/syslog.conf가 루트(또는 bin, sys)에 의해 소유되지 않습니다."
 fi
 
 # Check the permissions of the file
