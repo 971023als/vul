@@ -30,7 +30,7 @@ BAR
 
 
 
-#파일이 루트에 의해 소유되는지 확인합니다
+# 파일이 루트에 의해 소유되는지 확인합니다
 if [ $(stat -c "%U" /etc/shadow) != "root" ]; then
     WARN "/etc/shadow 파일이 루트에 의해 소유되지 않습니다."
 fi
