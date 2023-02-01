@@ -24,22 +24,22 @@ EOF
 
 BAR
 
-# Check if the DNS service is running
+# DNS service (named)가 실행 확인
 if ! systemctl is-active --quiet named; then
-  WARN "Error: DNS service (named)가 실행되고 있지 않습니다."
+  WARN "DNS service (named)가 실행되고 있지 않습니다."
 fi
 
-# Check if zone transfers are allowed for any hosts
+# Zone transfers 호스트 확인
 if ! grep -q "allow-transfer" /etc/named.conf; then
-  WARN "Error: Zone transfers가 어떤 호스트에도 허용되지 않습니다."
+  WARN "Zone transfers가 어떤 호스트에도 허용되지 않습니다."
 fi
 
-# Check if zone transfers are allowed for all hosts
+# Zone transfers가 일부 호스트에 대해 영역 전송 확인
 if ! grep -q "allow-transfer { any; };" /etc/named.conf; then
-  WARN "Error: Zone transfers가 일부 호스트에 대해 영역 전송이 허용되지 않음"
+  WARN "Zone transfers가 일부 호스트에 대해 영역 전송이 허용되지 않음"
 fi
 
-# If the script reaches this point, zone transfers are allowed for all hosts
+# 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
 OK "모든 호스트에 대해 영역 전송이 허용됨"
 
 

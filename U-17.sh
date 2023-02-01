@@ -30,7 +30,7 @@ EOF
 BAR
 
 
-# Check the ownership of the /etc/hosts.equiv file
+# /etc/hosts.equiv 파일의 소유권을 확인합니다
 file_owner=$(stat -c %U /etc/hosts.equiv)
 if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
   WARN " /etc/hosts.equiv가 루트 또는 $(whoami)에 의해 소유되지 않습니다."
@@ -38,7 +38,7 @@ else
   OK " /etc/hosts.equiv가 루트 또는 $(whoami)에 의해 소유되었습니다."
 fi
 
-# Check the permissions of the /etc/hosts.equiv file
+# /etc/hosts.equiv 파일의 권한을 확인합니다
 file_perms=$(stat -c %a /etc/hosts.equiv)
 dec_perms=$(printf "%d" $file_perms)
 if [ $dec_perms -gt 600 ]; then
@@ -47,14 +47,15 @@ else
   OK " /etc/hosts.equiv에 올바른 사용 권한이 있습니다. 600 이상 입니다."
 fi
 
-# Check if the /etc/hosts.equiv file contains the '+' setting
+
+# /etc/hosts.equiv 파일에 '+' 설정이 포함되어 있는지 확인하십시오
 if ! grep -q "+" /etc/hosts.equiv; then
   WARN " /etc/hosts.equiv에 '+' 설정이 없습니다."
 else
   OK " /etc/hosts.equiv에 '+' 설정이 있습니다."
 fi
 
-# Check the ownership of the $HOME/.rhosts file
+# $HOME/.rhosts 파일의 소유권을 확인합니다
 file_owner=$(stat -c %U $HOME/.rhosts)
 if [[ "$file_owner" != "root" && "$file_owner" != "$(whoami)" ]]; then
   WARN " $HOME/.rhosts가 루트 또는 $(whoami)에 의해 소유되지 않습니다."
@@ -62,7 +63,7 @@ else
   OK "  $HOME/.rhosts가 루트 또는 $(whoami)에 의해 소유되었습니다." 
 fi
 
-# Check the permissions of the $HOME/.rhosts file
+# $HOME/.rhosts 파일의 권한을 확인합니다
 file_perms=$(stat -c %a $HOME/.rhosts)
 dec_perms=$(printf "%d" $file_perms)
 if [ $dec_perms -gt 600 ]; then
@@ -71,14 +72,14 @@ else
   OK " $HOME/.rhosts에 올바른 사용 권한이 있습니다. 600 이상 입니다."
 fi
 
-# Check if the $HOME/.rhosts file contains the '+' setting
+# $HOME/.rhosts 파일에 '+' 설정이 포함되어 있는지 확인하십시오
 if ! grep -q "+" $HOME/.rhosts; then
   WARN " $HOME/.rhosts에 '+' 설정이 없습니다"
 else
   OK " $HOME/.rhosts에 '+' 설정이 있습니다."
 fi
 
-# If the script reaches this point, the ownership, permissions, and the '+' setting are correct
+# 스크립트가 이 지점에 도달하면 소유권, 사용 권한 및 '+' 설정이 올바른 것입니다
 OK "/etc/hosts.equiv 및 $HOME/.rhosts에 올바른 소유권, 사용 권한 및 '+' 설정이 있습니다."
 
 

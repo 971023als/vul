@@ -26,7 +26,7 @@ EOF
 BAR
 
 
-# Check if the shadow password file exists
+# 섀도 암호 파일이 있는지 확인하십시오
 if [ ! -f /etc/shadow ]; then
     WARN "쉐도우 패스워드 파일이 없습니다. 암호는 암호화되지 않고 저장되지 않습니다"
 else

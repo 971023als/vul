@@ -24,15 +24,11 @@ EOF
 
 BAR
 
- 
-
-#!/bin/bash
-
-# Set the Apache2 Document Root directory to check
+# 확인할 Apache2 Document Root 디렉토리 설정
 dir_path=$(grep -E "^[ \t]*DocumentRoot[ \t]+" /etc/apache2/sites-enabled/* | awk '{print $2}')
 
-# Use find command to check all files and directories within the given path
-# and use stat command to check the last accessed time
+# 지정된 경로 내의 모든 파일 및 디렉토리를 확인하려면 find 명령을 사용합니다
+# stat 명령을 사용하여 마지막으로 액세스한 시간을 확인합니다
 find $dir_path -mindepth 1 -type f -atime +30 -exec ls -alh {} + > /tmp/unnecessary_files.txt
 find $dir_path -mindepth 1 -type d -atime +30 -exec ls -alh {} + >> /tmp/unnecessary_files.txt
 

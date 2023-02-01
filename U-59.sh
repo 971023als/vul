@@ -29,11 +29,11 @@ BAR
 
 rootdir="/home/user/"
 
-# List all hidden files and directories
+# 숨겨진 모든 파일 및 디렉터리 나열
 hidden_files=$(find "$rootdir" -type f -name ".*" ! -name ".*.swp")
 hidden_dirs=$(find "$rootdir" -type d -name ".*" ! -name ".*.swp")
 
-# Check if any unwanted or suspicious files or directories exist
+# 원하지 않거나 의심스러운 파일 또는 디렉터리가 있는지 확인
 for file in $hidden_files; do
   if [[ $(basename $file) =~ "unwanted-file" ]]; then
     WARN "원하지 않는 파일 발견: $file"

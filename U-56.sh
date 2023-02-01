@@ -26,10 +26,10 @@ EOF
 BAR
 
 
-# Use the umask command to check the current umask value
+# umask 명령을 사용하여 현재 umask 값을 확인합니다
 current_umask=$(umask)
 
-# Compare the current umask value to 022 or higher
+# 현재 umask 값을 022 이상과 비교합니다
 if [[ "$current_umask" -ge 22 ]]; then
     OK "UMASK 값이 022 이상으로 설정됨"
 else

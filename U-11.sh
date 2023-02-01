@@ -25,13 +25,13 @@ BAR
 
 
 
-# Check the ownership of the file
+# 파일 소유권 확인
 file_owner=$(stat -c %U /etc/syslog.conf)
 if [[ "$file_owner" != "root" && "$file_owner" != "bin" && "$file_owner" != "sys" ]]; then
   WARN " /etc/syslog.conf가 루트(또는 bin, sys)에 의해 소유되지 않습니다."
 fi
 
-# Check the permissions of the file
+# 파일 권한 확인
 file_perms=$(stat -c %a /etc/syslog.conf)
 dec_perms=$(printf "%d" $file_perms)
 if [ $dec_perms -lt 640 ]; then
@@ -41,7 +41,7 @@ else
 fi
 
 
-# If the script reaches this point, the ownership and permissions are correct
+# 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
 OK "/etc/syslog.conff에 올바른 소유권 및 사용 권한이 있음"
 
 

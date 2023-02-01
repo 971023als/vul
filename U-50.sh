@@ -26,18 +26,18 @@ EOF
 
 BAR
 
-# Define a list of necessary accounts
+# 필요한 계정 목록 정의
 necessary_accounts=("root" "Administrator" "ubuntu" "user")
 
-# Search for accounts that are not in the list of necessary accounts
+# 필요한 계정 목록에 없는 계정 검색
 unnecessary_accounts=$(getent group Administrators | awk -F: '{split($4,a,","); for(i in a) {if (!(a[i] in necessary_accounts)) { print a[i] }}}')
 
-# Check if any unnecessary accounts were found
+# 불필요한 계정이 발견되었는지 확인합니다
 if [ -n "$unnecessary_accounts" ]; then
   WARN "Error: Administrators 그룹에서 불필요한 계정이 발견되었습니다.: $unnecessary_accounts"
 fi
 
-# If the script reaches this point, no unnecessary accounts were found in the Administrators group
+# 스크립트가 이 지점에 도달하면 관리자 그룹에서 불필요한 계정을 찾을 수 없습니다
 OK "Administrators 그룹에서 불필요한 계정을 찾을 수 없습니다."
  
 

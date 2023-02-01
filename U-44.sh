@@ -25,18 +25,18 @@ EOF
 BAR
 
 
-# Get the UID of the root account
+# 루트 계정의 UID 가져오기
 root_uid=$(id -u root)
 
-# Search for accounts with the same UID as the root account
+# 루트 계정과 동일한 UID를 가진 계정 검색
 matching_accounts=$(awk -F: -v uid="$root_uid" '$3 == uid { print $1 }' /etc/passwd)
 
-# Check if any accounts were found
+# 발견된 계정이 있는지 확인하십시오
 if [ -n "$matching_accounts" ]; then
   WARN "UID가 $root_uid인 계정이 발견되었습니다"
 fi
 
-# If the script reaches this point, no accounts were found
+# 스크립트가 이 지점에 도달하면 계정을 찾을 수 없습니다
 OK "UID $root_uid를 가진 계정을 찾을 수 없습니다."
  
 

@@ -27,14 +27,14 @@ BAR
  
 
 
-# Set the log file path
+# 로그 파일 경로 설정
 log_file="/var/log/auth.log"
 
-# Check if the log file exists
+# 로그 파일이 있는지 확인하십시오
 if [ ! -f $log_file ]; then
     OK "Auth log file is not found"
 else
-    # Use grep command to search for Telnet or FTP in the log file
+    # grep 명령을 사용하여 로그 파일에서 Telnet 또는 FTP 검색
     telnet_count=$(grep -E "telnetd" $log_file | wc -l)
     ftp_count=$(grep -E "ftpd" $log_file | wc -l)
     if [ $telnet_count -ne 0 ]; then

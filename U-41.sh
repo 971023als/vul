@@ -26,10 +26,10 @@ BAR
 
 
 
-# Set the Apache2 configuration file path
+# 확인할 Apache2 Document Root 디렉토리 설정
 config_file="/etc/apache2/sites-enabled/*"
 
-# Use grep to check if the DocumentRoot directive is defined in the configuration file
+# 구성 파일에 DocumentRoot 지시어가 정의되어 있는지 확인하려면 grep를 사용하십시오
 Result=$(grep -E "^[ \t]*DocumentRoot[ \t]+" $config_file)
 
 if [ -n "$Result" ]; then

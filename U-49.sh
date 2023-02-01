@@ -30,18 +30,18 @@ BAR
 
 
 
-# Define a list of necessary accounts
+# 필요한 계정 목록 정의
 necessary_accounts=("root" "bin" "daemon" "adm" "lp" "sync" "shutdown" "halt" "ubuntu" "user")
 
-# Search for accounts that are not in the list of necessary accounts
+# 필요한 계정 목록에 없는 계정 검색
 unnecessary_accounts=$(awk -F: '{if (!($1 in necessary_accounts)) { print $1 }}' /etc/passwd)
 
-# Check if any unnecessary accounts were found
+# 불필요한 계정이 발견되었는지 확인합니다
 if [ -n "$unnecessary_accounts" ]; then
   WARN " 불필요한 계정이 발견되었습니다. $insequired_accounts"
 fi
 
-# If the script reaches this point, no unnecessary accounts were found
+# 스크립트가 이 지점에 도달하면 불필요한 계정을 찾을 수 없습니다
 OK "불필요한 계정을 찾을 수 없습니다."
 
 

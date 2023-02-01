@@ -22,7 +22,7 @@ EOF
 BAR
 
 
-# Check if the PermitRootLogin option is set to yes in the SSH configuration file
+# SSH 구성 파일에서 PermitRootLogin 옵션이 yes로 설정되어 있는지 확인합니다
 if grep -q "^PermitRootLogin yes" /etc/ssh/sshd_config; then
     WARN "원격 터미널 서비스를 통해 루트 직접 액세스가 허용됨"
 else

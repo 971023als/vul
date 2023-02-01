@@ -26,14 +26,14 @@ BAR
 
 
 
-# Check if the at command is available
+# at 명령을 사용할 수 있는지 확인하십시오
 if command -v at >/dev/null; then
     INFO "at 명령을 사용할 수 있습니다."
 else
     OK "at 명령을 사용할 수 없습니다."
 fi
 
-# Check the permission of the at related file
+# at 관련 파일의 사용 권한을 확인하십시오
 at_dir="/etc/at.allow"
 if [ -f $at_dir ]; then
     permission=$(stat -c %a $at_dir)

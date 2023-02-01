@@ -30,12 +30,12 @@ BAR
 
 path="$PATH"
 
-# check if '.' is present in the beginning of the path
+# 경로 시작 부분에 '.'이 있는지 확인합니다
 if [[ "$path" =~ ^\. ]]; then
     WARN "Dangerous  '.' 이 PATH 변수의 시작 부분에서 발견되었습니다."
 fi
 
-# check if '.' is present in the middle of the path
+# 경로 중간에 '.'이 있는지 확인합니다
 if [[ "$path" =~ :\. ]]; then
     WARN "Dangerous '.' 이 PATH 변수의 중간에서 발견되었습니다."
 fi

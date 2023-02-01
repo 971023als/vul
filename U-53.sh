@@ -33,10 +33,10 @@ BAR
  
 
 
-# Get a list of accounts that do not require login
+# 로그인이 필요 없는 계정 목록 가져오기
 nologin_accounts=$(grep -E 'nologin$|false$' /etc/passwd | awk -F: '{print $1}')
 
-# Check if any accounts that do not require login were not granted a nologin shell
+# 로그인이 필요하지 않은 계정에 로그인 셸이 부여되지 않았는지 확인합니다
 for account in $nologin_accounts; do
   shell=$(grep "^$account:" /etc/passwd | awk -F: '{print $NF}')
   if [[ "$shell" != "/sbin/nologin" && "$shell" != "/bin/false" ]]; then
@@ -44,7 +44,7 @@ for account in $nologin_accounts; do
   fi
 done
 
-# If the script reaches this point, all accounts that do not require login are using a nologin shell
+# 스크립트가 이 지점에 도달하면 로그인이 필요하지 않은 모든 계정이 로그인 셸을 사용하는 것입니다
 OK "로그인이 필요하지 않은 모든 계정은 nologin 셸을 사용하고 있습니다."
 
 
