@@ -41,9 +41,6 @@ if [ -n "$unnecessary_accounts" ]; then
   WARN " 불필요한 계정이 발견되었습니다. $insequired_accounts"
 fi
 
-# 스크립트가 이 지점에 도달하면 불필요한 계정을 찾을 수 없습니다
-OK "불필요한 계정을 찾을 수 없습니다."
-
 
  
 

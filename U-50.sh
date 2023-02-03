@@ -27,7 +27,7 @@ EOF
 BAR
 
 # 필요한 계정 목록 정의
-necessary_accounts=("root" "Administrator" "ubuntu" "user")
+necessary_accounts=("root" "bin" "daemon" "adm" "lp" "sync" "shutdown" "halt" "ubuntu" "user")
 
 # 필요한 계정 목록에 없는 계정 검색
 unnecessary_accounts=$(getent group Administrators | awk -F: '{split($4,a,","); for(i in a) {if (!(a[i] in necessary_accounts)) { print a[i] }}}')
