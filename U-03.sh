@@ -24,7 +24,6 @@ EOF
 
 BAR
 
-
 # 계정 잠금 임계값이 /etc/pam.d/common-auth에 설정되어 있는지 확인하십시오
 if ! grep -q "auth required pam_tally2.so" /etc/pam.d/common-auth; then
     WARN "계정 잠금 임계값이 /etc/pam.d/common-auth에서 설정되지 않았습니다."
