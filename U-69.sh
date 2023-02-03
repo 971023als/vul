@@ -34,16 +34,18 @@ fi
 
 # 파일 소유자 확인
 if [[ $(stat -c '%U' $nfs_settings_file) = "root" ]]; then
-  WARN "nfs_settings의 소유자는 루트입니다. 이것은 허용되지 않습니다."
+  OK "nfs_settings의 소유자는 루트입니다. 이것은 허용됩니다."
+else
+  OK "nfs_settings의 소유자는 루트가 아닙니다. 이것은 허용되지 않습니다."
 fi
 
 # 파일에 대한 사용 권한 확인
 
 if [[ $(stat -c '%a' $nfs_settings_file) -lt 644 ]]; then
-  WARN "nfs_settings에 대한 권한이 644보다 작습니다. 이것은 허용되지 않습니다."
+  OK "nfs_settings에 대한 권한이 644보다 작습니다. 이것은 허용됩니다."
+else
+  WARN "nfs_settings에 대한 권한이 644보다 큽니다. 이것은 허용되지 않습니다."
 fi
-
-OK "NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하입니다."
 
 
 
