@@ -27,29 +27,25 @@ BAR
 
 ftpusers_file="/etc/vsftpd/ftpusers"
 
-# 파일이 있는지 확인하십시오
+# ftpusers 파일 확인
 if [ ! -f $ftpusers_file ]; then
-  WARN "ftpusers 파일이 없습니다. 확인해주세요."
+  INFO "ftpusers 파일이 없습니다. 확인해주세요."
 fi
 
-# 파일 소유자 확인
+# ftpusers 파일 소유자 root 확인
 owner=$(stat -c '%U' $ftpusers_file)
 
 if [[ $owner == "root" ]]; then
     OK "root가 users 파일을 소유하고 있습니다."
 else
-    WARN "root가 users 파일을 소유하고 있지 않습니다."
+    INFO "root가 users 파일을 소유하고 있지 않습니다."
 fi
 
-# 파일에 대한 사용 권한 확인
+# ftp 사용자에 대한 권한
 
 if [[ `stat -c '%a' $ftpusers_file` -lt 640 ]]; then
-  WARN "ftp 사용자에 대한 권한이 640 미만입니다."
+  INFO "ftp 사용자에 대한 권한이 640 미만입니다."
 fi
-
-OK "ftpusers 파일의 소유자가 root이고, 권한이 640 이하입니다."
- 
-
 
 
 
