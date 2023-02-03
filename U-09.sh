@@ -35,15 +35,15 @@ BAR
 
 # check if the file is not owned by root
 if [ $(stat -c "%U" /etc/hosts) == "root" ]; then
-    WARN "/etc/hosts 파일이 루트에 의해 소유됩니다."
+    OK "/etc/hosts 파일이 루트에 의해 소유됩니다."
 fi
 
 # check if the file permissions are 600 or higher
 if [ $(stat -c "%a" /etc/hosts) -lt 600 ]; then
-    WARN "/etc/hosts 파일에 600 이외의 권한이 있습니다"
+    OK "/etc/hosts 파일에 600 이하 권한이 입니다"
 fi
 
-OK "/etc/hosts 파일이 루트에 의해 소유되지 않으며 600 이상의 권한이 있습니다."
+WARN "/etc/hosts 파일이 루트에 의해 소유되지 않으며 600 이상의 권한이 있습니다."
 
 
 cat $result
