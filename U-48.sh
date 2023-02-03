@@ -24,16 +24,11 @@ EOF
 
 BAR
 
-# 암호 최소 사용 기간 가져오기
-min_age=$(grep -i "^password.*minimum.*age" /etc/login.defs | awk '{print $NF}')
-
-# min_age 변수가 비어 있는지 확인합니다
-if [ -z "$min_age" ]; then
-  WARN "암호 최소 사용 기간이 설정되지 않았습니다"
+if grep -q "PASS_MIN_DAYS" /etc/login.defs; then
+  OK "PASS_MIN_DAYS가 /etc/login.defs에 있습니다."
+else
+  WARN "PASS_MIN_DAYS가 /etc/login.defs에 없습니다."
 fi
-
-# 스크립트가 이 지점에 도달하면 암호 최소 사용 기간이 설정됩니다
-OK "암호 최소 사용 기간이 설정됨"
 
 
  
