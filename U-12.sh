@@ -33,12 +33,12 @@ if [ -e "/etc/services" ]; then
 
 # 파일 사용 권한 확인
     if [ $(stat -c "%a" /etc/services) -gt 644 ]; then
-        WARN "/etc/services 파일 사용 권한이 644보다 큽니다."
+        OK "/etc/services 파일 사용 권한이 644보다 큽니다."
     else
-        OK "/etc/services file is owned by root (or bin, sys) and has 644 or less permissions."
+        WARN "/etc/services 파일은 루트(또는 bin, sys)에 의해 소유되며 644개 이하의 권한이 있습니다."
     fi
     else
-OK "/etc/services file does not exist"
+OK "/etc/services 파일이 없습니다"
 fi
 
 
