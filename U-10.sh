@@ -23,7 +23,6 @@ EOF
 
 BAR
 
-<<<<<<< HEAD
 # 파일이 있는지 확인하십시오
 if [ ! -f /etc/xinetd.conf ]; then
   OK "/etc/xinetd.conf 파일이 없습니다"
@@ -43,26 +42,6 @@ else
     fi
   fi
 fi
-
-=======
-
-
-# 파일 소유권 확인
-file_owner=$(stat -c %U /etc/xinetd.conf)
-if [ "$file_owner" != "root" ]; then
-  WARN " /etc/xinetd.conf가 루트에 의해 소유되지 않음"
-fi
-
-# 파일의 사용 권한 확인
-file_perms=$(stat -c %a /etc/xinetd.conf)
-if [ "$file_perms" != "600" ]; then
-  WARN " /etc/xinetd.conf에 잘못된 사용 권한이 있습니다. 600이어야 합니다"
-fi
-
-# 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
-OK "/etc/xinetd.conf에 올바른 소유권 및 사용 권한이 있음"
-
->>>>>>> fa63b2b05c6a5766dab53ba7800cee02960edd0c
 
 
 cat $result
