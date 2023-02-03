@@ -27,7 +27,7 @@ BAR
 
 # 파일이 있는지 확인하십시오
 if [ ! -f /etc/hosts.lpd ]; then
-  WARN "hosts.lpd 파일이 없습니다. 확인해주세요."
+  INFO "hosts.lpd 파일이 없습니다. 확인해주세요."
 fi
 
 hosts=$(stat -c '%U' /etc/hosts.lpd)
@@ -42,7 +42,7 @@ if [[ $host = "600" ]]; then
   WARN  "hosts.lpd에 대한 권한이 600으로 설정되었습니다. 이것은 허용되지 않습니다."
 fi
 
-OK "https.lpd 파일이 있고 소유자와 권한이 예상대로입니다."
+
 
 
 cat $result

@@ -26,14 +26,10 @@ EOF
 
 BAR
 
-
-
-timeout=`grep -i "TMOUT" /etc/profile`
-
-if [[ $timeout -le 600 ]]; then
-  WARN "세션 시간 초과가 $timeout seconds로 설정되었으며, 이는 허용 가능합니다."
+if grep -q "TMOUT=600" /etc/profile; then
+  OK "/etc/profile에서 TMOUT가 600으로 설정되었습니다."
 else
-  OK "세션 시간 초과가 $timeout seconds로 설정되었습니다. 이는 너무 깁니다. 10분 이내로 조정해 주세요."
+  WARN "/etc/profile에서 TMOUT가 600으로 설정되지 않았습니다."
 fi
 
 
