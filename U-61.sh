@@ -25,7 +25,7 @@ EOF
 BAR
 
 
-# check if the vsftpd service is active
+# vsftpd 서비스가 활성 상태인지 확인합니다
 if systemctl is-active --quiet vsftpd; then
     WARN "FTP 서비스가 활성화되어 있습니다"
 else

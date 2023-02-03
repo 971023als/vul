@@ -31,18 +31,18 @@ EOF
 BAR
 
 
-# Define a list of necessary groups
+# 필요한 그룹 목록 정의
 necessary_groups=("root" "sudo" "sys" "adm" "wheel" "daemon")
 
-# Search for groups that are not in the list of necessary groups
+# 필요한 그룹 목록에 없는 그룹 검색
 unnecessary_groups=$(getent group | awk -F: '{if (!($1 in necessary_groups)) { print $1 } }')
 
-# Check if any unnecessary groups were found
+# 불필요한 그룹이 발견되었는지 확인하십시오
 if [ -n "$unnecessary_groups" ]; then
   WARN " 불필요한 그룹이 발견되었습니다. $unequired_groups"
 fi
 
-# If the script reaches this point, no unnecessary groups were found
+# 스크립트가 이 지점에 도달하면 불필요한 그룹을 찾을 수 없습니다
 OK "불필요한 그룹을 찾을 수 없습니다."
 
 

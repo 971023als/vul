@@ -25,18 +25,18 @@ EOF
 BAR
 
 
-# Check if the SMTP service is running
+# SMTP 서비스가 실행 중인지 확인합니다
 service=`systemctl is-active postfix`
 if [ $service != "active" ]; then
   INFO "SMTP 서비스가 실행되고 있지 않습니다."
 fi
 
-# Path to Postfix main configuration file
+# 포스트픽스 기본 구성 파일의 경로
 CONF_FILE=/etc/postfix/main.cf
 
-# Check if 'smtpd_recipient_restrictions' is present in configuration file
+# 구성 파일에 'smtpd_recipient_restrictions'가 있는지 확인하십시오
 if grep -q "smtpd_recipient_restrictions" "$CONF_FILE"; then
-  # Check if 'noexpn' and 'novrfy' are not present
+  # 'noexpn' 및 'novfy'가 존재하지 않는지 점검하십시오
   if ! grep -q "noexpn" "$CONF_FILE" && ! grep -q "novrfy" "$CONF_FILE"; then
     WARN "noexpn 및 novrfy 옵션이 설정되지 않았습니다."
   else

@@ -25,22 +25,22 @@ EOF
 BAR
 
 
-# Set the target home directory path
+# 대상 홈 디렉토리 경로 설정
 home_dir="/home"
 
-# Use find command to get the home directory paths
+# find 명령을 사용하여 홈 디렉토리 경로 가져오기
 home_directories=$(find $home_dir -mindepth 1 -maxdepth 1 -type d)
 
-# Iterate through each home directory
+# 각 홈 디렉토리를 반복합니다
 for directory in $home_directories; do
-  # Use stat command to get the owner and group of the directory
+  # stat 명령을 사용하여 디렉토리의 소유자 및 그룹 가져오기
   owner=$(stat -c %U $directory)
   group=$(stat -c %G $directory)
 
-  # Use id command to check if the owner is a member of the group
+  # stat 명령을 사용하여 디렉토리의 소유자 및 그룹 가져오기
   id_result=$(id -nG $owner | grep $group)
 
-  # Check if the owner is a member of the group and check if the group has write permission
+  # 소유자가 그룹의 구성원인지 확인하고 그룹에 쓰기 권한이 있는지 확인합니다
   if [ -z "$id_result" ] && [ $(find $directory -perm -002 -type d -print | wc -l) -gt 0 ]; then
     WARN "홈 디렉토리 $directory는 계정에 의해 소유되지 않으며 다른 사용자에게 쓸 수 있는 권한이 있습니다."
   else

@@ -26,10 +26,10 @@ BAR
 
 
 
-# Set the Apache2 configuration file path
+# Apache2 구성 파일 경로 설정
 config_file="/etc/apache2/apache2.conf"
 
-# Use grep to check if the directory listing is enabled in the configuration file
+# grep을 사용하여 구성 파일에서 디렉토리 목록이 사용 가능한지 확인합니다
 Result=$(grep -E "^[ \t]*Options[ \t]+Indexes" $config_file)
 
 if [ -n "$Result" ]; then

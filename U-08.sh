@@ -30,12 +30,12 @@ BAR
 
 
 
-# check if the file is owned by root
+# 파일이 루트에 의해 소유되는지 확인합니다
 if [ $(stat -c "%U" /etc/shadow) != "root" ]; then
     WARN "/etc/shadow 파일이 루트에 의해 소유되지 않습니다."
 fi
 
-# check if the file permissions are less than 400
+# 파일 사용 권한이 400보다 작은지 확인합니다
 if [ $(stat -c "%a" /etc/shadow) -lt 400 ]; then
     WARN "/etc/shadow 파일에 400 미만의 권한이 있습니다."
 fi

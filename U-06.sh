@@ -27,7 +27,7 @@ EOF
 BAR
 
 
-# Check if any files or directories without owners exist
+# 소유자가 없는 파일 또는 디렉터리가 있는지 확인하십시오
 no_owner_files=( $(find / -nouser 2>/dev/null) )
 if [ ${#no_owner_files[@]} -eq 0 ]; then
     OK "소유자가 없는 파일 또는 디렉터리를 찾을 수 없습니다."

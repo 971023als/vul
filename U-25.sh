@@ -24,8 +24,7 @@ EOF
 
 BAR
 
- 
-#!/bin/bash
+
 
 if grep -q -E '^[^#].*\s+everyone(?!.*no_root_squash)' /etc/exports; then
     WARN "NFS는 '모두' 그룹에 대한 제한 없이 수출을 공유하고 있습니다"

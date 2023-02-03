@@ -24,18 +24,18 @@ EOF
 BAR
 
 
-# Get the password maximum age
+# 암호 최대 사용 기간 가져오기
 max_age=$(grep -i "^password.*maximum.*age" /etc/login.defs | awk '{print $NF}')
 
-#convert the value in days to weeks
+#일 단위로 환산하여 주 단위로 환산하다
 max_age_weeks=$((max_age/7))
 
-# Check if the password maximum age is less than 12 weeks
+# 암호 최대 사용 기간이 12주 미만인지 확인합니다
 if [ "$max_age_weeks" -lt 12 ]; then
   WARN "Error: 암호 최대 사용 기간이 12주 미만: $max_age_weeks"
 fi
 
-# If the script reaches this point, the password maximum age is greater than or equal to 12 weeks
+# 스크립트가 이 지점에 도달하면 암호 최대 사용 기간이 12주 이상입니다
 OK "암호 최대 사용 기간이 12주 이상임: $max_age_weeks"
 
 

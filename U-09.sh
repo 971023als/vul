@@ -33,12 +33,12 @@ BAR
  
 
 
-# check if the file is not owned by root
+# 파일이 루트에 의해 소유되는지 확인합니다
 if [ $(stat -c "%U" /etc/hosts) == "root" ]; then
     OK "/etc/hosts 파일이 루트에 의해 소유됩니다."
 fi
 
-# check if the file permissions are 600 or higher
+# 파일 사용 권한이 600 이상인지 확인합니다
 if [ $(stat -c "%a" /etc/hosts) -lt 600 ]; then
     OK "/etc/hosts 파일에 600 이하 권한이 입니다"
 fi

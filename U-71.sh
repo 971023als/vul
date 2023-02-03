@@ -23,7 +23,7 @@ EOF
 
 BAR
 
-# Check if Server Tokens is set to "Prod"
+# 서버 토큰이 "Prod"로 설정되어 있는지 확인하십시오
 ServerTokens=`grep "ServerTokens" /etc/apache2/apache2.conf`
 if [[ $ServerTokens == *"Prod"* ]]; then
   OK "Server Tokens이 Prod로 설정됨"
@@ -31,7 +31,7 @@ else
   WARN "Server Tokens이 Prod로 설정되지 않음"
 fi
 
-# Check if Server Signature is set to "Off"
+# 서버 서명이 "끄기"로 설정되어 있는지 확인합니다
 ServerSignature=`grep "ServerSignature" /etc/apache2/apache2.conf`
 if [[ $ServerSignature == *"Off"* ]]; then
   OK "Server Signature가 Off로 설정됨"

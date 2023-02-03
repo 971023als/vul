@@ -23,7 +23,7 @@ EOF
 BAR
 
 
-# Check if the finger daemon is running
+# Finger 서비스 확인
 if pgrep -x "fingerd" > /dev/null; then
     WARN "Finger 서비스가 실행되고 있습니다"
 else

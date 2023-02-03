@@ -24,7 +24,7 @@ EOF
 BAR
 
 
-# check if the snmp service is active
+# snmp 서비스가 활성 상태인지 확인합니다
 if systemctl is-active --quiet snmpd; then
     WARN "SNMP 서비스가 활성되어 있습니다"
 else

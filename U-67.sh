@@ -25,12 +25,12 @@ BAR
 
 snmpd_config_file="/etc/snmp/snmpd.conf"
 
-# Check if the snmpd.conf file exists
+# snmpd.conf 파일이 있는지 확인합니다
 if [ ! -f $snmpd_config_file ]; then
   INFO "snmpd.conf 파일이 없습니다. 확인해주세요."
 fi
 
-# Search for community names in the snmpd.conf file
+# snmpd.conf 파일에서 커뮤니티 이름 검색
 communities=$(grep -E '^community' $snmpd_config_file | cut -d ' ' -f 2)
 
 for community in $communities; do

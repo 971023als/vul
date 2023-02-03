@@ -24,7 +24,7 @@ EOF
 
 BAR
 
-# Define log file locations
+# 로그 파일 위치 정의
 log_files=(
     "/var/log/secure"
     "/var/log/messages"
@@ -33,7 +33,7 @@ log_files=(
     "/var/log/httpd/error_log"
 )
 
-# Define log configuration file locations
+# 로그 구성 파일 위치 정의
 conf_files=(
     "/etc/rsyslog.conf"
     "/etc/syslog.conf"
@@ -41,7 +41,7 @@ conf_files=(
     "/etc/audit/auditd.conf"
 )
 
-# Check if log files exist
+# 로그 파일이 있는지 확인
 for file in "${log_files[@]}"; do
     if [ -f $file ]; then
         OK "$file 이 존재합니다."
@@ -50,7 +50,7 @@ for file in "${log_files[@]}"; do
     fi
 done
 
-# Check if log configuration files exist
+# 로그 구성 파일이 있는지 확인하십시오
 for file in "${conf_files[@]}"; do
     if [ -f $file ]; then
         OK "$file 이 존재합니다."

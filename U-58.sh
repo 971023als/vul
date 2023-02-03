@@ -26,16 +26,16 @@ BAR
 
 
 
-# Get a list of all accounts
+# 모든 계정 목록 가져오기
 accounts=`cat /etc/passwd | cut -d: -f1`
 
-# Loop through all accounts
+# 모든 계정에 반복 실행
 for account in $accounts; do
 
-  # Get the home directory of the account
+  # 계정의 홈 디렉토리를 가져옵니다
   home=`cat /etc/passwd | grep $account | cut -d: -f6`
 
-  # Check if the home directory is empty
+  # 홈 디렉토리가 비어 있는지 확인합니다
   if [ -z "$home" ]; then
     WARN "Account $account 홈 디렉토리가 없습니다."
   fi

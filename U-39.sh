@@ -24,10 +24,10 @@ EOF
 BAR
 
 
-# Set the Apache2 configuration file path
+# 확인할 Apache2 Document Root 디렉토리 설정
 config_file="/etc/apache2/apache2.conf"
 
-# Use grep to check if the FollowSymLinks and SymLinksIfOwnerMatch options are enabled in the configuration file
+# grep을 사용하여 구성 파일에서 FollowSymLinks 및 SymLinksIfOwnerMatch 옵션이 실행되었는지 확인합니다
 symlink_result=$(grep -E "^[ \t]*Options[ \t]+FollowSymLinks" $config_file)
 alias_result=$(grep -E "^[ \t]*Options[ \t]+SymLinksIfOwnerMatch" $config_file)
 

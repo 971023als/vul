@@ -25,21 +25,21 @@ EOF
 BAR
 
 
-# Set the log file path
+# 로그 파일 경로 설정
 log_file="/var/log/system.log"
 
-# Check if the log file exists
+# 로그 파일이 있는지 확인하십시오
 if [ ! -f $log_file ]; then
     WARN "시스템 로그 파일을 찾을 수 없습니다"
 else
-    # Check if the log file is updated within the last 7 days
+    # 로그 파일이 최근 7일 이내에 업데이트되었는지 확인합니다
     if test $(find $log_file -mtime -7); then
         OK "시스템 로그 파일이 최근 7일 이내에 업데이트되고 로그 기록이 정기적으로 검토되고 있습니다."
     else
         WARN "지난 7일 이내에 시스템 로그 파일이 업데이트되지 않았습니다. 로그 기록이 정기적으로 검토되지 않을 수 있습니다."
     fi
 
-    # Use grep to check if log analysis and reporting is performed
+    # grep을 사용하여 로그 분석 및 보고가 수행되는지 확인
     Result=$(grep -E "^[ \t]*Log analysis and reporting performed" $log_file)
 
     if [ -n "$Result" ]; then

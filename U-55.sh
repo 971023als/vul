@@ -25,7 +25,7 @@ EOF
 BAR
 
 
-# Check if the file exists
+# 파일이 있는지 확인하십시오
 if [ ! -f /etc/hosts.lpd ]; then
   WARN "hosts.lpd 파일이 없습니다. 확인해주세요."
 fi
@@ -35,7 +35,7 @@ if [[ $hosts = "root" ]]; then
   WARN "Owner of hosts.lpd의 소유자는 루트입니다. 이것은 허용되지 않습니다."
 fi
 
-# Check permission on the file
+# 파일에 대한 사용 권한 확인
 
 host=$(stat -c %a /etc/hosts.lpd)
 if [[ $host = "600" ]]; then

@@ -22,12 +22,12 @@ BAR
 
 
 
-# check if the file is owned by root
+# 파일이 루트에 의해 소유되는지 확인합니다
 if [ $(stat -c "%U" /etc/passwd) != "root" ]; then
     WARN "/etc/passwd 파일이 루트에 의해 소유되지 않습니다."
 fi
 
-# check if the file permissions are less than 644
+# 파일 사용 권한이 644보다 작은지 확인합니다
 if [ $(stat -c "%a" /etc/passwd) -lt 644 ]; then
     WARN "/etc/passwd 파일의 권한이 644보다 작습니다."
 fi

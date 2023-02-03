@@ -26,13 +26,13 @@ BAR
 
 
 
-# check if the vsftpd service is active
+# vsftpd 서비스가 활성 상태인지 확인합니다
 if ! systemctl is-active --quiet vsftpd; then
     WARN "FTP 서비스가 활성화되지 않았습니다."
 else
     OK "FTP 서비스 사용 중 입니다."
 
-    # check if the ftp root login is allowed
+    # ftp 루트 로그인이 허용되는지 확인합니다
     if grep -q "root" /etc/vsftpd/vsftpd.conf; then
         WARN "루트 계정 액세스가 허용됨"
     else
