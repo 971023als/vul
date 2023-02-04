@@ -25,17 +25,20 @@ EOF
 BAR
 
 
-if systemctl is-active --quiet postfix; then
-    OK "SMTP 서비스를 사용 중입니다"
+# SMTP 서비스가 실행 중인지 확인합니다
+if ps aux | grep -q "smtp"; then
+  WARN "SMTP 서비스가 실행 중입니다"
 else
-    WARN "SMTP 서비스를 사용 중 아닙니다"
+  OK "SMTP 서비스가 실행되고 있지 않습니다"
 fi
 
-if [ -x /usr/sbin/sendmail ]; then
-    OK "일반 사용자의 sendmail 실행 방지가 설정되어 있습니다"
+# /etc/mail/submit.cf에서 sendmail_enable 변수가 NO로 설정되어 있는지 확인합니다
+if grep -q "^O sendmail_enable=NO" /etc/mail/submit.cf; then
+  OK "Sendmail 실행에 대한 최종 사용자 보호가 활성화되었습니다"
 else
-    WARN "일반 사용자의 sendmail 실행 방지가 설정되어 있습니다"
+  WARN "Sendmail 실행에 대한 최종 사용자 보호가 활성화되지 않았습니다"
 fi
+
 
 cat $result
 
