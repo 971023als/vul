@@ -24,14 +24,40 @@ EOF
 
 BAR
 
-
-NC='ps -ef | egrep "nfs|statd|lockd" | grep -v kblock'
-
-if [ -n "$NC" ]; then
-WARN " NFS 서비스가 동작 중입니다."
+# 파일이 있는지 확인하십시오
+if [ -f "/etc/dfs/dfstab" ]; then
+  shares_file="/etc/dfs/dfstab"
+elif [ -f "/etc/exports" ]; then
+  shares_file="/etc/exports"
 else
-OK "NFS 서비스가 동작 중이지 않습니다."
+  echo "공유 파일을 찾을 수 없습니다."
 fi
+
+# 파일에서 공유 목록 가져오기
+shares=$(grep '^share' $shares_file | awk '{print $2}')
+
+# 각 공유가 있는지 확인합니다
+for share in $shares; do
+  if [ -d "$share" ]; then
+    echo "$share가 있습니다."
+  else
+    echo "$share가 없습니다."
+  fi
+done
+
+services=("nfsd" "statd" "mountd")
+
+for service in "${services[@]}"; do
+  status=$(systemctl is-active "$service")
+  if [ "$status" == "active" ]; then
+    echo "$service가 실행 중입니다."
+  elif [ "$status" == "inactive" ]; then
+    echo "$service가 중지되었습니다."
+  else
+    echo "$service의 상태를 확인할 수 없습니다."
+  fi
+done
+
 
 
  
