@@ -27,22 +27,25 @@ EOF
 
 BAR
 
- 
 
+# 사용 권한을 확인할 파일
+file="/etc/environment"
 
-file=$(eval echo ~)/.*profile
-
+# 파일이 있는지 확인하십시오
 if [ -f "$file" ]; then
-    owner=$(ls -l "$file" | awk '{print $3}')
-    permissions=$(ls -l "$file" | awk '{print $1}')
-    if [ "$owner" = "root" ] && [ "$permissions" = "-rw-------" ]; then
-        OK "$file 의 소유자 및 권한이 올바르게 설정되어 있습니다.."
-    else
-        WARN "$file 의 소유자 또는 권한이 잘못되었습니다"
-    fi
+  # 파일의 사용 권한 가져오기
+  perms=$(stat -c %a "$file")
+  # 파일에 다른 사용자에 대한 쓰기 권한이 있는지 확인합니다
+  if [ $((perms & 2)) -ne 0 ]; then
+    OK "$file 에는 다른 사용자에 대한 쓰기 권한이 있습니다."
+  else
+    WARN "$file 에는 다른 사용자에 대한 쓰기 권한이 없습니다."
+  fi
 else
-    INFO "$file 을 찾을 수 없습니다."
+  INFO "$file 이 없습니다."
 fi
+
+
 
 cat $result
 
