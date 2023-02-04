@@ -23,21 +23,26 @@ EOF
 
 BAR
 
- 
+# 주요 실행 파일을 배열에 저장
+executables=(/bin/ping /usr/bin/passwd /usr/bin/sudo)
 
-find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' > SUIDGIDSB.txt
+# 실행 파일 배열을 반복합니다
+for exec in "${executables[@]}"; do
+  # SUID 비트가 설정되어 있는지 확인합니다
+  if [ -u "$exec" ]; then
+    WARN "$exec에 SUID가 설정되어 있습니다."
+  else 
+    OK "$exec에 SUID가 설정이 안 되어 있습니다."
+  fi
 
-CHECK_PERM=`find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' | wc -l`
+  # SGID 비트가 설정되어 있는지 확인합니다
+  if [ -g "$exec" ]; then
+    WARN "$exec에 SGID가 설정되어 있습니다."
+  else 
+    OK "$exec에 SGID가 설정이 안 되어 있습니다."
+  fi
+done
 
-
-
-if [ $CHECK_PERM = 0 ]; then
-    OK " SETUID, SETGID, Sticky Bit가 설정된 파일이 없습니다."
-else
-    WARN " SETUID, SETGID, Sticky Bit가 설정된 파일이 $CHECK_PERM개 존재합니다."
-    find / -user root -type f 2>/dev/null \( -perm -04000 -o -perm -02000 -o -perm -01000 \) -xdev -exec ls -l {} \; | awk '{print $1, $3, $4, $9}' >> SUIDGIDSB.txt
-    INFO "SUIDGIDSB.txt파일을 참조하십시오."
-fi
 
 
 
