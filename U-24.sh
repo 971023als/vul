@@ -30,7 +30,7 @@ if [ -f "/etc/dfs/dfstab" ]; then
 elif [ -f "/etc/exports" ]; then
   shares_file="/etc/exports"
 else
-  echo "공유 파일을 찾을 수 없습니다."
+  INFO "공유 파일을 찾을 수 없습니다."
 fi
 
 # 파일에서 공유 목록 가져오기
@@ -39,9 +39,9 @@ shares=$(grep '^share' $shares_file | awk '{print $2}')
 # 각 공유가 있는지 확인합니다
 for share in $shares; do
   if [ -d "$share" ]; then
-    echo "$share가 있습니다."
+    WARN "$share가 있습니다."
   else
-    echo "$share가 없습니다."
+    OK "$share가 없습니다."
   fi
 done
 
@@ -50,11 +50,11 @@ services=("nfsd" "statd" "mountd")
 for service in "${services[@]}"; do
   status=$(systemctl is-active "$service")
   if [ "$status" == "active" ]; then
-    echo "$service가 실행 중입니다."
+    WARN "$service가 실행 중입니다."
   elif [ "$status" == "inactive" ]; then
-    echo "$service가 중지되었습니다."
+    OK "$service가 중지되었습니다."
   else
-    echo "$service의 상태를 확인할 수 없습니다."
+    INFO "$service의 상태를 확인할 수 없습니다."
   fi
 done
 
