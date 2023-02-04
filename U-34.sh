@@ -24,23 +24,29 @@ EOF
 
 BAR
 
-# DNS service (named)가 실행 확인
-if ! systemctl is-active --quiet named; then
-  WARN "DNS service (named)가 실행되고 있지 않습니다."
+
+
+# 서비스가 실행 중인지 확인합니다
+if systemctl is-active --quiet named; then
+  WARN "DNS 서비스가 실행 중입니다"
+else
+  OK "DNS 서비스가 실행되고 있지 않습니다"
 fi
 
-# Zone transfers 호스트 확인
-if ! grep -q "allow-transfer" /etc/named.conf; then
-  WARN "Zone transfers가 어떤 호스트에도 허용되지 않습니다."
+# /etc/bind/name.conf에 전송 허용 설정이 있는지 확인하십시오
+if grep -q "allow-transfer" /etc/bind/named.conf; then
+  OK "allow-transfer 설정이 /etc/bind/name.conf에 있습니다"
+else
+  WARN "allow-transfer 설정이 /etc/bind/name.conf에 없습니다"
 fi
 
-# Zone transfers가 일부 호스트에 대해 영역 전송 확인
-if ! grep -q "allow-transfer { any; };" /etc/named.conf; then
-  WARN "Zone transfers가 일부 호스트에 대해 영역 전송이 허용되지 않음"
+# xfrnets 설정이 /etc/bind/name.conf에 있는지 확인합니다
+if grep -q "xfrnets" /etc/bind/named.conf; then
+  OK "xfrnets 설정이 /etc/bind/name.conf에 있습니다"
+else
+  WARN "xfrnets 설정이 /etc/bind/name.conf에 없습니다"
 fi
 
-# 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
-OK "모든 호스트에 대해 영역 전송이 허용됨"
 
 
 
