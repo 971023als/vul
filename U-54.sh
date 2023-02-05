@@ -30,7 +30,7 @@ BAR
 if grep -q "TMOUT=600" /etc/profile; then
   OK "/etc/profile에서 TMOUT가 600으로 설정됨"
 else
-  WARN "/etc/profile에서 TMOUT가 600으로 설정되지 않
+  WARN "/etc/profile에서 TMOUT가 600으로 설정되지 않음"
 fi
 
 
