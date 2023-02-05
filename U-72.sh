@@ -53,8 +53,6 @@ else
 fi
 
 
-
-
 cat $result
 
 echo ; echo 
