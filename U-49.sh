@@ -58,7 +58,9 @@ approved_accounts=(
   "postfix"
   "gdm"
   "adiosl"
+  "cubrid"
 )
+
 # 모든 계정에 반복
 for account in $(cut -d: -f1 /etc/passwd); do
   # 계정이 승인 목록에 없는지 확인하십시오
