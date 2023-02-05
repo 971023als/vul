@@ -25,22 +25,23 @@ EOF
 
 BAR
 
-min_len=$(grep "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
 
-if [ "$min_len" -lt 8 ]; then
-  OK "최소 암호 길이가 8자 미만입니다."
-  
+# Check minimum password length in /etc/login.defs
+min_len_defs=$(grep "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
+if [ "$min_len_defs" -ge 8 ]; then
+  echo "Minimum password length in /etc/login.defs is set to $min_len_defs"
 else
-  WARN "최소 암호 길이는 8자 이상인 $min_len 문자로 설정됩니다."
+  echo "Minimum password length in /etc/login.defs is less than 8"
 fi
 
-grep -q "^password.*required.*pam_cracklib.so.*minclass=3" /etc/pam.d/system-auth
-
-if [ $? -ne 0 ]; then
-  OK "/etc/pam.d/system-auth에 암호에 대한 최소 문자 요구 사항이 설정되지 않았습니다."
+# Check for minimum input of English, numeric, and special characters in /etc/pam.d/system-auth
+min_len_pam=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "minlen" | awk -F"=" '{print $2}')
+if [ "$min_len_pam" -ge 8 ]; then
+  echo "Minimum password length in /etc/pam.d/system-auth is set to $min_len_pam"
 else
-  WARN "/etc/pam.d/system-auth에서 설정된 암호에 대한 최소 문자 요구 사항 설정 완료."
+  echo "Minimum password length in /etc/pam.d/system-auth is less than 8"
 fi
+
 
  
 
