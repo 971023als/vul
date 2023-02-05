@@ -23,20 +23,25 @@ EOF
 
 BAR
 
-# 서버 토큰이 "Prod"로 설정되어 있는지 확인하십시오
-ServerTokens=`grep "ServerTokens" /etc/apache2/apache2.conf`
-if [[ $ServerTokens == *"Prod"* ]]; then
-  OK "Server Tokens이 Prod로 설정됨"
-else
-  WARN "Server Tokens이 Prod로 설정되지 않음"
+filename="/etc/apache2/apache2.conf"
+
+if [ ! -e "$filename" ]; then
+  echo "$filename does not exist."
 fi
 
-# 서버 서명이 "끄기"로 설정되어 있는지 확인합니다
-ServerSignature=`grep "ServerSignature" /etc/apache2/apache2.conf`
-if [[ $ServerSignature == *"Off"* ]]; then
-  OK "Server Signature가 Off로 설정됨"
+server_tokens=$(grep -i 'ServerTokens' "$filename" | awk '{print $2}')
+server_signature=$(grep -i 'ServerSignature' "$filename" | awk '{print $2}')
+
+if [ "$server_tokens" == "Prod" ]; then
+  echo "The Server Tokens setting is set to Prod."
 else
-  WARN "Server Signature가 Off로 설정되어 있지 않음"
+  echo "The Server Tokens setting is not set to Prod."
+fi
+
+if [ "$server_signature" == "Off" ]; then
+  echo "The Server Signature setting is set to Off."
+else
+  echo "The Server Signature setting is not set to Off."
 fi
 
 

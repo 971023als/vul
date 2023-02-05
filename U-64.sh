@@ -24,21 +24,13 @@ EOF
 
 BAR
 
-
-
-# vsftpd 서비스가 활성 상태인지 확인합니다
-if ! systemctl is-active --quiet vsftpd; then
-    WARN "FTP 서비스가 활성화되지 않았습니다."
+# check if root has a valid shell
+if [ $(grep "^root" /etc/passwd | awk -F: '{print $7}') != "/bin/false" ]; then
+  echo "Root account has a valid shell. Please set it to /bin/false to prevent direct FTP access."
 else
-    OK "FTP 서비스 사용 중 입니다."
-
-    # ftp 루트 로그인이 허용되는지 확인합니다
-    if grep -q "root" /etc/vsftpd/vsftpd.conf; then
-        WARN "루트 계정 액세스가 허용됨"
-    else
-        OK "루트 계정 액세스가 허용되지 않음"
-    fi
+  echo "Root account does not have a valid shell for direct FTP access."
 fi
+
 
 
 cat $result

@@ -25,12 +25,13 @@ EOF
 
 BAR
 
-
-if grep -q "umask 022" /etc/profile; then
-  OK "umask 022가 /etc/profile에 있습니다."
+# check if UMASK is set to 022 in /etc/profile
+if grep -q "UMASK=022" /etc/profile; then
+  echo "UMASK is set to 022 in /etc/profile"
 else
-  WARN "umask 022가 /etc/profile에 없습니다."
+  echo "UMASK is not set to 022 in /etc/profile"
 fi
+
 
 
 cat $result

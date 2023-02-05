@@ -24,39 +24,34 @@ EOF
 
 BAR
 
-# 로그 파일 위치 정의
-log_files=(
-    "/var/log/secure"
-    "/var/log/messages"
-    "/var/log/audit/audit.log"
-    "/var/log/httpd/access_log"
-    "/var/log/httpd/error_log"
+filename="/etc/syslog.conf"
+
+if [ ! -e "$filename" ]; then
+  echo "$filename does not exist."
+fi
+
+expected_content=(
+  "*.info;mail.none;authpriv.none;cron.none /var/log/messages"
+  "authpriv.* /var/log/secure"
+  "mail.* /var/log/maillog"
+  "cron.* /var/log/cron"
+  "*.alert /dev/console"
+  "*.emerg *"
 )
 
-# 로그 구성 파일 위치 정의
-conf_files=(
-    "/etc/rsyslog.conf"
-    "/etc/httpd/conf/httpd.conf"
-    "/etc/audit/auditd.conf"
-)
-
-# 로그 파일이 있는지 확인
-for file in "${log_files[@]}"; do
-    if [ -f $file ]; then
-        OK "$file 이 존재합니다."
-    else
-        WARN "$file 이 존재하지 않습니다"
-    fi
+match=0
+for content in "${expected_content[@]}"; do
+  if grep -q "$content" "$filename"; then
+    match=$((match + 1))
+  fi
 done
 
-# 로그 구성 파일이 있는지 확인하십시오
-for file in "${conf_files[@]}"; do
-    if [ -f $file ]; then
-        OK "$file 이 존재합니다."
-    else
-        WARN "$file 이 존재하지 않습니다"
-    fi
-done
+if [ "$match" -eq "${#expected_content[@]}" ]; then
+  echo "The content of $filename is correct."
+else
+  echo "The content of $filename is incorrect."
+fi
+
 
 
 
