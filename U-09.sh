@@ -30,20 +30,20 @@ BAR
 
 file="/etc/hosts"
 
-# Check ownership
+# 소유권 확인
 owner=$(stat -c '%U' "$file")
 if [ "$owner" != "root" ]; then
-  echo "ERROR: The owner of $file is not root. It is owned by $owner."
+  WARN "$file의 소유자가 루트가 아니라 $owner가 소유하고 있다."
 else
-  echo "The owner of $file is root."
+  OK "$file의 소유자는 루트입니다."
 fi
 
-# Check permissions
+# 권한 확인
 permissions=$(stat -c '%a' "$file")
 if [ "$permissions" -lt 600 ]; then
-  echo "ERROR: The permissions of $file are less than 600. They are set to $permissions."
+  WARN "$file의 권한이 600 미만입니다. $permissions 설정."
 else
-  echo "The permissions of $file are at least 600."
+  OK "$file의 권한은 최소 600 입니다."
 fi
 
 
