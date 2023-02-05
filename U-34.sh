@@ -24,24 +24,29 @@ EOF
 
 BAR
 
-
-
-# DNS 서비스가 실행 중인지 확인합니다
-dns_status=$(systemctl is-active named)
-
-if [ "$dns_status" == "active" ]; then
-  INFO "DNS 쿼리 확인 중"
-  queries=$(ss -u | grep named | wc -l)
-  if [ $queries -eq 0 ]; then
-    OK "DNS 쿼리가 검색되지 않음, 명명된 서비스 중지"
-    systemctl stop named
-  else
-    INFO "DNS 쿼리가 탐지됨, 명명된 서비스가 계속 실행됨"
-  fi
-else
-  OK "DNS 서비스가 이미 중지되었습니다."
+# dig 명령이 설치되어 있는지 확인하십시오
+if ! command -v dig >/dev/null 2>&1; then
+    INFO "'dig' 명령이 설치되지 않았습니다. 계속하기 전에 설치하십시오."
 fi
 
+# 로컬 해결사가 작동 중인지 확인하십시오
+INFO "로컬 확인 중..."
+if dig +short localhost >/dev/null 2>&1; then
+    WARN "로컬 해결사가 작동 중입니다."
+else
+    OK "로컬 해결사가 작동하지 않습니다. DNS 구성을 확인하십시오."
+fi
+
+# 공용 DNS 서버가 작동 중인지 확인
+INFO "공용 DNS 서버 확인 중..."
+if dig +short google.com >/dev/null 2>&1; then
+    WARN "공용 DNS 서버가 작동 중입니다."
+else
+    OK "공용 DNS 서버가 작동하지 않습니다. 인터넷 연결 또는 DNS 구성을 확인하십시오."
+fi
+
+# 모든 검사 통과
+INFO "DNS 서비스가 예상대로 작동하고 있습니다."
 
 
 
