@@ -24,10 +24,14 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
+
 filename="/etc/rsyslog.conf"
 
 if [ ! -e "$filename" ]; then
-  echo "$filename does not exist."
+  WARN "$filename 가 존재하지 않습니다"
 fi
 
 expected_content=(
@@ -47,9 +51,9 @@ for content in "${expected_content[@]}"; do
 done
 
 if [ "$match" -eq "${#expected_content[@]}" ]; then
-  echo "The content of $filename is correct."
+  OK "$filename의 내용이 정확합니다."
 else
-  echo "The content of $filename is incorrect."
+  WARN "$filename의 내용이 잘못되었습니다."
 fi
 
 

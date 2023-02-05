@@ -24,21 +24,29 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
+
 filename="/etc/exports"
 
 if [ ! -e "$filename" ]; then
-  echo "$filename does not exist."
+  WARN "$message가 존재하지 않습니다"
 fi
 
 owner=$(stat -c '%U' "$filename")
 permission=$(stat -c '%a' "$filename")
 
 if [ "$owner" != "root" ]; then
-  echo "The owner of $filename is not root."
+  WARN "$filename의 소유자가 루트가 아닙니다."
+else
+    OK "$filename의 소유자가 루트가 맞습니다."
 fi
 
 if [ "$permission" -gt 644 ]; then
-  echo "The permission of $filename is greater than 644."
+  WARN "$filename의 권한이 644보다 큽니다."
+else
+    OK "$filename의 권한이 644 이하니다."
 fi
 
 

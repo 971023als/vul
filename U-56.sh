@@ -25,11 +25,11 @@ EOF
 
 BAR
 
-# check if UMASK is set to 022 in /etc/profile
+# # /etc/profile에서 UMASK가 022로 설정되어 있는지 확인합니다
 if grep -q "UMASK=022" /etc/profile; then
-  echo "UMASK is set to 022 in /etc/profile"
+  OK "UMASK가 /etc/profile에서 022로 설정됨"
 else
-  echo "UMASK is not set to 022 in /etc/profile"
+  WARN "UMASK가 /etc/profile에서 022로 설정되지 않음"
 fi
 
 

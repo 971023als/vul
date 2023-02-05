@@ -24,6 +24,9 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
 
 # at 명령을 사용할 수 있는지 확인하십시오

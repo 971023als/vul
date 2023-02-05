@@ -23,6 +23,9 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
 # snmp 서비스가 활성 상태인지 확인합니다
 if systemctl is-active --quiet snmpd; then

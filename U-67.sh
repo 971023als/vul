@@ -23,6 +23,10 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
+
 snmpd_config_file="/etc/snmp/snmpd.conf"
 
 # snmpd.conf 파일이 있는지 확인합니다

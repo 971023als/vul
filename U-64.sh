@@ -24,14 +24,18 @@ EOF
 
 BAR
 
-# check if root has a valid shell
-if [ $(grep "^root" /etc/passwd | awk -F: '{print $7}') != "/bin/false" ]; then
-  echo "Root account has a valid shell. Please set it to /bin/false to prevent direct FTP access."
-else
-  echo "Root account does not have a valid shell for direct FTP access."
-fi
+TMP1=`SCRIPTNAME`.log
 
+> $TMP1 
 
+ftp_users=$(grep "^ftp" /etc/passwd | cut -d: -f1)
+for user in $ftp_users; do
+  if [ "$user" == "root" ]; then
+    OK "FTP 연결은 루트 계정에 직접 액세스할 수 있습니다."
+  else
+    WARN "FTP 연결은 루트 계정에 직접 액세스할 수 없습니다."
+  fi
+done
 
 cat $result
 

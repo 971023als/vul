@@ -23,14 +23,17 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
 files=("/etc/motd" "/etc/issue.net" "/etc/vsftpd/vsftpd.conf" "/etc/mail/sendmail.cf" "/etc/named.conf")
 
 for file in "${files[@]}"; do
   if [ ! -e "$file" ]; then
-    echo "$file does not exist."
+    INFO "$file이 존재하지 않습니다."
   else
-    echo "$file exists."
+    OK "$file이 존재합니다."
   fi
 done
 

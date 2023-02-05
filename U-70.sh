@@ -24,6 +24,9 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
 
 # SMTP 서비스가 실행 중인지 확인합니다
 service=`systemctl is-active postfix`

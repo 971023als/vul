@@ -23,25 +23,28 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1 
+
 filename="/etc/apache2/apache2.conf"
 
 if [ ! -e "$filename" ]; then
-  echo "$filename does not exist."
+  WARN "$filename 가 존재하지 않습니다"
 fi
 
 server_tokens=$(grep -i 'ServerTokens' "$filename" | awk '{print $2}')
 server_signature=$(grep -i 'ServerSignature' "$filename" | awk '{print $2}')
 
 if [ "$server_tokens" == "Prod" ]; then
-  echo "The Server Tokens setting is set to Prod."
+  OK "서버 토큰 설정이 Prod로 설정되었습니다."
 else
-  echo "The Server Tokens setting is not set to Prod."
-fi
+  WARN "서버 토큰 설정이 Prod로 설정되지 않았습니다."
 
 if [ "$server_signature" == "Off" ]; then
-  echo "The Server Signature setting is set to Off."
+  OK "Server Signature 설정이 Off로 설정되었습니다."
 else
-  echo "The Server Signature setting is not set to Off."
+  WARN "Server Signature 설정이 Off로 설정되지 않았습니다."
 fi
 
 

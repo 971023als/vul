@@ -26,11 +26,11 @@ EOF
 
 BAR
 
-# check if TMOUT is set to 600 in /etc/profile
+# /etc/profile에서 TMOUT가 600으로 설정되어 있는지 확인합니다
 if grep -q "TMOUT=600" /etc/profile; then
-  echo "TMOUT is set to 600 in /etc/profile"
+  OK "/etc/profile에서 TMOUT가 600으로 설정됨"
 else
-  echo "TMOUT is not set to 600 in /etc/profile"
+  WARN "/etc/profile에서 TMOUT가 600으로 설정되지 않
 fi
 
 
