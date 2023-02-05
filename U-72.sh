@@ -36,7 +36,6 @@ log_files=(
 # 로그 구성 파일 위치 정의
 conf_files=(
     "/etc/rsyslog.conf"
-    "/etc/syslog.conf"
     "/etc/httpd/conf/httpd.conf"
     "/etc/audit/auditd.conf"
 )

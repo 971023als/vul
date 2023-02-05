@@ -41,7 +41,7 @@ fi
 
 # 파일에 대한 사용 권한 확인
 
-if [[ $(stat -c '%a' $nfs_settings_file) -lt 644 ]]; then
+if [[ $(stat -c '%a' $nfs_settings_file) -gt 644 ]]; then
   OK "nfs_settings에 대한 권한이 644보다 작습니다. 이것은 허용됩니다."
 else
   WARN "nfs_settings에 대한 권한이 644보다 큽니다. 이것은 허용되지 않습니다."

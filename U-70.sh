@@ -40,7 +40,7 @@ if grep -q "smtpd_recipient_restrictions" "$CONF_FILE"; then
   if ! grep -q "noexpn" "$CONF_FILE" && ! grep -q "novrfy" "$CONF_FILE"; then
     WARN "noexpn 및 novrfy 옵션이 설정되지 않았습니다."
   else
-    WARN "noexpn 및 novrfy 옵션이 설정되었습니다."
+    OK "noexpn 및 novrfy 옵션이 설정되었습니다."
   fi
 else
   OK "구성 파일에서 esxd_disclusions를 찾을 수 없습니다."
