@@ -31,7 +31,7 @@ ftp_users=$(getent passwd | grep -E "^ftp" | cut -d: -f1)
 
 # 각 ftp 계정을 반복합니다
 for user in $ftp_users; do
-  # Use the getent command to get the shell of the ftp account
+  #  ftp 계정의 셸을 가져옵니다
   shell=$(getent passwd $user | cut -d: -f7)
 
   # ftp 계정에 /bin/false 셸이 있는지 확인합니다
