@@ -28,26 +28,24 @@ EOF
 
 BAR
 
- 
+file="/etc/hosts"
 
-#  파일이 있는지 확인합니다
-if [ -f /etc/hosts ]; then
-  #  파일이 루트에 의해 소유되는지 확인합니다
-  if [ $(stat -c "%U" /etc/hosts) == "root" ]; then
-    OK "/etc/hosts 파일이 루트에 의해 소유됩니다."
-  else
-    WARN "/etc/hosts 파일이 루트에 의해 소유되지 않습니다."
-  fi
-
-  #  파일이 루트에 의해 소유되는지 확인합니다
-  if [ $(stat -c "%a" /etc/hosts) -lt 600 ]; then
-    OK "/etc/hosts 파일의 사용 권한이 600 미만입니다."
-  else
-    WARN "/etc/hosts 파일에 600 이상의 권한이 있습니다."
-  fi
+# Check ownership
+owner=$(stat -c '%U' "$file")
+if [ "$owner" != "root" ]; then
+  echo "ERROR: The owner of $file is not root. It is owned by $owner."
 else
-  OK "/etc/hosts 파일을 찾을 수 없습니다."
+  echo "The owner of $file is root."
 fi
+
+# Check permissions
+permissions=$(stat -c '%a' "$file")
+if [ "$permissions" -lt 600 ]; then
+  echo "ERROR: The permissions of $file are less than 600. They are set to $permissions."
+else
+  echo "The permissions of $file are at least 600."
+fi
+
 
 
 cat $result

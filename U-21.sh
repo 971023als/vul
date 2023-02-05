@@ -31,20 +31,28 @@ EOF
 BAR
 
 
-unnecessary_services=("rsh-server" "rlogin" "rexec")
-running_services=()
 
-for service in "${unnecessary_services[@]}"; do
-    if systemctl is-active "$service" > /dev/null; then
-        running_services+=($service)
-    fi
-done
-
-if [ ${#running_services[@]} -gt 0 ]; then
-    OK "다음 불필요한 r-패밀리 서비스가 실행 중입니다: ${running_services[@]}" | mail -s "불필요한 r-패밀리 서비스가 실행 중입니다" 
+# rlogin 파일 확인
+if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rlogin; then
+  OK "rlogin 파일에 'disable = yes' 설정이 있습니다."
 else
-    WARN "불필요한 모든 r-family 서비스가 실행되고 있지 않습니다"
+  WARN "rlogin 파일에 'disable = yes' 설정이 없습니다."
 fi
+
+# rsh 파일 확인
+if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rsh; then
+  OK "rsh 파일에 'disable = yes' 설정이 있습니다."
+else
+  WARN "rsh 파일에 'disable = yes' 설정이 없습니다."
+fi
+
+# rexec 파일 확인
+if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rexec; then
+  OK "exec 파일에 'disable = yes' 설정이 있습니다."
+else
+  WARN "exec 파일에 'disable = yes' 설정이 없습니다."
+fi
+
 
  
 

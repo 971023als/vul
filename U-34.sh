@@ -26,25 +26,20 @@ BAR
 
 
 
-# 서비스가 실행 중인지 확인합니다
-if systemctl is-active --quiet named; then
-  WARN "DNS 서비스가 실행 중입니다"
-else
-  OK "DNS 서비스가 실행되고 있지 않습니다"
-fi
+# DNS 서비스가 실행 중인지 확인합니다
+dns_status=$(systemctl is-active named)
 
-# /etc/bind/name.conf에 전송 허용 설정이 있는지 확인하십시오
-if grep -q "allow-transfer" /etc/bind/named.conf; then
-  OK "allow-transfer 설정이 /etc/bind/name.conf에 있습니다"
+if [ "$dns_status" == "active" ]; then
+  INFO "DNS 쿼리 확인 중"
+  queries=$(ss -u | grep named | wc -l)
+  if [ $queries -eq 0 ]; then
+    OK "DNS 쿼리가 검색되지 않음, 명명된 서비스 중지"
+    systemctl stop named
+  else
+    INFO "DNS 쿼리가 탐지됨, 명명된 서비스가 계속 실행됨"
+  fi
 else
-  WARN "allow-transfer 설정이 /etc/bind/name.conf에 없습니다"
-fi
-
-# xfrnets 설정이 /etc/bind/name.conf에 있는지 확인합니다
-if grep -q "xfrnets" /etc/bind/named.conf; then
-  OK "xfrnets 설정이 /etc/bind/name.conf에 있습니다"
-else
-  WARN "xfrnets 설정이 /etc/bind/name.conf에 없습니다"
+  OK "DNS 서비스가 이미 중지되었습니다."
 fi
 
 

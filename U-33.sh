@@ -22,25 +22,20 @@ EOF
 
 BAR
 
-# DNS 서비스 확인
-if systemctl is-active --quiet named; then
-  OK "DNS 서비스가 실행 중"
-else
-  WARN "DNS 서비스가 실행되고 있지 않습니다."
-fi
+# DNS 서비스가 실행 중인지 확인합니다
+dns_status=$(systemctl is-active named)
 
-# 자동 업데이트 확인
-if grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10periodic; then
-  OK "자동 업데이트 사용"
+if [ "$dns_status" == "active" ]; then
+  INFO "DNS 쿼리 확인 중"
+  queries=$(ss -u | grep named | wc -l)
+  if [ $queries -eq 0 ]; then
+    OK "DNS 쿼리가 검색되지 않음, 명명된 서비스 중지"
+    systemctl stop named
+  else
+    INFO "DNS 쿼리가 탐지됨, 명명된 서비스가 계속 실행됨"
+  fi
 else
-  WARN "자동 업데이트가 활성화되지 않음"
-fi
-
-# 자동 보안 업데이트 확인
-if grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/50unattended-upgrades; then
-  OK "자동 보안 업데이트 사용"
-else
-  WARN "자동 보안 업데이트가 활성화되지 않음"
+  OK "DNS 서비스가 이미 중지되었습니다."
 fi
 
 

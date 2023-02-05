@@ -25,17 +25,15 @@ EOF
 
 BAR
 
+# Sendmail 서비스가 실행 중인지 확인합니다
+sendmail_status=$(systemctl is-active sendmail)
 
-SI=`apt list --installed | grep sendmail | awk '{print $1}'`
-
-if [ $SI ]
-	then
-		SV=`echo \$Z | /usr/lib/sendmail -bt -d0 | sed -n '1p' | awk '{print $2}'`
-		OK "설치된 sendmail의 버전은 $SV 입니다" 
-		OK "최신 버전의 설치 및 업그레이드를 위해 sendmail 데몬의 중지가 필요하기 때문에 적절한 시간대에 수행해야 함" 
-	else
-		WARN "sendmail이 설치되어 있지 않습니다 " 
+if [ "$sendmail_status" == "active" ]; then
+  WARN "Sendmail 서비스가 실행 중입니다."
+else
+  OK "메일 보내기 서비스가 실행되고 있지 않습니다."
 fi
+
 
 
 

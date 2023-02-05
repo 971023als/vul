@@ -24,21 +24,20 @@ EOF
 
 BAR
 
+# 루트 계정 UID
+root_uid=0
 
-# 루트 계정의 UID 가져오기
-root_uid=$(id -u root)
+# 루트와 동일한 UID를 가진 계정이 있는지 확인하십시오
+accounts_with_root_uid=$(grep ":$root_uid:" /etc/passwd | cut -d: -f1)
 
-# 루트 계정과 동일한 UID를 가진 계정 검색
-matching_accounts=$(awk -F: -v uid="$root_uid" '$3 == uid { print $1 }' /etc/passwd)
-
-# 발견된 계정이 있는지 확인하십시오
-if [ -n "$matching_accounts" ]; then
-  WARN "UID가 $root_uid인 계정이 발견되었습니다"
+# 루트와 동일한 UID를 가진 계정이 있는지 확인하십시오
+if [ -z "$accounts_with_root_uid" ]; then
+  OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
+else
+  WARN "다음 계정의 UID가 루트 계정과 동일합니다."
+  INFO $accounts_with_root_uid
 fi
 
-# 스크립트가 이 지점에 도달하면 계정을 찾을 수 없습니다
-OK "UID $root_uid를 가진 계정을 찾을 수 없습니다."
- 
 
 
  

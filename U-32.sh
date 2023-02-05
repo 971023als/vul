@@ -25,18 +25,13 @@ EOF
 BAR
 
 
-# SMTP 서비스가 실행 중인지 확인합니다
-if ps aux | grep -q "smtp"; then
-  WARN "SMTP 서비스가 실행 중입니다"
-else
-  OK "SMTP 서비스가 실행되고 있지 않습니다"
-fi
+# Sendmail 서비스가 실행 중인지 확인합니다
+sendmail_status=$(systemctl is-active sendmail)
 
-# /etc/mail/submit.cf에서 sendmail_enable 변수가 NO로 설정되어 있는지 확인합니다
-if grep -q "^O sendmail_enable=NO" /etc/mail/submit.cf; then
-  OK "Sendmail 실행에 대한 최종 사용자 보호가 활성화되었습니다"
+if [ "$sendmail_status" == "active" ]; then
+  WARN "Sendmail 서비스가 실행 중입니다."
 else
-  WARN "Sendmail 실행에 대한 최종 사용자 보호가 활성화되지 않았습니다"
+  OK "메일 보내기 서비스가 실행되고 있지 않습니다."
 fi
 
 

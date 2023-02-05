@@ -28,22 +28,15 @@ EOF
 BAR
 
 
-# 사용 권한을 확인할 파일
-file="/etc/environment"
+files=( "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.bash_aliases" )
 
-# 파일이 있는지 확인하십시오
-if [ -f "$file" ]; then
-  # 파일의 사용 권한 가져오기
-  perms=$(stat -c %a "$file")
-  # 파일에 다른 사용자에 대한 쓰기 권한이 있는지 확인합니다
-  if [ $((perms & 2)) -ne 0 ]; then
-    OK "$file 에는 다른 사용자에 대한 쓰기 권한이 있습니다."
-  else
-    WARN "$file 에는 다른 사용자에 대한 쓰기 권한이 없습니다."
-  fi
+for file in "${files[@]}"; do
+  if [ -w "$files" ]; then
+  WARN "다른 사용자는 $file 에 대한 쓰기 권한을 가지고 있습니다."
 else
-  INFO "$file 이 없습니다."
+  OK "다른 사용자는 $file 에 대한 쓰기 권한이 없습니다."
 fi
+
 
 
 

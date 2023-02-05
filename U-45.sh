@@ -21,38 +21,13 @@ EOF
 
 BAR
 
- 
 
-PAM_FILE=/etc/pam.d/su
-
-PAM_MODULE=pam_wheel.so
-
-GROUP_FILE=/etc/group
-
- 
-
-egrep -v '^#|^$' $PAM_FILE | grep -q $PAM_MODULE
-
-if [ $? -eq 0 ] ; then
-
-INFO 'pam_wheel.so 모듈을 사용하고 있습니다.'
-
-if grep -q wheel $GROUP_FILE ; then
-
-INFO 'wheel 그룹이 존재합니다.'
-
+# 모든 사용자에 대해 su 명령이 활성화되었는지 확인합니다
+if [ $(grep -c '^SU_WHEEL_ONLY' /etc/login.defs) -eq 0 ]; then
+  WARN "su 명령은 모든 사용자에 대해 활성화됩니다."
 else
-
-INFO 'wheel 그룹이 존재하지 않습니다.'
-
-fi
-
-OK 'su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우입니다.'
-
-else
-
-WARN 'su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우입니다.'
-
+  wheel_group=$(grep '^SU_WHEEL_GROUP' /etc/login.defs | cut -d' ' -f2)
+  OK "su 명령은 $wheel_group 그룹의 멤버로 제한됩니다."
 fi
 
  

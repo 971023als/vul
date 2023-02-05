@@ -23,16 +23,11 @@ EOF
 
 BAR
 
-PASS_MAX_DAYS=$(grep "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
-
-if [ -z "$PASS_MAX_DAYS" ]; then
-  WARN "PASS_MAX_DAYS가 /etc/login.defs에 설정되어 있지 않습니다."
+# 암호 최대 사용 기간이 90일로 설정되었는지 확인합니다
+if [ $(grep -c '^PASS_MAX_DAYS\s*90' /etc/login.defs) -eq 1 ]; then
+  OK "암호 최대 사용 기간은 예상대로 90일로 설정됩니다."
 else
-  if [ "$PASS_MAX_DAYS" -le 90 ]; then
-    OK "PASS_MAX_DAYS가 $PASS_MAX_DAYS로 설정되어 있으며, 이는 90보다 작거나 같습니다."
-  else
-    WARN "PASS_MAX_DAYS가 90보다 큰 $PASS_MAX_DAYS로 설정되었습니다."
-  fi
+  WARN "암호 최대 사용 기간이 90일로 설정되지 않았습니다."
 fi
 
  

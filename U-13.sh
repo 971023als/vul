@@ -23,25 +23,26 @@ EOF
 
 BAR
 
-# 주요 실행 파일을 배열에 저장
-executables=(/bin/ping /usr/bin/passwd /usr/bin/sudo)
+executables=("/bin/ping" "/usr/bin/passwd" "/usr/bin/sudo")
 
-# 실행 파일 배열을 반복합니다
 for exec in "${executables[@]}"; do
-  # SUID 비트가 설정되어 있는지 확인합니다
-  if [ -u "$exec" ]; then
-    WARN "$exec에 SUID가 설정되어 있습니다."
-  else 
-    OK "$exec에 SUID가 설정이 안 되어 있습니다."
+  # SUID 확인
+  suid=$(stat -c '%u' "$exec")
+  if [ "$suid" -ne 0 ]; then
+    OK "SUID가 $exec 에 설정되었습니다."
+  else
+    WARN "$exec 에 SUID가 설정되지 않았습니다."
   fi
 
-  # SGID 비트가 설정되어 있는지 확인합니다
-  if [ -g "$exec" ]; then
-    WARN "$exec에 SGID가 설정되어 있습니다."
-  else 
-    OK "$exec에 SGID가 설정이 안 되어 있습니다."
+  # SGID 확인
+  sgid=$(stat -c '%g' "$exec")
+  if [ "$sgid" -ne 0 ]; then
+    OK "SGID가 $exec 에 설정되었습니다."
+  else
+    WARN "$exec 에 SGID가 설정되지 않았습니다."
   fi
 done
+
 
 
 
