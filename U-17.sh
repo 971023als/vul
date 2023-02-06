@@ -38,7 +38,8 @@ else
 fi
 
 # /etc/hosts.equiv의 사용 권한을 확인합니다
-if [ "$(stat -c '%a' /etc/hosts.equiv)" -gt 600 ]; then
+HOSTS_EQUIV_PERM=$(stat -c '%a' /etc/hosts.equiv)
+if [ "$HOSTS_EQUIV_PERM" -gt 600 ] 2>/dev/null; then
   WARN "/etc/syslog.equiv 권한이 600보다 큽니다."
 else
   OK "/etc/syslog.equiv 권한이 600보다 작거나 같습니다."
@@ -53,7 +54,8 @@ else
 fi
 
 # $HOME/.rhosts의 사용 권한 확인
-if [ "$(stat -c '%a' $HOME/.rhosts)" -gt 600 ]; then
+RHOSTS_PERM=$(stat -c '%a' $HOME/.rhosts)
+if [ "$RHOSTS_PERM" -gt 600 ] 2>/dev/null; then
   WARN "$HOME/.rhosts 권한이 600보다 큽니다."
 else
   OK "$HOME/.rhosts 권한이 600보다 작거나 같습니다."
