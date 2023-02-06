@@ -22,23 +22,15 @@ EOF
 
 BAR
 
- 
+TMP1=`SCRIPTNAME`.log
 
-search_dir="/path/to/search"
+>$TMP1  
 
-if [ -d "$search_dir" ]; then
-    files=$(find "$search_dir" -type f -perm -0002)
-    if [ -z "$files" ]; then
-        OK "$search_dir 에서 전역 쓰기 가능 파일을 찾을 수 없습니다."
-    else
-        WARN " $search_dir 에서 찾은 전역 쓰기 가능 파일: "
-        INFO "$files"
-    fi
+if find / -type f -perm 777 | grep -q . ; then
+  WARN "world writeable 파일이 있습니다"
 else
-    INFO " $search_dir 디렉터리를 찾을 수 없습니다"
+  OK "world writeable 파일이 없습니다."
 fi
-
-
 
  
 cat $result
