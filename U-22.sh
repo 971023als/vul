@@ -25,13 +25,13 @@ EOF
 BAR
 
 # 파일 정의
-files=(/etc/crontab /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly /etc/cron.allow /etc/cron.deny /var/spool/cron/ /var/spool/cron/crontabs/)
+files=(/etc/crontab /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly /etc/cron.allow /etc/cron.deny /var/spool/cron* /var/spool/cron/crontabs/)
 
 for file in "${files[@]}"; do
   if [ -e "$file" ]; then
     owner=$(stat -c %U "$file")
     if [ "$owner" != "root" ]; then
-      WARN "$file은 root가 아닌 $owner가 소유합니다"
+      WARN "$file 은 root가 아닌 $owner가 소유합니다"
     fi
   else
     INFO "$file이 존재하지 않습니다"
