@@ -26,7 +26,7 @@ BAR
 
 
 # Sendmail 서비스가 실행 중인지 확인합니다
-sendmail_status=$(service is-active sendmail)
+sendmail_status=$(ps -ef | grep sendmail | grep -v "grep")
 
 if [ "$sendmail_status" == "active" ]; then
   WARN "Sendmail 서비스가 실행 중입니다."
