@@ -24,15 +24,12 @@ EOF
 
 BAR
 
- 
-
-
 # 로그 파일 경로 설정
 log_file="/var/log/auth.log"
 
 # 로그 파일이 있는지 확인하십시오
 if [ ! -f $log_file ]; then
-    OK "Auth log file is not found"
+    WARN "Auth log file is not found"
 else
     # grep 명령을 사용하여 로그 파일에서 Telnet 또는 FTP 검색
     telnet_count=$(grep -E "telnetd" $log_file | wc -l)
@@ -44,7 +41,7 @@ else
         INFO "FTP 프로토콜 사용 $ftp_count times"
     fi
     if [ $telnet_count -eq 0 ] && [ $ftp_count -eq 0 ]; then
-        WARN "안전하지 않은 프로토콜이 탐지되지 않음"
+        OK "안전하지 않은 프로토콜이 탐지되지 않음"
     fi
 fi
 

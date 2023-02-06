@@ -28,7 +28,6 @@ TMP1=`SCRIPTNAME`.log
 
 
 min_len=$(grep "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
-min_len=$(expr "$min_len" + 0)
 
 if [ "$min_len" -lt "8" ]; then
   WARN "암호 최소 길이가 8자 미만으로 설정되었습니다."
