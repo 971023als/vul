@@ -39,9 +39,6 @@ for file in "${files[@]}"; do
 done
 
 
-
-
-
 cat $result
 
 echo ; echo

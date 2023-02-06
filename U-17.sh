@@ -19,7 +19,7 @@ cat << EOF >> $result
 
 1. /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자가 root 또는, 해당 계정인 경우 
 
-2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 이하인 경우 
+2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 미만인 경우 
 
 3. /etc/hosts.equiv 및 $HOME/.rhosts 파일 설정에 ‘+’ 설정이 없는 경우
 
@@ -29,17 +29,12 @@ EOF
 
 BAR
 
-TMP1=`SCRIPTNAME`.log
-
->$TMP1  
-
-gt 600
 
 # /etc/hosts.equiv의 소유자를 확인하십시오
 if [ "$(stat -c '%U' /etc/hosts.equiv)" != "root" ]; then
-  WARN "/etc/messages.equiv 소유자가 루트가 아닙니다."
+  WARN "/etc/hosts.equiv 소유자가 루트가 아닙니다."
 else
-  OK "/etc/messages.equiv 소유자는 루트입니다."
+  OK "/etc/hosts.equiv 소유자는 루트입니다."
 fi
 
 # /etc/hosts.equiv의 사용 권한을 확인합니다
@@ -48,6 +43,7 @@ if [ "$(stat -c '%a' /etc/hosts.equiv)" -gt 600 ]; then
 else
   OK "/etc/syslog.equiv 권한이 600보다 작거나 같습니다."
 fi
+
 
 # $HOME/.rhosts 소유자 확인
 if [ "$(stat -c '%U' $HOME/.rhosts)" != "root" ]; then
