@@ -26,11 +26,20 @@ EOF
 BAR
 
 
-# 섀도 암호 파일이 있는지 확인하십시오
-if [ ! -f /etc/shadow ]; then
-    WARN "쉐도우 패스워드 파일이 없습니다. 암호는 암호화되지 않고 저장되지 않습니다"
+FILENAME1=/etc/shadow
+FILENAME2=/etc/passwd
+
+
+if [ -f $FILENAME ] ; then
+	INFO "쉐도우 파일이 존재합니다."
+	CHECK=$(cat $FILENAME2 | awk -F: '{print $2}' | grep -v 'x')
+	if [ -z $CHECK ] ; then
+		OK "쉐도우 패스워드를 사용하거나, 패스워드를 암호화하여 저장하는 경우"
+	else
+		WARN "쉐도우 패스워드를 사용하지 않고, 패스워드를 암호화하여 저장하지 않는 경우"
+	fi
 else
-    OK "쉐도우 패스워드 파일이 있습니다. 암호는 섀도 암호를 사용하여 암호화되고 저장됩니다."
+	INFO "쉐도우 파일이 존재하지 않습니다."
 fi
 
 
