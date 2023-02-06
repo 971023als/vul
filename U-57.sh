@@ -24,31 +24,26 @@ EOF
 
 BAR
 
+# /etc/passwd에서 홈 디렉토리 읽기
+cat /etc/passwd | awk -F ':' '{print $6}' | while read home_dir; do
+  # 홈 디렉토리의 소유권 및 사용 권한 가져오기
+  ls -ld "$home_dir" | while read permissions owner group; do
+    # 홈 디렉토리의 소유자가 사용자 이름과 일치하는지 확인합니다
+    username=$(basename "$home_dir")
+    if [ "$username" = "$owner" ]; then
+      OK "홈 디렉토리 $home_dir 는 $username 이 소유하고 있습니다."
+    else
+      WARN "홈 디렉토리 $home_dir 가 $username 에 의해 소유되지 않습니다"
+    fi
 
-# 대상 홈 디렉토리 경로 설정
-home_dir="/home"
-
-# find 명령을 사용하여 홈 디렉토리 경로 가져오기
-home_directories=$(find $home_dir -mindepth 1 -maxdepth 1 -type d)
-
-# 각 홈 디렉토리를 반복합니다
-for directory in $home_directories; do
-  # stat 명령을 사용하여 디렉토리의 소유자 및 그룹 가져오기
-  owner=$(stat -c %U $directory)
-  group=$(stat -c %G $directory)
-
-  # stat 명령을 사용하여 디렉토리의 소유자 및 그룹 가져오기
-  id_result=$(id -nG $owner | grep $group)
-
-  # 소유자가 그룹의 구성원인지 확인하고 그룹에 쓰기 권한이 있는지 확인합니다
-  if [ -z "$id_result" ] && [ $(find $directory -perm -002 -type d -print | wc -l) -gt 0 ]; then
-    WARN "홈 디렉토리 $directory는 계정에 의해 소유되지 않으며 다른 사용자에게 쓸 수 있는 권한이 있습니다."
-  else
-    OK "홈 디렉토리 $directory는 계정에 의해 소유되어 있으며 다른 사용자에게 쓸 수 있는 권한이 없습니다."
-  fi
+    # 다른 사용자에게 홈 디렉토리에 대한 쓰기 권한이 있는지 확인
+    if [ ! "${permissions:6:3}" = "rwx" ]; then
+      OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
+    else
+      WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
+    fi
+  done
 done
-
-
 
 cat $result
 

@@ -24,7 +24,7 @@ EOF
 
 BAR
 
-result=$(find /dev -type f -exec ls -l {} \;)
+results=$(find /dev -type f -exec ls -l {} \;)
 
 while read line; do
   major_minor=$(echo $line | awk '{print $5,$6}')
@@ -33,7 +33,7 @@ while read line; do
   else
     OK "메이저 및 마이너 번호가 있습니다"
   fi
-done <<< "$result"
+done <<< "$results"
  
 
 cat $result
