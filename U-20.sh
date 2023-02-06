@@ -35,14 +35,14 @@ ftp_status=$(service is-active vsftpd)
 if [ "$ftp_status" != "active" ]; then
   OK "FTP 서비스가 실행되고 있지 않습니다"
 else
-  echo "익명 FTP 연결이 활성화되었습니다"
+  INFO "FTP 서비스가 실행되고 있습니다"
 fi
 
 # vsftpd 구성 파일에서 익명 로그인 설정을 확인하십시오
 if grep -q "^anonymous_enable=NO" /etc/vsftpd.conf; then
-  echo "익명 FTP 연결 사용 안 함"
+  OK "익명 FTP 연결 사용 안 함"
 else
-  echo "오류: 익명 FTP 연결이 활성화되었습니다"
+  WARN "익명 FTP 연결이 활성화되었습니다"
 fi
 
  
