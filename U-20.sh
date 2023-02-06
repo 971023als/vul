@@ -26,55 +26,26 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
+
+# FTP 서비스가 실행 중인지 확인합니다
+ftp_status=$(service is-active vsftpd)
+if [ "$ftp_status" != "active" ]; then
+  OK "FTP 서비스가 실행되고 있지 않습니다"
+else
+  echo "익명 FTP 연결이 활성화되었습니다"
+fi
+
+# vsftpd 구성 파일에서 익명 로그인 설정을 확인하십시오
+if grep -q "^anonymous_enable=NO" /etc/vsftpd.conf; then
+  echo "익명 FTP 연결 사용 안 함"
+else
+  echo "오류: 익명 FTP 연결이 활성화되었습니다"
+fi
+
  
-
-INFO $TMP1 파일을 점검한다.
-
- 
-
-netstat -antp | grep ftp | awk '{print $7}' | awk -F: '{print $1}' | awk -F/ '{print $2}' >/dev/null 2>&1
-
-if [ $? -eq 0 ] ; then 
-
-INFO 'FTP 서비스가 존재합니다'
-
-pgrep -lf vsftpd > vsftpd.pid
-
-if [ -s vsftpd.pid ] ; then 
-
-cat vsftpd.pid > $TMP1
-
-WARN vsftpd 서비스가 동작 중 입니다.
-
-RES=$(cat /etc/vsftpd/vsftpd.conf | egrep -v '^#' \
-
-| egrep anonymous_enable \
-
-| awk -F= '{print $2}')
-
-if [ $RES = 'YES' ] ; then
-
-WARN Anonymous FTP 서비스가 활성화 되어 있습니다.
-
-echo "/etc/vsftpd/vsftpd.conf(anonymous_enable=YES)" >> $TMP1
-
-else
-
-OK Anonymous FTP 서비스가 비활성화 되어 있습니다.
-
-fi
-
-else
-
-OK vsftpd 서비스가 동작 중이 아닙니다.
-
-fi
-
-else
-
-INFO 'FTP 서비스가 존재하지 않습니다'
-
-fi
 
 cat $result
 

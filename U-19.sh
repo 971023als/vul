@@ -22,6 +22,9 @@ EOF
 
 BAR
 
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1  
 
 # Finger 서비스 확인
 if pgrep -x "fingerd" > /dev/null; then

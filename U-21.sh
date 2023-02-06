@@ -31,33 +31,26 @@ EOF
 BAR
 
 
-
-# rlogin 파일 확인
-if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rlogin; then
-  OK "rlogin 파일에 'disable = yes' 설정이 있습니다."
+# rlogin 서비스가 사용하도록 설정되었는지 확인하십시오
+if [ "$(service is-enabled rlogin)" = "enabled" ]; then
+  WARN "rlogin 서비스가 활성화되었습니다"
 else
-  WARN "rlogin 파일에 'disable = yes' 설정이 없습니다."
+  OK "rlogin 서비스가 비활성화되었습니다."
 fi
 
-# rsh 파일 확인
-if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rsh; then
-  OK "rsh 파일에 'disable = yes' 설정이 있습니다."
+# rsh 서비스가 사용하도록 설정되었는지 확인하십시오
+if [ "$(service is-enabled rsh)" = "enabled" ]; then
+  WARN "rsh 서비스가 활성화되었습니다"
 else
-  WARN "rsh 파일에 'disable = yes' 설정이 없습니다."
+  OK "rsh 서비스가 비활성화되었습니다"
 fi
 
-# rexec 파일 확인
-if grep -q "disable\s*=\s*yes" /etc/xinetd.d/rexec; then
-  OK "exec 파일에 'disable = yes' 설정이 있습니다."
+# exec 서비스가 활성화되었는지 확인하십시오
+if [ "$(service is-enabled exec)" = "enabled" ]; then
+  WARN "exec 서비스 사용"
 else
-  WARN "exec 파일에 'disable = yes' 설정이 없습니다."
-fi
-
-
- 
-
-
- 
+  OK "exec 서비스가 비활성화됨"
+fi 
 
 cat $result
 
