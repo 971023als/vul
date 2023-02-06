@@ -24,18 +24,18 @@ EOF
 
 BAR
 
-# 인증 파일 경로 정의
-auth_file="/path/to/authentication_file"
+# Set the Apache2 Document Root directory to check
+dir_path=$(grep -E "^[ \t]*DocumentRoot[ \t]+" /etc/apache2/apache2.conf | awk '{print $2}')
 
-# 사용자 이름 정의
-username="user"
+# Use find command to check all files and directories within the given path 
+# and use stat command to check the move restriction bit
+Result=$(find $dir_path -mindepth 1 -type d -exec stat -c '%a %n' {} + | awk '{ if ($1 % 1000 / 100 != 7 ) print $2}')
 
-# 인증 파일에 사용자 이름이 있는지 확인합니다
-if htpasswd -D $auth_file $username &> /dev/null; then
-  echo "사용자 $username 은 이미 존재합니다"
+if [ -n "$Result" ]; then
+    WARN "Apache2 Document Root에서 이동 제한이 설정되지 않은 디렉터리가 있습니다: 정보"
+    INFO $Result
 else
-  echo "사용자 $username 생성"
-  htpasswd -c $auth_file $username
+    OK "모든 디렉터리에는 Apache2 Document Root에 설정된 이동 제한이 있습니다."
 fi
 
 
