@@ -33,9 +33,9 @@ BAR
 services=$(ls -alL /etc/xinetd.d/* | egrep "rsh|rlogin|rexec" | egrep -v "grep|klogin|kshell|kexec")
 
 if [ -z "$services" ]; then
-  echo "rsh, rlogin 및 exec 서비스가 실행되고 있지 않습니다."
+  OK "rsh, rlogin 및 exec 서비스가 실행되고 있지 않습니다."
 else
-  echo "하나 이상의 rsh, rlogin 및 exec 서비스가 실행 중"
+  WARN "하나 이상의 rsh, rlogin 및 exec 서비스가 실행 중"
 fi
 
 
