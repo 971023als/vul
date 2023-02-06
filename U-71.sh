@@ -40,6 +40,7 @@ if [ "$server_tokens" == "Prod" ]; then
   OK "서버 토큰 설정이 Prod로 설정되었습니다."
 else
   WARN "서버 토큰 설정이 Prod로 설정되지 않았습니다."
+fi
 
 if [ "$server_signature" == "Off" ]; then
   OK "Server Signature 설정이 Off로 설정되었습니다."
