@@ -30,21 +30,12 @@ TMP1=`SCRIPTNAME`.log
 
 >$TMP1  
 
-# FTP 서비스가 실행 중인지 확인합니다
-ftp_status=$(service is-active vsftpd)
-if [ "$ftp_status" != "active" ]; then
-  OK "FTP 서비스가 실행되고 있지 않습니다"
+# "ftp" 사용자가 "/etc/passwd" 파일에 있는지 확인하십시오
+if grep -q "ftp" /etc/passwd; then
+    WARN "'ftp' 사용자가 '/etc/passwd' 파일에 있습니다."
 else
-  INFO "FTP 서비스가 실행되고 있습니다"
+    OK "'ftp' 사용자가 '/etc/passwd' 파일에 없습니다."
 fi
-
-# vsftpd 구성 파일에서 익명 로그인 설정을 확인하십시오
-if grep -q "^anonymous_enable=NO" /etc/vsftpd.conf; then
-  OK "익명 FTP 연결 사용 안 함"
-else
-  WARN "익명 FTP 연결이 활성화되었습니다"
-fi
-
  
 
 cat $result

@@ -43,7 +43,7 @@ else
     OK "$filename의 소유자가 루트가 맞습니다."
 fi
 
-if [ $(expr "$permission" \<= 644) -eq 1 ]; then
+if [ "$permission" -gt 600 ] 2>/dev/null; then
   INFO "$filename의 권한이 644보다 큽니다."
 else
     OK "$filename의 권한이 644 이하니다."

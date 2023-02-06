@@ -29,13 +29,20 @@ EOF
 
 BAR
 
+# /etc/hosts.equiv의 소유자를 확인합니다
+FILE="/etc/hosts.equiv"
 
-# /etc/hosts.equiv의 소유자를 확인하십시오
-if [ "$(stat -c '%U' /etc/hosts.equiv)" != "root" ]; then
-  WARN "/etc/hosts.equiv 소유자가 루트가 아닙니다."
+if [ -f "$FILE" ]; then
+  OWNER=$(stat -c '%U' "$FILE")
+  if [ "$OWNER" == "root" ]; then
+    OK "예상대로 $FILE의 소유자는 루트입니다."
 else
-  OK "/etc/hosts.equiv 소유자는 루트입니다."
+  WARN "$FILE 의 소유자는 $OWNER 이지만 루트여야 합니다."
+  fi
+else
+  INFO "$FILE 이 없습니다."
 fi
+
 
 # /etc/hosts.equiv의 사용 권한을 확인합니다
 HOSTS_EQUIV_PERM=$(stat -c '%a' /etc/hosts.equiv)
@@ -45,13 +52,20 @@ else
   OK "/etc/syslog.equiv 권한이 600보다 작거나 같습니다."
 fi
 
-
-# $HOME/.rhosts 소유자 확인
-if [ "$(stat -c '%U' $HOME/.rhosts)" != "root" ]; then
-  WARN "$HOME/.rhosts 소유자가 루트가 아닙니다."
+# $HOME/.rhosts의 소유자를 확인합니다
+RHOSTS_FILE=$HOME/.rhosts
+if [ -f $RHOSTS_FILE ]; then
+  RHOSTS_OWNER=$(ls -l $RHOSTS_FILE | awk '{print $3}')
+  if [ $RHOSTS_OWNER == "root" ]; then
+    OK "예상대로 $RHOSTS_FILE 의 소유자는 루트입니다."
 else
-  OK "$HOME/.rhosts 소유자는 루트입니다."
+  WARN "$RHOSTS_FILE 의 소유자는 $RHOSTS_OWNER 이지만 루트여야 합니다."
+  fi
+else
+  INFO "$RHOSTS_FILE 이 없습니다."
 fi
+fi
+
 
 # $HOME/.rhosts의 사용 권한 확인
 RHOSTS_PERM=$(stat -c '%a' $HOME/.rhosts)
@@ -67,10 +81,6 @@ if grep -q '^\+' /etc/hosts.equiv || grep -q '^\+' $HOME/.rhosts; then
 else
   OK "File /etc/hosts.equiv 및 $HOME/.rhosts에 '+' 설정이 없습니다."
 fi
-
- 
-
-
 
 
 cat $result

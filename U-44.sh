@@ -24,18 +24,16 @@ EOF
 
 BAR
 
-FILE=etc/passwd
+FILE=/etc/passwd
 
-# 계정명: 패스워드 : UID값: 설명(Comment): 홈디렉터리: 지정된 쉘
-# root: 0 -> root 계정과 동일한 UID 갖는 계정 확인
-
-awk -F:'$3=="0"{print $1":"$3}'$FILE>>$TMP1
-UIDCHECK=$(wc-l<$TMP1)
-if [$UIDCHECK -ge 2]; then # >=
-   WARN "root 계정과 동일한 UID를 갖는 계정이 존재합니다."
-   INFO "$TMP1 파일을 확인해야 합니다."
+# 루트 계정과 동일한 UID를 가진 계정 확인(UID 값 0)
+awk -F: '$3=="0"{print $1":"$3}' $FILE > $TMP1
+UIDCHECK=$(wc -l < $TMP1)
+if [ $UIDCHECK -ge 2 ]; then
+   WARN "루트 계정과 동일한 UID를 가진 계정이 있습니다."
+   INFO "자세한 내용은 $TMP1 을 확인하십시오."
 else
-   OK "root 계정과 동일한 UID를 갖는 계정이 존재하지 않습니다."
+   OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
    sudo rm $TMP1
 fi
  

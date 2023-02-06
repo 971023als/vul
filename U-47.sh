@@ -23,13 +23,15 @@ EOF
 
 BAR
 
-# 암호 최대 사용 기간이 90일로 설정되었는지 확인합니다
-if [ $(grep -c '^PASS_MAX_DAYS\s*90' /etc/login.defs) -eq 1 ]; then
-  OK "암호 최대 사용 기간은 예상대로 90일로 설정됩니다."
-else
-  WARN "암호 최대 사용 기간이 90일로 설정되지 않았습니다."
-fi
+# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
+pass_max_days=$(grep -E "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
 
+# 값이 90보다 작거나 같은지 확인합니다
+if [ $pass_max_days -le 90 ]; then
+  echo "PASS_MAX_DAYS가 90보다 작거나 같은 $pass_max_days로 설정됨"
+else
+  echo "PASS_MAX_DAYS가 90보다 큰 $pass_max_days로 설정됨"
+fi
  
 
  

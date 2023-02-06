@@ -24,24 +24,16 @@ EOF
 
 BAR
 
- 
+result=$(find /dev -type f -exec ls -l {} \;)
 
-find /dev -type f -exec ls -l {} \; > $TMP1
-
- 
-
-if [ -s $TMP1 ] ; then
-
-WARN 파일이 존재합니다. 
-
-INFO $TMP1를 확인하십시오.
-
-else
-
-OK 파일이 존재하지 않습니다. 
-
-fi
-
+while read line; do
+  major_minor=$(echo $line | awk '{print $5,$6}')
+  if [ "$major_minor" == "0 0" ]; then
+    WARN "메이저 및 마이너 번호가 없는 장치를 찾았습니다: $line"
+  else
+    OK "메이저 및 마이너 번호가 있습니다"
+  fi
+done <<< "$result"
  
 
 cat $result

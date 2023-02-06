@@ -23,27 +23,25 @@ EOF
 
 BAR
 
-executables=("/bin/ping" "/usr/bin/passwd" "/usr/bin/sudo")
-
-for exec in "${executables[@]}"; do
-  # SUID 확인
-  suid=$(stat -c '%u' "$exec")
-  if [ "$suid" -ne 0 ]; then
-    OK "SUID가 $exec 에 설정되었습니다."
+# 지정한 파일에 대한 쓰기 권한 확인
+check_write_permissions() {
+  filename=$1
+  if [ -w "$filename" ]; then
+    WARN "$filename 는 다른 사용자가 쓸 수 있습니다."
   else
-    WARN "$exec 에 SUID가 설정되지 않았습니다."
+    OK "$filename 는 다른 사용자가 쓸 수 없습니다."
   fi
+}
 
-  # SGID 확인
-  sgid=$(stat -c '%g' "$exec")
-  if [ "$sgid" -ne 0 ]; then
-    OK "SGID가 $exec 에 설정되었습니다."
-  else
-    WARN "$exec 에 SGID가 설정되지 않았습니다."
-  fi
-done
-
-
+# 지정된 모든 파일에 대한 쓰기 권한 확인
+check_write_permissions .profile
+check_write_permissions .kshrc
+check_write_permissions .cshrc
+check_write_permissions .bashrc
+check_write_permissions .bash_profile
+check_write_permissions .login
+check_write_permissions .exrc
+check_write_permissions .netrc
 
 
 

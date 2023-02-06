@@ -21,13 +21,21 @@ EOF
 
 BAR
 
+# su 명령에 액세스할 수 있어야 하는 그룹의 이름
+group="wheel"
 
-# 모든 사용자에 대해 su 명령이 활성화되었는지 확인합니다
-if [ $(grep -c '^SU_WHEEL_ONLY' /etc/login.defs) -eq 0 ]; then
-  WARN "su 명령은 모든 사용자에 대해 활성화됩니다."
+# 그룹이 있는지 확인하십시오
+if grep -q "^$group:" /etc/group; then
+  OK "그룹 $group 이 존재합니다"
 else
-  wheel_group=$(grep '^SU_WHEEL_GROUP' /etc/login.defs | cut -d' ' -f2)
-  OK "su 명령은 $wheel_group 그룹의 멤버로 제한됩니다."
+  WARN "그룹 $group 이 존재하지 않습니다"
+fi
+
+# su에 대한 PAM 모듈이 그룹에 대한 액세스를 제한하도록 구성되어 있는지 확인하십시오
+if grep -q "^auth\s*required\s*pam_wheel.so\s*group=$group" /etc/pam.d/su; then
+  OK "su 명령은 $group 그룹으로 제한됩니다."
+else
+  WARN "su 명령은 $group 그룹으로 제한되지 않습니다."
 fi
 
  
