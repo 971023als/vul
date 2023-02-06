@@ -30,15 +30,14 @@ EOF
 
 BAR
 
-rsh_status=$(service is-active rsh.socket)
-rlogin_status=$(service is-active rlogin.socket)
-rexec_status=$(service is-active rexec.socket)
+services=$(ls -alL /etc/xinetd.d/* | egrep "rsh|rlogin|rexec" | egrep -v "grep|klogin|kshell|kexec")
 
-if [ "$rsh_status" == "active" ] && [ "$rlogin_status" == "active" ] && [ "$rexec_status" == "active" ]; then
-  WARN "rsh, rlogin 및 exec 서비스가 실행 중"
+if [ -z "$services" ]; then
+  echo "rsh, rlogin 및 exec 서비스가 실행되고 있지 않습니다."
 else
-  OK "하나 이상의 rsh, rlogin 및 exec 서비스가 실행되고 있지 않습니다."
+  echo "하나 이상의 rsh, rlogin 및 exec 서비스가 실행 중"
 fi
+
 
 cat $result
 
