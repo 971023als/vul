@@ -33,6 +33,7 @@ TMP1=`SCRIPTNAME`.log
 
 >$TMP1  
 
+gt 600
 
 # /etc/hosts.equiv의 소유자를 확인하십시오
 if [ "$(stat -c '%U' /etc/hosts.equiv)" != "root" ]; then

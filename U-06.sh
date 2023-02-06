@@ -32,8 +32,8 @@ invalid_owner_files=$(find / -nouser 2>/dev/null)
 if [ -z "$invalid_owner_files" ]; then
   OK "잘못된 소유자가 있는 파일 또는 디렉터리를 찾을 수 없습니다"
 else
-  INFO "다음 파일 또는 디렉터리의 소유자가 잘못되었습니다."
-  echo "$invalid_owner_files"
+  INFO "다음 파일 또는 디렉터리의 소유자가 의심됩니다."
+  INFO "$invalid_owner_files"
 fi
 
 
