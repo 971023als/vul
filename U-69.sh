@@ -31,7 +31,7 @@ TMP1=`SCRIPTNAME`.log
 filename="/etc/exports"
 
 if [ ! -e "$filename" ]; then
-  WARN "$message가 존재하지 않습니다"
+  WARN "$filename 가 존재하지 않습니다"
 fi
 
 owner=$(stat -c '%U' "$filename")
