@@ -34,10 +34,6 @@ BAR
 CHECK1=$(ls -alL /etc/xinetd.d/* | egrep 'rsh|rlogin|rexec' | egrep -v 'grep|klogin|kshell|kexec' | wc -l)
 CHECK2=$(ls -alL /etc/xinetd.d/* | egrep 'rsh|rlogin|rexec' | egrep -v 'grep|klogin|kshell|kexec' |awk '{print $NF}' >> /root/linuxs/U-21.txt)
 
-FILE1=$(cat U-21.txt | sed -n '1p')
-FILE2=$(cat U-21.txt | sed -n '2p')
-FILE3=$(cat U-21.txt | sed -n '3p')
-
 FILECHECK1=$(cat $FILE1 | grep disable | awk '{print $3}')
 FILECHECK2=$(cat $FILE2 | grep disable | awk '{print $3}')
 FILECHECK3=$(cat $FILE3 | grep disable | awk '{print $3}')
