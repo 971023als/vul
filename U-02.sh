@@ -25,21 +25,50 @@ EOF
 
 BAR
 
-
 # /etc/login.defs에서 최소 암호 길이 확인
 min_len_defs=$(grep "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
-if [ "$(expr "$min_len_defs" + 0)" -ge 8 ]; then
-  OK "/etc/login.defs의 최소 암호 길이가 $min_len_defs 로 설정됨"
-else
-  WARN "/etc/login.defs의 최소 암호 길이가 8보다 작음"
+if [ "$min_len_defs" -eq "$min_len_defs" ] 2>/dev/null; then
+  if [ "$(expr "$min_len_defs" + 0)" -ge 8 ]; then
+    OK "/etc/login.defs의 최소 암호 길이가 $min_len_defs 로 설정됨"
+  else
+    WARN "/etc/login.defs의 최소 암호 길이가 8보다 작음"
 fi
 
-# /etc/pam.d/system-auth에서 영어, 숫자 및 특수 문자 설정 확인
-min_len_pam=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "minlen" | awk -F"=" '{print $2}')
-if [ "$(expr "$min_len_pam" + 0)" -ge 8 ]; then
-  OK "/etc/pam.d/system-auth의 최소 암호 길이가 $min_len_pam으로 설정됨"
+# 파일이 있는지 확인하십시오
+if [ -f /etc/pam.d/system-auth ]; then
+  # 최소 대문자 수가 설정되어 있는지 확인하십시오
+  min_ucase=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "ucredit" | awk -F"=" '{print $2}')
+  if [ "$(expr "$min_ucase" + 0)" -ge 1 ]; then
+    OK "최소 대문자 수가 설정되었습니다."
+  else
+    WARN "최소 대문자 수가 설정되지 않았거나 1보다 작습니다."
+  fi
+
+  # 최소 소문자 수가 설정되어 있는지 확인하십시오
+  min_lcase=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "lcredit" | awk -F"=" '{print $2}')
+  if [ "$(expr "$min_lcase" + 0)" -ge 1 ]; then
+    OK "소문자의 최소 수가 설정되었습니다."
+  else
+    WARN "소문자의 최소 수가 설정되지 않았거나 1자 미만입니다."
+  fi
+
+  # 최소 숫자 문자 수가 설정되어 있는지 확인합니다
+  min_num=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "dcredit" | awk -F"=" '{print $2}')
+  if [ "$(expr "$min_num" + 0)" -ge 1 ]; then
+    OK "최소 숫자 문자 수가 설정되었습니다."
+  else
+    WARN "최소 숫자 문자 수가 설정되지 않았거나 1보다 작습니다."
+  fi
+
+  # 최소 특수 문자 수가 설정되어 있는지 확인하십시오
+  min_spec=$(grep "pam_cracklib.so" /etc/pam.d/system-auth | grep "ocredit" | awk -F"=" '{print $2}')
+  if [ "$(expr "$min_spec" + 0)" -ge 1 ]; then
+    OK "최소 특수 문자 수가 설정되었습니다."
+  else
+    WARN "최소 특수 문자 수가 설정되지 않았거나 1보다 작습니다."
+  fi
 else
-  WARN "/etc/pam.d/system-auth의 최소 암호 길이가 8보다 작습니다."
+  INFO "/etc/pam.d/system-auth 파일이 없습니다."
 fi
 
 
