@@ -31,7 +31,7 @@ files=("/etc/motd" "/etc/issue.net" "/etc/vsftpd/vsftpd.conf" "/etc/mail/sendmai
 
 for file in "${files[@]}"; do
   if [ ! -e "$file" ]; then
-    WARN "$file이 존재하지 않습니다."
+    INFO "$file이 존재하지 않습니다."
   else
     OK "$file이 존재합니다."
   fi
