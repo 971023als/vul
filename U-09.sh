@@ -10,10 +10,6 @@ TMP1=`SCRIPTNAME`.log
 
 >$TMP1
 
- 
-
- 
-
 BAR
 
 CODE [U-09] /etc/hosts 파일 소유자 및 권한 설정.
