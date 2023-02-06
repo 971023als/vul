@@ -31,11 +31,13 @@ BAR
 files=( "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.bash_aliases" )
 
 for file in "${files[@]}"; do
-  if [ -w "$files" ]; then
-  WARN "다른 사용자는 $file 에 대한 쓰기 권한을 가지고 있습니다."
-else
-  OK "다른 사용자는 $file 에 대한 쓰기 권한이 없습니다."
-fi
+  if [ -w "$file" ]; then
+    WARN "다른 사용자는 $file 에 대한 쓰기 권한을 가지고 있습니다."
+  else
+    OK "다른 사용자는 $file 에 대한 쓰기 권한이 없습니다."
+  fi
+done
+
 
 
 
