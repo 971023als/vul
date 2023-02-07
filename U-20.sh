@@ -30,12 +30,12 @@ TMP1=`SCRIPTNAME`.log
 
 >$TMP1  
 
-# "ftp" 사용자가 "/etc/passwd" 파일에 있는지 확인하십시오
-if grep -q "ftp" /etc/passwd; then
-    WARN "'ftp' 사용자가 '/etc/passwd' 파일에 있습니다."
+if cat /etc/passwd | grep -q "$ftp_account"; then
+  WARN "FTP 계정이 /etc/passwd 파일에 있습니다."
 else
-    OK "'ftp' 사용자가 '/etc/passwd' 파일에 없습니다."
+  OK "FTP 계정이 /etc/passwd 파일에 없습니다."
 fi
+
  
 
 cat $result
