@@ -4,7 +4,6 @@
 
 . function.sh
 
- 
 
 TMP1=`SCRIPTNAME`.log
 
@@ -13,7 +12,6 @@ TMP1=`SCRIPTNAME`.log
 TMP2=/tmp/tmp1
 
 > $TMP2
-
  
 
 BAR
@@ -30,56 +28,21 @@ EOF
 
 BAR
 
-# 필수 계정 배열
-required_accounts=(
-  "root"
-  "bin"
-  "daemon"
-  "adm"
-  "lp"
-  "sync"
-  "shutdown"
-  "halt"
-  "ubuntu"
-  "user"
-  "messagebus"
-  "syslog"
-  "avahi"
-  "kernoops"
-  "whoopsie"
-  "colord"
-  "systemd-network"
-  "systemd-resolve"
-  "systemd-timesync"
-  "mysql"
-  "dbus"
-  "rpc"
-  "rpcuser"
-  "haldaemon"
-  "apache"
-  "postfix"
-  "gdm"
-  "adiosl"
-  "cubrid"
-)
+# 명령 출력에서 사용자 목록 가져오기
+user_list=$(cat /etc/passwd | egrep "^daemon|^bin|^sys|^adm|^listen|^nobody|^nobody4|^ noaccess|^diag|^operator|^games|^gopher" | grep -v "admin" | awk -F: '{print $1}')
 
-# 모든 사용자를 순환시키다
-for user in $(cut -d: -f1 /etc/passwd); do
-  # 사용자용 셸 가져오기
-  shell=$(grep "^$user:" /etc/passwd | cut -d: -f7)
-  
-  # 사용자에게 /bin/false 셸이 있는지 확인
-  if [ "$shell" == "/bin/false" ]; then
-    # 사용자가 필수 계정 목록에 없는지 확인합니다
-    if ! [[ " ${required_accounts[@]} " =~ " ${user} " ]]; then
-      # 불필요한 사용자에 대한 오류 메시지 인쇄(알로그인 셸 없음)
-      WARN "사용자 $user 에 로그인 셸이 있지만 필수 계정 목록에 없습니다."
-    else
-      OK "/bin/false 셸이 있습니다."
-    fi
+# 사용자 목록을 순환
+for user in $user_list; do
+  # 사용자의 셸 가져오기
+  shell=$(grep "^$user:" /etc/passwd | awk -F: '{print $7}')
+
+# 셸이 /bin/false인지 /sbin/nologin인지 확인합니다
+  if [[ $shell == "/bin/false" || $shell == "/sbin/nologin" ]]; then
+    OK "사용자 $user 셸이 $shell 로 설정됨"
+  else
+    WARN "사용자 $use r의 셸이 /bin/false 또는 /sbin/nlogin으로 설정되어 있지 않습니다. 현재 셸은 $shell 입니다."
   fi
 done
-
 
 cat $result
 

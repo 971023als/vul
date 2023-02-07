@@ -24,21 +24,18 @@ EOF
 
 BAR
 
+# /etc/passwd 파일에서 FTP 계정의 항목을 가져옵니다
+ftp_entry=$(grep "^ftp:" /etc/passwd)
 
+# /etc/passwd 파일에서 FTP 계정의 항목을 가져옵니다
+ftp_shell=$(echo $ftp_entry | awk -F: '{print $7}')
 
-# 명령을 사용하여 모든 ftp 계정 가져오기 
-ftp_users=$(getent passwd | grep -E "^ftp" | cut -d: -f1)
-
-for user in $ftp_users; do
-  shell=$(getent passwd $user | cut -d: -f7)
-
-  if [ "$shell" != "/bin/false" ]; then
-    OK "ftp 계정 $user에 /bin/false 셸이 없습니다"
-  else
-    WARN "ftp 계정 $user에 /bin/false 셸이 있습니다."
-  fi
-done
-
+# FTP 계정의 셸을 /bin/false와 비교합니다
+if [ "$ftp_shell" == "/bin/false" ]; then
+  OK "FTP 계정이 /bin/false 셸이 부여되었습니다."
+else
+  WARN "FTP 계정이 /bin/false 셸이 부여되지 않았습니다."
+fi
 
 
 
