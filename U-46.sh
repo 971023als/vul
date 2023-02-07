@@ -26,14 +26,14 @@ TMP1=`SCRIPTNAME`.log
 
 > $TMP1
 
-# Get the value of PASS_MIN_LEN from the login.defs file
+# login.defs 파일에서 PASS_MIN_LEN 값을 가져옵니다
 pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
 
-# Check if the value is greater than or equal to 8
+# 값이 8보다 크거나 같은지 점검하십시오
 if [ $pass_min_len -ge 8 ]; then
-  echo "PASS_MIN_LEN is set to $pass_min_len which is greater than or equal to 8"
+  OK "PASS_MIN_LEN이 8보다 크거나 같은 $pass_min_len 으로 설정됨"
 else
-  echo "PASS_MIN_LEN is set to $pass_min_len which is less than 8"
+  WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
 fi
 
  
