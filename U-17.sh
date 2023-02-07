@@ -19,7 +19,7 @@ cat << EOF >> $result
 
 1. /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자가 root 또는, 해당 계정인 경우 
 
-2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 미만인 경우 
+2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 이하인 경우 
 
 3. /etc/hosts.equiv 및 $HOME/.rhosts 파일 설정에 ‘+’ 설정이 없는 경우
 
@@ -29,58 +29,75 @@ EOF
 
 BAR
 
-# /etc/hosts.equiv의 소유자를 확인합니다
-FILE="/etc/hosts.equiv"
+equiv_file="/etc/hosts.equiv"
+rhosts_file="$HOME/.rhosts"
 
-if [ -f "$FILE" ]; then
-  OWNER=$(stat -c '%U' "$FILE")
-  if [ "$OWNER" == "root" ]; then
-    OK "예상대로 $FILE의 소유자는 루트입니다."
-else
-  WARN "$FILE 의 소유자는 $OWNER 이지만 루트여야 합니다."
+if [ -f "$equiv_file" ]; then
+  equiv_owner=$(stat -c "%U" "$equiv_file")
+  if [ "$equiv_owner" = "root" ]; then
+    OK "$equiv_file 은 루트에 의해 소유됩니다."
+  else
+    INFO "$equiv_file 이 루트에 의해 소유되지 않음($equiv_owner 가 소유함)" 
   fi
 else
-  INFO "$FILE 이 없습니다."
+  INFO "$equiv_file 을 찾을 수 없습니다"
 fi
 
-
-# /etc/hosts.equiv의 사용 권한을 확인합니다
-HOSTS_EQUIV_PERM=$(stat -c '%a' /etc/hosts.equiv)
-if [ "$HOSTS_EQUIV_PERM" -gt 600 ] 2>/dev/null; then
-  WARN "/etc/syslog.equiv 권한이 600보다 큽니다."
-else
-  OK "/etc/syslog.equiv 권한이 600보다 작거나 같습니다."
-fi
-
-# $HOME/.rhosts의 소유자를 확인합니다
-RHOSTS_FILE=$HOME/.rhosts
-if [ -f $RHOSTS_FILE ]; then
-  RHOSTS_OWNER=$(ls -l $RHOSTS_FILE | awk '{print $3}')
-  if [ $RHOSTS_OWNER == "root" ]; then
-    OK "예상대로 $RHOSTS_FILE 의 소유자는 루트입니다."
-else
-  WARN "$RHOSTS_FILE 의 소유자는 $RHOSTS_OWNER 이지만 루트여야 합니다."
+if [ -f "$rhosts_file" ]; then
+  rhosts_owner=$(stat -c "%U" "$rhosts_file")
+  if [ "$rhosts_owner" = "$USER" ]; then
+    OK "$rhosts_file 은 $USER 가 소유하고 있습니다."
+  else
+    INFO "$rhosts_fil e은 $USER($rhosts_owner 소유)가 소유하지 않습니다."
   fi
 else
-  INFO "$RHOSTS_FILE 이 없습니다."
-fi
+  INFO "$rhosts_file 을 찾을 수 없습니다"
 fi
 
 
-# $HOME/.rhosts의 사용 권한 확인
-RHOSTS_PERM=$(stat -c '%a' $HOME/.rhosts)
-if [ "$RHOSTS_PERM" -gt 600 ] 2>/dev/null; then
-  WARN "$HOME/.rhosts 권한이 600보다 큽니다."
+equiv_file="/etc/hosts.equiv"
+rhosts_file="$HOME/.rhosts"
+
+if [ -f "$equiv_file" ]; then
+  equiv_perms=$(stat -c "%a" "$equiv_file")
+  if [ "$equiv_perms" -le "600" ]; then
+    OK "$equiv_file 에 허용 가능한 권한($equiv_perms)이 있습니다."
+  else
+    WARN "$equiv_file 에 허용되지 않는 권한($equiv_perms)이 있습니다."
+  fi
 else
-  OK "$HOME/.rhosts 권한이 600보다 작거나 같습니다."
+  INFO "$equiv_file 을 찾을 수 없습니다"
 fi
 
-# /etc/hosts.equiv 또는 $HOME/.rhosts에 '+' 설정이 있는지 확인하십시오
-if grep -q '^\+' /etc/hosts.equiv || grep -q '^\+' $HOME/.rhosts; then
-  WARN "File /etc/hosts.equiv 또는 $HOME/.rhosts에 '+' 설정이 있습니다."
+if [ -f "$rhosts_file" ]; then
+  rhosts_perms=$(stat -c "%a" "$rhosts_file")
+  if [ "$rhosts_perms" -le "600" ]; then
+    OK "$rhosts_file 에 허용 가능한 권한($rhosts_perms)이 있습니다."
+  else
+    WARN "$rhosts_file 에 허용되지 않는 권한($rhosts_perms)이 있습니다."
+  fi
 else
-  OK "File /etc/hosts.equiv 및 $HOME/.rhosts에 '+' 설정이 없습니다."
+  INFO "$rhosts_file 을 찾을 수 없습니다"
 fi
+
+equiv_file="/etc/hosts.equiv"
+rhosts_file="$HOME/.rhosts"
+
+check_file() {
+  file=$1
+  if [ -f "$file" ]; then
+    if grep -q "+" "$file"; then
+      WARN "$file '+' 설정이 있습니다"
+    else
+      OK "$file  '+' 설정이 없습니다"
+    fi
+  else
+    INFO "$file 을 찾을 수 없습니다"
+  fi
+}
+
+check_file "$equiv_file"
+check_file "$rhosts_file"
 
 
 cat $result
