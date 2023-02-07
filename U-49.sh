@@ -62,7 +62,6 @@ default_accounts=(
   "systemd-network"
   "systemd-resolve"
   "systemd-timesync"
-  "mysql"
   "dbus"
   "rpc"
   "rpcuser"
@@ -70,8 +69,6 @@ default_accounts=(
   "apache"
   "postfix"
   "gdm"
-  "adiosl"
-  "cubrid"
   "sys"
   "games"
   "man"
@@ -102,6 +99,9 @@ default_accounts=(
   "gnone-initial-setup"
   "systmd-coredump"
   "fwupd-refresh"
+  "adiosl"
+  "mysql"
+  "cuvrid"
 )
 # 셸이 bash로 설정된 사용자 목록을 /etc/passwd에서 가져옵니다
 user_list=$(cat /etc/passwd | grep bash | awk -F: '{print $1}')
@@ -117,7 +117,6 @@ for user in $user_list; do
   fi
 done
 
-OK "모든 계정은 기본 계정입니다."
  
 
 cat $result
