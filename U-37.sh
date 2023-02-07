@@ -22,14 +22,18 @@ EOF
 
 BAR
 
-# grep을 사용하여 apache2.conf 파일에서 AllowOrideAuthConfig 지시문을 검색합니다
-result=$(grep -F "AllowOverride AuthConfig" /etc/apache2/apache2.conf )
 
-# 결과가 비어 있지 않은지 확인하십시오
-if [ -n "$result" ]; then
-  OK "AllowOverride AuthConfig가 apache2.conf 파일에 설정되어 있습니다."
+HTTPD_CONF_FILE="/etc/apache2/apache2.conf"
+ALLOW_OVERRIDE_OPTION="AllowOverride AuthConfig"
+
+if [ ! -f "$HTTPD_CONF_FILE" ]; then
+    INFO "$HTTPD_CONF_FILE 을 찾을 수 없습니다."
 else
-  WARN "AllowOverride AuthConfig가 apache2.conf 파일에 설정되어 있지 않습니다."
+    if grep -q "$ALLOW_OVERRIDE_OPTION" "$HTTPD_CONF_FILE"; then
+        OK "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾았습니다."
+    else
+        WARN "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾을 수 없습니다."
+    fi
 fi
 
 
