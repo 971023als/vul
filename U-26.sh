@@ -25,7 +25,7 @@ EOF
 BAR
 
 
-status=$(svcs -a | grep "autofs" | awk '{print $1}')
+status=$(ps -ef | grep automount | awk '{print $1}')
 
 if [ "$status" = "online" ]; then
   WARN "Automount 서비스가 실행 중입니다"
