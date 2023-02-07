@@ -1,7 +1,5 @@
 #!/bin/bash
 
- 
-
 . function.sh
 
  
@@ -24,21 +22,15 @@ EOF
 
 BAR
 
-# Set the Apache2 Document Root directory to check
-dir_path=$(grep -E "^[ \t]*DocumentRoot[ \t]+" /etc/apache2/apache2.conf | awk '{print $2}')
+# grep을 사용하여 apache2.conf 파일에서 AllowOrideAuthConfig 지시문을 검색합니다
+result=$(grep -F "AllowOverride AuthConfig" /etc/apache2/apache2.conf )
 
-# Use find command to check all files and directories within the given path 
-# and use stat command to check the move restriction bit
-Result=$(find $dir_path -mindepth 1 -type d -exec stat -c '%a %n' {} + | awk '{ if ($1 % 1000 / 100 != 7 ) print $2}')
-
-if [ -n "$Result" ]; then
-    INFO "Apache2 Document Root에서 이동 제한이 설정되지 않은 디렉터리가 있습니다: 정보"
-    INFO $Result
-    INFO "git 관련된 파일 조치 후에 장애 생길 수 있습니다"
+# 결과가 비어 있지 않은지 확인하십시오
+if [ -n "$result" ]; then
+  OK "AllowOverride AuthConfig가 apache2.conf 파일에 설정되어 있습니다."
 else
-    OK "모든 디렉터리에는 Apache2 Document Root에 설정된 이동 제한이 있습니다."
+  WARN "AllowOverride AuthConfig가 apache2.conf 파일에 설정되어 있지 않습니다."
 fi
-
 
 
 cat $result
