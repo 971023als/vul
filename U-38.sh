@@ -24,20 +24,20 @@ EOF
 
 BAR
 
-# 확인할 Apache2 Document Root 디렉토리 설정
-dir_path=$(grep -E "^[ \t]*DocumentRoot[ \t]+" /etc/apache2/sites-enabled/* | awk '{print $2}')
+HTTPD_ROOT="/etc/apache2/apache2.conf"
+UNWANTED_ITEMS="manual samples docs"
 
-# 지정된 경로 내의 모든 파일 및 디렉토리를 확인하려면 find 명령을 사용합니다
-# stat 명령을 사용하여 마지막으로 액세스한 시간을 확인합니다
-find $dir_path -mindepth 1 -type f -atime +30 -exec ls -alh {} + > /tmp/unnecessary_files.txt
-find $dir_path -mindepth 1 -type d -atime +30 -exec ls -alh {} + >> /tmp/unnecessary_files.txt
-
-if [ -s /tmp/unnecessary_files.txt ]; then
-    WARN "Apache2에서 만든 불필요한 파일과 디렉터리가 제거되지 않았습니다. 다음 파일을 검토하십시오"
-    INFO cat /tmp/unnecessary_files.txt
+if [ `ps -ef | grep httpd | grep -v "grep" | wc -l` -eq 0 ]; then
+    echo "Apache is not running."
 else
-    OK "Apache2에서 만든 불필요한 파일 및 디렉터리가 탐지되지 않았습니다."
+    for item in $UNWANTED_ITEMS
+    do
+        if [ ! -d "$HTTPD_ROOT/$item" ] && [ ! -f "$HTTPD_ROOT/$item" ]; then
+            echo "$item not found in $HTTPD_ROOT"
+        fi
+    done
 fi
+
 
 cat $result
 
