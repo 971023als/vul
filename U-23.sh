@@ -39,7 +39,7 @@ fi
 
 ls /etc/xinetd.d/discard* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+OK /etc/xinetd.d/discard 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/discard*`
 do
@@ -55,7 +55,7 @@ fi
 
 ls /etc/xinetd.d/daytime* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+OK /etc/xinetd.d/daytime 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/daytime*`
 do
@@ -71,7 +71,7 @@ fi
 
 ls /etc/xinetd.d/chargen* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+OK /etc/xinetd.d/chargen 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/chargen*`
 do
