@@ -21,23 +21,33 @@ EOF
 
 BAR
 
-# su 명령에 액세스할 수 있어야 하는 그룹의 이름
-group="wheel"
-
-# 그룹이 있는지 확인하십시오
-if grep -q "^$group:" /etc/group; then
-  OK "그룹 $group 이 존재합니다"
+# 휠 그룹이 /etc/group 파일에 정의되어 있는지 확인하십시오
+grep -q '^wheel:' /etc/group
+if [ $? -eq 0 ]; then
+  # 휠 그룹이 정의됨
+  
+  # SUID 비트가 su 명령에 대해 설정되었는지 확인합니다
+  ls -l $(which su) | grep -q '^-rwsr-xr-x'
+  if [ $? -eq 0 ]; then
+    # SUID 비트가 설정되었습니다
+    
+    # 휠 그룹이 su 실행 권한이 있는 유일한 그룹인지 점검하십시오
+    ls -l $(which su) | grep -q '^.*wheel.*$'
+    if [ $? -eq 0 ]; then
+      # 휠 그룹에만 su 실행 권한이 있습니다
+      OK "SU 명령은 휠 그룹의 사용자로 제한됩니다."
+    else
+      # 허가는 휠 그룹으로만 제한되지 않습니다
+      WARN "SU 명령은 휠 그룹의 사용자로 제한되지 않습니다."
+    fi
+  else
+    # SUID bit is not set
+    INFO "SUID 비트가 SU 명령에 대해 설정되지 않았습니다."
+  fi
 else
-  WARN "그룹 $group 이 존재하지 않습니다"
+  # SUID 비트가 설정되지 않았습니다
+  WARN "휠 그룹이 /etc/group 파일에 정의되어 있지 않습니다."
 fi
-
-# su에 대한 PAM 모듈이 그룹에 대한 액세스를 제한하도록 구성되어 있는지 확인하십시오
-if grep -q "^auth\s*required\s*pam_wheel.so\s*group=$group" /etc/pam.d/su; then
-  OK "su 명령은 $group 그룹으로 제한됩니다."
-else
-  WARN "su 명령은 $group 그룹으로 제한되지 않습니다."
-fi
-
  
 
 cat $result
