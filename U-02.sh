@@ -34,6 +34,16 @@ if [ "$min_len_defs" -eq "$min_len_defs" ] 2>/dev/null; then
     WARN "/etc/login.defs의 최소 암호 길이가 8보다 작음"
 fi
 
+auth_file="/etc/pam.d/system-auth"
+auth_config="password requisite pam_cracklib.so retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+
+if grep -q "$auth_config" "$auth_file"; then
+  OK "구성이 설정되었습니다"
+else
+  INFO "구성 설정 중..."
+  echo "$auth_config" | sudo tee -a "$auth_file"
+  INFO "구성 설정"
+fi
  
 
 cat $result
