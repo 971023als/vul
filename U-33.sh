@@ -22,21 +22,19 @@ EOF
 
 BAR
 
-# DNS 서비스가 실행 중인지 확인합니다
-dns_status=$(systemctl is-active named)
+# ps-ef | grep 명명된 명령의 출력을 변수에 저장합니다
+result=$(ps -ef | grep named)
 
-if [ "$dns_status" == "active" ]; then
-  INFO "DNS 쿼리 확인 중"
-  queries=$(ss -u | grep named | wc -l)
-  if [ $queries -eq 0 ]; then
-    OK "DNS 쿼리가 검색되지 않음, 명명된 서비스 중지"
-    systemctl stop named
-  else
-    INFO "DNS 쿼리가 탐지됨, 명명된 서비스가 계속 실행됨"
-  fi
+# 결과가 비어 있지 않은지 확인하십시오
+if [ -n "$result" ]; then
+  WARN "DNS 서비스가 실행 중"
+  # 결과에서 BIND 버전 추출
+  bind_version=$(named -v | awk '{print $3}')
+  INFO "BIND 버전: $bind_version"
 else
-  OK "DNS 서비스가 이미 중지되었습니다."
+  OK "DNS 서비스가 실행되고 있지 않습니다."
 fi
+
 
 
 
