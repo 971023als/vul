@@ -28,9 +28,6 @@ result=$(ps -ef | grep named)
 # 결과가 비어 있지 않은지 확인하십시오
 if [ -n "$result" ]; then
   WARN "DNS 서비스가 실행 중"
-  # 결과에서 BIND 버전 추출
-  bind_version=$(named -v | awk '{print $3}')
-  INFO "BIND 버전: $bind_version"
 else
   OK "DNS 서비스가 실행되고 있지 않습니다."
 fi
