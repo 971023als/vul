@@ -45,7 +45,6 @@ else
   fi
 fi
 
-
 cat $result
 
 echo ; echo 

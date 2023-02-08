@@ -52,7 +52,6 @@ default_accounts=(
   "shutdown"
   "halt"
   "ubuntu"
-  "user"
   "messagebus"
   "syslog"
   "avahi"
@@ -102,6 +101,7 @@ default_accounts=(
   "adiosl"
   "mysql"
   "cuvrid"
+  "user"
 )
 # 셸이 bash로 설정된 사용자 목록을 /etc/passwd에서 가져옵니다
 user_list=$(cat /etc/passwd | grep bash | awk -F: '{print $1}')
