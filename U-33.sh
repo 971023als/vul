@@ -27,9 +27,9 @@ results=$(ps -ef | grep named | grep -v grep)
 
 # 결과 변수가 비어 있으면 명명된 프로세스가 실행되고 있지 않습니다
 if [ -z "$results" ]; then
-  WARN "DNS 서비스가 실행되고 있지 않습니다."
+  OK "DNS 서비스가 실행되고 있지 않습니다."
 else
-  OK "DNS 서비스가 실행 중입니다."
+  WARN "DNS 서비스가 실행 중입니다."
 fi
 
 
