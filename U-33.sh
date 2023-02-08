@@ -22,17 +22,15 @@ EOF
 
 BAR
 
-# ps-ef | grep 명명된 명령의 출력을 변수에 저장합니다
-result=$(ps -ef | grep named)
+# 명명된 프로세스가 실행 중인지 확인하십시오
+result=$(ps -ef | grep named | grep -v grep)
 
-# 결과가 비어 있지 않은지 확인하십시오
-if [ -n "$result" ]; then
-  WARN "DNS 서비스가 실행 중"
+# 결과 변수가 비어 있으면 명명된 프로세스가 실행되고 있지 않습니다
+if [ -z "$result" ]; then
+  WARN "DNS 서비스가 실행되고 있지 않습니다."
 else
-  OK "DNS 서비스가 실행되고 있지 않습니다."
+  OK "DNS 서비스가 실행 중입니다."
 fi
-
-
 
 
 cat $result
