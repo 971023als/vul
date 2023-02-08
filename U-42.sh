@@ -29,12 +29,10 @@ log_file="/var/log/patch.log"
 
 # 로그 파일이 있는지 확인하십시오
 if [ -f $log_file ]; then
-  # Display the contents of the log file
-  cat $log_file
+  WARN "패치 로그 파일 $log_file 이 존재하지 않습니다"
 else
-  echo "패치 로그 파일 $log_file 이 존재하지 않습니다"
+  OK "패치 로그 파일 $log_file 이 존재합니다"
 fi
-
 
 
 cat $result
