@@ -30,17 +30,21 @@ cat /etc/passwd | awk -F ':' '{print $6}' | while read home_dir; do
   ls -ld "$home_dir" | while read permissions owner group; do
     # 홈 디렉토리의 소유자가 사용자 이름과 일치하는지 확인합니다
     username=$(basename "$home_dir")
-    if [ "$username" = "$owner" ]; then
-      OK "홈 디렉토리 $home_dir 는 $username 이 소유하고 있습니다."
+    if [ ! -f "$home_dir" ]; then
+      INFO "$home_dir 을 찾을 수 없습니다."
     else
-      WARN "홈 디렉토리 $home_dir 가 $username 에 의해 소유되지 않습니다"
-    fi
+      if [ "$username" = "$owner" ]; then
+        OK "홈 디렉토리 $home_dir 는 $username 이 소유하고 있습니다."
+      else
+        WARN "홈 디렉토리 $home_dir 가 $username 에 의해 소유되지 않습니다"
+      fi
 
-    # 다른 사용자에게 홈 디렉토리에 대한 쓰기 권한이 있는지 확인
-    if [ ! "${permissions:6:3}" = "rwx" ]; then
-      OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
-    else
-      WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
+      # 다른 사용자에게 홈 디렉토리에 대한 쓰기 권한이 있는지 확인
+      if [ ! "${permissions:6:3}" = "rwx" ]; then
+        OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
+      else
+        WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
+      fi
     fi
   done
 done
