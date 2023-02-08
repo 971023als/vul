@@ -25,7 +25,6 @@ EOF
 BAR
 
 
-
 # 확인할 Apache2 Document Root 디렉토리 설정
 config_file="/etc/apache2/sites-available/000-default.conf"
 
@@ -34,7 +33,7 @@ config_file="/etc/apache2/sites-available/000-default.conf"
 if [ "$config_file" = "/var/www/html" ] ; then
   WARN "DocumentRoot가 기본 경로로 설정되었습니다: /var/www/html"
 else
-  OK "DocumentRoot가 기본 경로로 설정되지 않았습니다. $config_file"
+  OK "DocumentRoot가 기본 경로로 설정되지 않았습니다. "
 fi
 
 
