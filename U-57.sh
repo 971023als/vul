@@ -24,30 +24,31 @@ EOF
 
 BAR
 
-# /etc/passwd에서 홈 디렉토리 읽기
-cat /etc/passwd | awk -F ':' '{print $6}' | while read home_dir; do
-  # 홈 디렉토리의 소유권 및 사용 권한 가져오기
-  ls -ld "$home_dir" | while read permissions owner group; do
-    # 홈 디렉토리의 소유자가 사용자 이름과 일치하는지 확인합니다
-    username="$username:$(id -gn "$username")"
-    if [ ! -f "$home_dir" ]; then
-      INFO "$home_dir 을 찾을 수 없습니다."
-    else
-      if [ "$username" = "$owner" ]; then
-        OK "홈 디렉토리 $home_dir 는 $username 이 소유하고 있습니다."
-      else
-        WARN "홈 디렉토리 $home_dir 가 $username 에 의해 소유되지 않습니다"
-      fi
+# /etc/passwd의 각 줄 읽기
+while read line; do
+  # 구분 기호로 ':'를 사용하여 줄을 필드로 분할
+  fields=($(echo $line | tr ':' ' '))
+  username=${fields[0]}
+  home_dir=${fields[5]}
+  owner=$(ls -ld "$home_dir" | awk '{print $3}')
 
-      # 다른 사용자에게 홈 디렉토리에 대한 쓰기 권한이 있는지 확인
-      if [ ! "${permissions:6:3}" = "rwx" ]; then
-        OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
-      else
-        WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
-      fi
-    fi
-  done
-done
+  # 홈 디렉토리 소유자가 사용자 이름과 일치하는지 확인합니다
+  if [ "$owner" != "$username" ]; then
+    WARN "$home_dir owner($owner)가 사용자 이름($username)과(와) 일치하지 않습니다"
+  else
+    OK "$home_dir owner($owner)가 사용자 이름($username)과(와) 일치합니다"
+  fi
+done < /etc/passwd
+
+# 다른 사용자에 대한 쓰기 권한 확인
+permissions=$(stat -c "%a" "$home_dir")
+other_write=${permissions:2:1}
+if [ "$other_write" == "w" ]; then
+  WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
+else
+  OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
+fi
+
 
 cat $result
 
