@@ -1,13 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1   
 
 BAR
 
@@ -19,21 +12,19 @@ cat << EOF >> $result
 
 [취약]: 불필요한 RPC 서비스가 활성화 되어 있는 경우
 
-
 EOF
 
 BAR
 
- 
+services=("rpc.cmsd" "rpc.ttdbserverd" "sadmin" "rusersd" "walld" "sprayd" "rstatd" "rpc.nisd" "rexd" "rpc.pcnfsd" "rpc.statd" "rpc.ypupdated" "rpc.requotad" "kcms_server" "cachefsd")
 
-if systemctl is-active --quiet rpcbind; then
-    WARN "불필요한 RPC 서비스가 실행 중입니다"
-else
-    OK "불필요한 RPC 서비스가 실행되고 있지 않습니다"
-fi
-
-
- 
+for service in "${services[@]}"; do
+  if service $service status; then
+    WARN "$service 서비스가 활성"
+  else
+    OK "$service 서비스가 활성화되지 않았습니다."
+  fi
+done
 
 cat $result
 
