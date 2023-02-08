@@ -23,28 +23,23 @@ EOF
 
 BAR
 
-# 지정한 파일에 대한 쓰기 권한 확인
-check_write_permissions() {
-  filename=$1
-  if [ -w "$filename" ]; then
-    WARN "$filename 는 다른 사용자가 쓸 수 있습니다."
+# SUID 또는 SGID 권한이 있는 모든 파일 찾기
+output=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls –al {} \;)
+
+# 출력을 배열로 분할
+arr=($output)
+
+# 어레이를 순환하여 SUID 및 SGID 확인
+for line in "${arr[@]}"
+do
+  if [[ $line == *"r-s"* ]]; then
+    WARN "SUID 설정: $line"
+  elif [[ $line == *"r-S"* ]]; then
+    WARN "SGID가 다음에 대해 설정됨: $line"
   else
-    OK "$filename 는 다른 사용자가 쓸 수 없습니다."
+    OK "UID와 SGID에 대한 설정이 부여"
   fi
-}
-
-# 지정된 모든 파일에 대한 쓰기 권한 확인
-check_write_permissions .profile
-check_write_permissions .kshrc
-check_write_permissions .cshrc
-check_write_permissions .bashrc
-check_write_permissions .bash_profile
-check_write_permissions .login
-check_write_permissions .exrc
-check_write_permissions .netrc
-
-
-
+done
 
 cat $result
 
