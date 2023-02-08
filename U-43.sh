@@ -63,11 +63,9 @@ allowed_accounts=(
 # sulog에서 su 명령을 통해 권한 상승 시도 확인 중
 
 INFO "sulog에서 su 명령을 통해 권한 상승 시도 확인 중..."
-if [ -f /var/log/sulog ]; then
-  echo "Contents of /var/log/sulog file:"
-  cat /var/log/sulog
+if [ ! -f /var/log/sulog ]; then
+  INFO "/var/log/sulog 파일을 찾을 수 없습니다"
 else
-  echo "Error: /var/log/sulog file not found"
   while read line; do
     user=$(echo $line | awk '{print $1}')
     if [[ ! " ${allowed_accounts[@]} " =~ " ${user} " ]]; then
@@ -85,15 +83,19 @@ max_failures=5
 
 # 로그에서 반복적인 로그인 실패 여부 확인
 INFO "로그에서 반복적인 로그인 실패를 확인하는 중..."
-failed_logins=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{print $1}')
-for failures in $failed_logins; do
-  if [ $failures -gt $max_failures ]; then
-    ip=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{if ($1 == "'$failures'") print $2}')
-    WARN "IP 주소에서 반복된 로그인 실패: $ip(로그인 실패 시도: $failures)"
-  else
-    OK "반복된 로그인 실패가 없습니다."
-  fi
-done
+if [ ! -f /var/log/auth.log ]; then
+  INFO "/var/log/auth.log 파일을 찾을 수 없습니다"
+else
+  failed_logins=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{print $1}')
+  for failures in $failed_logins; do
+    if [ $failures -gt $max_failures ]; then
+      ip=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{if ($1 == "'$failures'") print $2}')
+      WARN "IP 주소에서 반복된 로그인 실패: $ip(로그인 실패 시도: $failures)"
+    else
+      OK "반복된 로그인 실패가 없습니다."
+    fi
+  done
+fi
 
 
 # 로그인 거부에 관한 로그 검토
