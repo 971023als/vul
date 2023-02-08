@@ -59,16 +59,24 @@ allowed_accounts=(
   "cubrid"
 )
 
+
 # sulog에서 su 명령을 통해 권한 상승 시도 확인 중
+
 INFO "sulog에서 su 명령을 통해 권한 상승 시도 확인 중..."
-while read line; do
-  user=$(echo $line | awk '{print $1}')
-  if [[ ! " ${allowed_accounts[@]} " =~ " ${user} " ]]; then
-    INFO "사용자별 권한 상승 시도: $user"
-  else
-    OK "권한 상승 시도가 없습니다."
-  fi
-done < /var/log/sulog
+if [ -f /var/log/sulog ]; then
+  echo "Contents of /var/log/sulog file:"
+  cat /var/log/sulog
+else
+  echo "Error: /var/log/sulog file not found"
+  while read line; do
+    user=$(echo $line | awk '{print $1}')
+    if [[ ! " ${allowed_accounts[@]} " =~ " ${user} " ]]; then
+      INFO "사용자별 권한 상승 시도: $user"
+    else
+      OK "권한 상승 시도가 없습니다."
+    fi
+  done < /var/log/sulog
+fi
 
 # 반복적인 로그인 실패에 관한 로그 검토
 
