@@ -34,9 +34,9 @@ while read line; do
 
   # 홈 디렉토리 소유자가 사용자 이름과 일치하는지 확인합니다
   if [ "$owner" != "$username" ]; then
-    WARN "$home_dir owner($owner)가 사용자 이름($username)과(와) 일치하지 않습니다"
+    WARN "$home_dir owner($owner) 가 사용자 이름($username)과(와) 일치하지 않습니다"
   else
-    OK "$home_dir owner($owner)가 사용자 이름($username)과(와) 일치합니다"
+    OK "$home_dir owner($owner) 가 사용자 이름($username)과(와) 일치합니다"
   fi
 done < /etc/passwd
 
