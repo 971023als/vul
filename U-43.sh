@@ -78,23 +78,22 @@ fi
 
 # 반복적인 로그인 실패에 관한 로그 검토
 
-# 최대 허용 로그인 시도 실패 횟수 정의
-max_failures=5
+# 반복적인 로그인 실패에 대한 임계값 설정
+threshold=5
+
+# 로그 파일에서 반복되는 로그인 실패 횟수를 가져옵니다
+count=$(grep -c "Failed password" /var/log/auth.log)
 
 # 로그에서 반복적인 로그인 실패 여부 확인
 INFO "로그에서 반복적인 로그인 실패를 확인하는 중..."
 if [ ! -f /var/log/auth.log ]; then
   INFO "/var/log/auth.log 파일을 찾을 수 없습니다"
 else
-  failed_logins=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{print $1}')
-  for failures in $failed_logins; do
-    if [ $failures -gt $max_failures ]; then
-      ip=$(grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | awk '{if ($1 == "'$failures'") print $2}')
-      WARN "IP 주소에서 반복된 로그인 실패: $ip(로그인 실패 시도: $failures)"
-    else
-      OK "반복된 로그인 실패가 없습니다."
-    fi
-  done
+  if [ "$count" -gt "$threshold" ]; then
+    WARN "반복적인 로그인 실패가 탐지되었습니다. 총 실패 수: $count"
+  else
+    OK "로그인 실패가 반복되지 않습니다. 총 실패 수: $count"
+  fi
 fi
 
 
