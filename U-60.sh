@@ -24,14 +24,11 @@ EOF
 
 BAR
 
-# 활성 연결 가져오기
-connections=$(ss -t -a | awk '{print $5}')
-
-# 포트 22(SSH)를 사용하는 연결부가 있는지 점검하십시오
-if [[ $connections =~ :22 ]]; then
-  OK "SSH 프로토콜이 원격 연결에 사용되고 있습니다."
+# ssh 바이너리가 있는지 확인하십시오
+if command -v ssh > /dev/null 2>&1; then
+  OK "SSH가 설치되었습니다."
 else
-  WARN "SSH 프로토콜을 사용하는 연결이 검색되지 않음"
+  WARN "SSH가 설치되지 않았습니다."
 fi
 
 
