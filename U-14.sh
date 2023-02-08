@@ -46,7 +46,7 @@ for file in "${files[@]}"; do
       OK "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다." 
     fi
   else
-    INFO " ${files[@]} 을 찾을 수 없습니다"
+    INFO " $file 을 찾을 수 없습니다"
   fi
 done
 
