@@ -1,24 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
- 
-
-TMP2=$(mktemp)
-
-TMP3=$(mktemp)
-
-> $TMP2
-
-> $TMP3
-
- 
 
 BAR
 
@@ -34,53 +16,24 @@ EOF
 
 BAR
 
- 
+TMP1=`SCRIPTNAME`.log
 
-PASS_FILE=/etc/passwd
+> $TMP1
 
-#PASS_FILE=/root/scripts/passwd
+PASSWD="/etc/passwd"
 
- 
+uid_list=$(awk -F: '{print $3}' "$PASSWD")
+duplicate_uids=$(echo "$uid_list" | sort | uniq -d)
 
-awk -F: '{print $3}' $PASS_FILE | sort -n | uniq -d > $TMP2
-
-if [ -s $TMP2 ] ; then # -s =파일의 '사이즈'가 존재하면
-
-WARN '동일한 UID로 설정된 사용자 계정이 존재합니다.'
-
-INFO '자세한 내용은 $TMP1 파일을 참고하세요.'
-
-cat << EOF >> $TMP1
-
-===============================================================
-
-다음 내용은 /etc/passwd 파일의 내용 중 UID가 중복된 사용자의 정보입니다.
-
-ex) $ awk -v CHECK=1001 -F: ' $3 ==CHECK {print \$0}' /etc/passwd
-
-===============================================================
-
-EOF
-
-for Saram in $(cat $TMP2)
-
-do
-
-#echo $Saram
-
-awk -v CHECK=$Saram -F: '$3 == CHECK {print $0}' $PASS_FILE >> $TMP1
-
-done
-
+if [ ! -f "$PASSWD" ]; then
+	INFO "$PASSWD 파일이 없습니다."
 else
-
-OK '동일한 UID 로 설정된 사용자 계정이 존재하지 않습니다.'
-
+	if [ -n "$duplicate_uids" ]; then
+		WARN "UID가 동일한 사용자 계정이 있습니다: $duplicate_uids"
+	else
+		OK "같은 UID를 가진 사용자 계정이 없습니다."
+	fi
 fi
-
-cat $TMP2
-
- 
 
 cat $result
 
