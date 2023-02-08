@@ -29,7 +29,7 @@ cat /etc/passwd | awk -F ':' '{print $6}' | while read home_dir; do
   # 홈 디렉토리의 소유권 및 사용 권한 가져오기
   ls -ld "$home_dir" | while read permissions owner group; do
     # 홈 디렉토리의 소유자가 사용자 이름과 일치하는지 확인합니다
-    username=$(basename "$home_dir")
+    username="$username:$(id -gn "$username")"
     if [ ! -f "$home_dir" ]; then
       INFO "$home_dir 을 찾을 수 없습니다."
     else
