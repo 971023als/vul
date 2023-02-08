@@ -24,10 +24,10 @@ EOF
 BAR
 
 # NFS 서비스 데몬(nfsd, statd 및 lockd)이 실행 중인지 확인합니다
-result=$(ps -ef | egrep "nfsd|statd|lockd" | grep -v grep)
+NFS=$(ps -ef | egrep "nfsd|statd|lockd" | grep -v grep)
 
 # 결과 변수가 비어 있지 않으면 NFS 서비스 데몬이 실행되고 있습니다
-if [ -n "$result" ]; then
+if [ -n "$NFS" ]; then
   WARN "NFS 서비스 데몬이 실행 중입니다."
 else
   OK "NFS 서비스 데몬이 실행되고 있지 않습니다."
