@@ -27,7 +27,7 @@ OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/echo*`
 do
-WARN $i 파일이 존재합니다.
+INFO $i 파일이 존재합니다.
 if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
 OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
 else
@@ -35,7 +35,6 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-
 
 ls /etc/xinetd.d/discard* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -43,7 +42,7 @@ OK /etc/xinetd.d/discard 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/discard*`
 do
-WARN $i 파일이 존재합니다.
+INFO $i 파일이 존재합니다.
 if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
 OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
 else
@@ -51,7 +50,6 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-
 
 ls /etc/xinetd.d/daytime* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -59,7 +57,7 @@ OK /etc/xinetd.d/daytime 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/daytime*`
 do
-WARN $i 파일이 존재합니다.
+INFO $i 파일이 존재합니다.
 if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
 OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
 else
@@ -67,7 +65,6 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-
 
 ls /etc/xinetd.d/chargen* >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -75,7 +72,7 @@ OK /etc/xinetd.d/chargen 파일이 존재하지 않습니다.
 else
 for i in `ls /etc/xinetd.d/chargen*`
 do
-WARN $i 파일이 존재합니다.
+INFO $i 파일이 존재합니다.
 if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
 OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
 else
@@ -83,7 +80,6 @@ WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
 fi
 done
 fi
-
 
 cat $result
 
