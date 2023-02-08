@@ -35,10 +35,14 @@ pass=8
 if grep -q "^#PASS_MIN_LEN" /etc/login.defs; then
   WARN "PASS_MIN_LEN이 주석 처리되었습니다."
 else
-  if [ $pass_min_len -ge $pass ]; then
-    OK "PASS_MIN_LEN이 8보다 크거나 같은 $pass_min_len 으로 설정됨"
+  if ! [[ $pass_min_len =~ ^[0-9]+$ ]]; then
+    INFO "PASS_MIN_LEN 값이 숫자가 아닙니다."
   else
-    WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
+    if [ $pass_min_len -ge $pass ]; then
+      OK "PASS_MIN_LEN이 8보다 크거나 같은 $pass_min_len 으로 설정됨"
+    else
+      WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
+    fi
   fi
 fi
 
