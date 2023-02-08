@@ -1,13 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
-
-TMP1=`SCRIPTNAME`.log
-
->$TMP1  
 
 BAR
 
@@ -33,11 +26,11 @@ arr=($output)
 for line in "${arr[@]}"
 do
   if [[ $line == *"r-s"* ]]; then
-    WARN "SUID 설정: $line"
+    WARN "$line : SUID가 다음에 대해 설정됨"
   elif [[ $line == *"r-S"* ]]; then
-    WARN "SGID가 다음에 대해 설정됨: $line"
+    WARN "$line : SGID가 다음에 대해 설정됨"
   else
-    OK "UID와 SGID에 대한 설정이 부여"
+    OK "$line UID와 SGID에 대한 설정이 부여"
   fi
 done
 
