@@ -1,14 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-
- 
 
 BAR
 
@@ -52,9 +44,6 @@ fi
 # '마지막' 명령을 사용하여 로그 정보를 표시
 last -f "$WTMP"
 
-# 'failog' 명령을 사용하여 실패한 로그인 시도를 표시합니다
-faillog
-
 # 해킹 시도 증거 'btmp' 파일 내용 확인
 cat "$BTMP" | awk '{print $1, $2, $3, $4, $5}'
 
@@ -62,10 +51,8 @@ cat "$BTMP" | awk '{print $1, $2, $3, $4, $5}'
 echo "Last login information:" > log_review.txt
 last -f "$WTMP" >> log_review.txt
 echo "Failed login attempts:" >> log_review.txt
-faillog >> log_review.txt
 echo "Brute force login attempts:" >> log_review.txt
 cat "$BTMP" | awk '{print $1, $2, $3, $4, $5}' >> log_review.txt
-
 
 SULOG_FILE="/var/log/sulog"
 ALLOWED_ACCOUNTS=(
@@ -140,8 +127,6 @@ else
   # xferlog 파일이 없는 경우 오류 메시지 인쇄
   WARN "xferlog 파일 $XFERLOG를 찾을 수 없습니다"
 fi
-
-
 
 cat $result
 
