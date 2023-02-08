@@ -30,10 +30,14 @@ TMP1=`SCRIPTNAME`.log
 pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
 
 # 값이 8보다 크거나 같은지 점검하십시오
-if [ $pass_min_len -ge 8 ]; then
-  OK "PASS_MIN_LEN이 8보다 크거나 같은 $pass_min_len 으로 설정됨"
+if grep -q "^#PASS_MIN_LEN" /etc/login.defs; then
+  WARN "PASS_MIN_LEN이 주석 처리되었습니다."
 else
-  WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
+  if [ $pass_min_len -ge 8 ]; then
+    OK "PASS_MIN_LEN이 8보다 크거나 같은 $pass_min_len 으로 설정됨"
+  else
+    WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
+  fi
 fi
 
 
