@@ -27,7 +27,7 @@ BAR
 
 
 # 확인할 Apache2 Document Root 디렉토리 설정
-config_file=" /etc/apache2/sites-available/000-default.conf"
+config_file="/etc/apache2/sites-available/000-default.conf"
 
 
 # DocumentRoot가 기본 경로로 설정되어 있는지 확인합니다
