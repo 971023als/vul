@@ -1,14 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
- 
 
 BAR
 
@@ -37,7 +29,6 @@ else
    sudo rm $TMP1
 fi
  
-
 cat $result
 
 echo ; echo
