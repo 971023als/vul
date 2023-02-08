@@ -36,6 +36,7 @@ else
   WARN "PASS_MIN_LEN이 8보다 작은 $pass_min_len 으로 설정됨"
 fi
 
+
  
 
 cat $result
