@@ -32,6 +32,8 @@ for file in "${files[@]}"; do
     owner=$(stat -c %U "$file")
     if [ "$owner" != "root" ]; then
       WARN "$file 은 root가 아닌 $owner가 소유합니다"
+    else
+      OK "$file 은 root가 소유합니다"
     fi
   else
     INFO "$file이 존재하지 않습니다"
@@ -42,7 +44,9 @@ for file in "${files[@]}"; do
   if [ -e "$file" ]; then
     perms=$(stat -c %a "$file")
     if [ "$perms" -lt 640 ]; then
-      WARN "$file에 $perms 권한이 있으며 이 권한은 640보다 작습니다"
+      OK "$file에 $perms 권한이 있으며 이 권한은 640보다 작습니다"
+    else
+      WARN "$file에 $perms 권한이 있으며 이 권한은 640보다 큽니다"
     fi
   else
     INFO "$file이 존재하지 않습니다"

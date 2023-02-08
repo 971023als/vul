@@ -31,7 +31,7 @@ files=(".profile" ".kshrc" ".cshrc" ".bashrc" ".bash_profile" ".login" ".exrc" "
 
 for file in "${files[@]}"; do
 
-  if [ -f "${files[@]}" ]; then
+  if [ -f "${file}" ]; then
     owner=$(stat -c '%U' $file)
     if [ "$owner" != "root" ] && [ "$owner" != "$USER" ]; then
       WARN "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다."
