@@ -41,11 +41,11 @@ if [ $? -eq 0 ]; then
       WARN "SU 명령은 휠 그룹의 사용자로 제한되지 않습니다."
     fi
   else
-    # SUID bit is not set
-    INFO "SUID 비트가 SU 명령에 대해 설정되지 않았습니다."
+    # SUID 비트가 SU 명령에 대해 설정
+    WARN "SUID 비트가 SU 명령에 대해 설정되지 않았습니다."
   fi
 else
-  # SUID 비트가 설정되지 않았습니다
+  # 휠 그룹이 /etc/group 파일에 정의
   WARN "휠 그룹이 /etc/group 파일에 정의되어 있지 않습니다."
 fi
  
