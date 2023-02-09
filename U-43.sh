@@ -87,7 +87,6 @@ ALLOWED_ACCOUNTS=(
   "cubrid"
 )
 
-INFO "$SULOG_FILE 의 su 명령을 통해 확인 권한이 증가합니다"
 while read line; do
   username=$(echo $line | awk '{print $1}')
   granted=$(echo $line | awk '{print $3}')
