@@ -16,6 +16,24 @@ EOF
 
 BAR
 
+# /etc/passwd 파일을 읽고 홈 디렉토리 추출
+output=$(cat /etc/passwd | awk -F ':' '{print $6}')
+
+#  출력을 배열로 분할
+arr=($output)
+
+# 출력을 배열로 분할
+for line in "${arr[@]}"
+do
+  permissions=$(ls -ld $line | awk '{print $1}')
+  owner=$(ls -ld $line | awk '{print $3}')
+  group=$(ls -ld $line | awk '{print $4}')
+  if [[ $permissions == *"w"* ]] && [[ $owner != *$group* ]]; then
+    WARN "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
+  else
+    OK "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
+  fi
+done
 
 cat $result
 
