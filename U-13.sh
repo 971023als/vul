@@ -17,7 +17,7 @@ EOF
 BAR
 
 # SUID 또는 SGID 권한이 있는 모든 파일 찾기
-output=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls –al {} \;)
+output=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls -al {} \;)
 
 # 출력을 배열로 분할
 arr=($output)

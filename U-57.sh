@@ -16,36 +16,24 @@ EOF
 
 BAR
 
-# 구분 기호로 ':'를 사용하여 줄을 필드로 분할
-fields=($(echo $line | tr ':' ' '))
-username=${fields[0]}
-home_dir=${fields[5]}
-owner=$(ls -ld "$home_dir" | awk '{print $3}')
+# /etc/passwd 파일을 읽고 홈 디렉토리 추출
+output=$(cat /etc/passwd | awk -F ':' '{print $6}')
 
-# 다른 사용자에 대한 쓰기 권한 변수 설정
-permissions=$(stat -c "%a" "$home_dir")
-other_write=${permissions:2:1}
+#  출력을 배열로 분할
+arr=($output)
 
-if [ ! -f "$home_dir" ]; then
-  INFO "$home_dir 가 없습니다."
-else
-  # /etc/passwd의 각 줄 읽기
-  while read line; do
-    # 홈 디렉토리 소유자가 사용자 이름과 일치하는지 확인합니다
-    if [ "$owner" != "$username" ]; then
-      WARN "$home_dir $owner 가 $username 과 일치하지 않습니다"
-    else
-      OK "$home_dir $owner 가 $username 과 일치합니다"
-    fi
-  done < /etc/passwd
-
-  # 다른 사용자에 대한 쓰기 권한 확인
-  if [ "$other_write" == "w" ]; then
-    WARN "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 있습니다."
+# 출력을 배열로 분할
+for line in "${arr[@]}"
+do
+  permissions=$(ls -ld $line | awk '{print $1}')
+  owner=$(ls -ld $line | awk '{print $3}')
+  group=$(ls -ld $line | awk '{print $4}')
+  if [[ $permissions == *"w"* ]] && [[ $owner != *$group* ]]; then
+    WARN "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
   else
-    OK "다른 사용자에게 $home_dir 에 대한 쓰기 권한이 없습니다."
+    OK "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
   fi
-fi
+done
 
 cat $result
 

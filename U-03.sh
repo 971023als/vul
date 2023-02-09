@@ -24,18 +24,11 @@ EOF
 
 BAR
 
-# 파일에 올바른 줄이 있는지 확인합니다
-if grep -q "auth required /lib/security/pam_tally.so deny=5 unlock_time=120 no_magic_root" /etc/pam.d/common-auth; then
-  # 올바른 옵션이 설정되어 있는지 확인하십시오
-  if grep -q "deny=5" /etc/pam.d/common-auth && grep -q "unlock_time=120" /etc/pam.d/common-auth && grep -q "no_magic_root" /etc/pam.d/common-auth; then
-    OK "/etc/pam.d/common-auth에서 올바른 설정이 설정되었습니다."
-  else
-    WARN "/etc/pam.d/common-auth에서 올바른 옵션이 설정되지 않았습니다."
-  fi
+if grep -q "auth required pam_tally2.so deny=10 unlock_time=900" /etc/pam.d/common-auth; then
+  OK "auth required pam_required pam_required2.so deny=10 unlock_time=900 존재."
 else
-  WARN "/etc/pam.d/common-auth에서 올바른 행을 찾을 수 없습니다."
+  WARN "auth required pam_required pam_required2.so deny=10 unlock_time=900 없음."
 fi
-
 
 cat $result
 
