@@ -20,14 +20,17 @@ EOF
 
 BAR
 
-# 로그 파일 경로 설정
-log_file="/var/log/patch.log"
+# 현재 날짜 가져오기
+current_date=$(date +%Y-%m-%d)
 
-# 로그 파일이 있는지 확인하십시오
-if [ -f $log_file ]; then
-  WARN "패치 로그 파일 $log_file 이 존재하지 않습니다"
+# /var/log/patch.log에 "$current_date에 설치된 패치" 행이 있는지 확인합니다
+grep "Patches installed on $current_date" /var/log/patch.log > /dev/null 2>&1
+
+# If the exit status of grep is 0, the line exists in the file
+if [ $? -eq 0 ]; then
+  OK "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 있습니다."
 else
-  OK "패치 로그 파일 $log_file 이 존재합니다"
+  WARN "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 없습니다."
 fi
 
 
