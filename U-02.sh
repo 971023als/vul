@@ -29,9 +29,7 @@ if [ ! -f "$LOGIN_DEFS_FILE" ]; then
 else
     PASS_MIN_LEN=$(grep "^$PASS_MIN_LEN_OPTION" "$LOGIN_DEFS_FILE" | awk '{print $2}')
 
-    if [ -z "$PASS_MIN_LEN" ]; then
-        WARN "$LOGIN_DEFS_FILE 에서 $PASS_MIN_LEN_OPTION 을 찾을 수 없습니다."
-    elif [ "$PASS_MIN_LEN" -lt 8 ]; then
+    if [ "$PASS_MIN_LEN" -lt 8 ]; then
         WARN "$LOGIN_DEFS_FILE 에서 $PASS_MIN_LEN_OPTION 값이 8보다 작습니다."
     else
         OK "$LOGIN_DEFS_FILE 에서 $PASS_MIN_LEN_OPTION 값이 8 이상입니다."
