@@ -32,7 +32,7 @@ max=90
 if grep -q "^PASS_MAX_DAYS" /etc/login.defs; then
   WARN "PASS_MAX_DAYS이 주석 처리되었습니다."
 else
-  if ! [[ $pass_max_days =~ ^[0-9]+$ ]]; then
+  if ! [[ $pass_max_days =~ ^[0-9999999]+$ ]]; then
     INFO "PASS_MAX_DAYS 값이 숫자가 아닙니다."
   else
     if [ $pass_max_days -le $max ]; then
