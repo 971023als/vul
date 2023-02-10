@@ -35,7 +35,7 @@ pass=8
 if grep -q "^#PASS_MIN_LEN" /etc/login.defs; then
   WARN "PASS_MIN_LEN이 주석 처리되었습니다."
 else
-  if ! [[ $pass_max_days =~ ^[0-9999999]+$ ]]; then
+  if ! [[ $pass_min_len =~ ^[0-9999999]+$ ]]; then
     INFO "PASS_MIN_LEN 값이 숫자가 아닙니다."
   else
     if [ $pass_min_len -ge $pass ]; then
