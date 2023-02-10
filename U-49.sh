@@ -99,8 +99,9 @@ user_list=$(cat /etc/passwd | grep bash | awk -F: '{print $1}')
 
 # 사용자 목록을 순환
 for user in $user_list; do
-  # Check if the user is a default account
+  # 사용자가 기본 계정인지 확인합니다
   if echo "$default_accounts" | grep -qw "$user"; then
+    OK "용도가 의심되는 계정이 없습니다"
   else
     INFO "용도가 의심되는 계정 발견: $user"
   fi
