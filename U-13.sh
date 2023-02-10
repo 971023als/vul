@@ -16,23 +16,48 @@ EOF
 
 BAR
 
-# SUID 또는 SGID 권한이 있는 모든 파일 찾기
-output=$(find / -xdev -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
+# /etc/passwd 파일을 읽고 홈 디렉토리의 압축을 풉니다
+passwd_file=$(cat /etc/passwd)
 
-# 출력을 배열로 분할
-arr=($output)
+# 라인 구분 기호를 기준으로 출력을 배열로 분할
+IFS=$'\n' read -d '' -r -a lines <<< "$passwd_file"
 
-# 어레이를 순환하여 SUID 및 SGID 확인
-for line in "${arr[@]}"
+# 배열을 반복하여 각 사용자의 홈 디렉토리 추출
+for line in "${lines[@]}"
 do
-  if [[ $line == *"r-s"* ]]; then
-    WARN "$line : SUID가 다음에 대해 설정됨"
-  elif [[ $line == *"r-S"* ]]; then
-    WARN "$line : SGID가 다음에 대해 설정됨"
-  else
-    OK "$line SUID와 SGID에 대한 설정이 부여"
-  fi
+  # 구분 기호 ':'를 사용하여 줄을 필드로 나눕니다
+  IFS=':' read -r -a fields <<< "$line"
+
+  # 필드에서 홈 디렉토리 추출
+  home_dir=${fields[5]}
+
+  # 홈 디렉토리에서 SUID 또는 SGID 권한이 있는 파일 확인
+  output=$(find "$home_dir" -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls -al {} \;)
+
+  # 출력을 배열로 분할
+  arr=($output)
+
+  # 어레이를 루프하여 각 파일 확인
+  for file_line in "${arr[@]}"
+  do
+    # 파일에 대한 권한, 소유자 및 그룹 추출
+    permissions=$(ls -ld "$file_line" | awk '{print $1}')
+    owner=$(ls -ld "$file_line" | awk '{print $3}')
+    group=$(ls -ld "$file_line" | awk '{print $4}')
+
+    # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
+    if [[ $permissions == *"r-s"* ]]; then
+      file=$(echo "$file_line" | awk '{print $9}')
+      WARN "파일에서 SUID 권한이 탐지되었습니다: $file"
+    elif [[ $permissions == *"r-S"* ]]; then
+      file=$(echo "$file_line" | awk '{print $9}')
+      WARN "SGID 권한이 파일에서 탐지됨: $file"
+    else
+      OK "$file SUID와 SGID에 대한 설정이 부여"
+    fi
+  done
 done
+
 
 
 cat $result

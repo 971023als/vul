@@ -43,18 +43,18 @@ else
 fi
 
 PAM_FILE="/etc/pam.d/common-auth"
-EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+EXPECTED_OPTIONS="password    requisite    pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
 
 
 if [ -f "$PAM_FILE" ]; then
     if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
-        OK " "$PAM_FILE" 에 $EXPECTED_OPTIONS 있음  "
+        OK " $PAM_FILE 에 $EXPECTED_OPTIONS 있음  "
     else
-        WARN " "$PAM_FILE" 에 $EXPECTED_OPTIONS 없음  "
+        WARN " $PAM_FILE 에 $EXPECTED_OPTIONS 없음  "
     fi
 else
-    INFO " "$PAM_FILE" 못 찾음"
-fi 
+    INFO " $PAM_FILE 못 찾음"
+fi
 
 cat $result
 
