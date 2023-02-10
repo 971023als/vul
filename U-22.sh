@@ -39,10 +39,10 @@ done
 for file in "${files[@]}"; do
   if [ -e "$file" ]; then
     perms=$(stat -c %a "$file")
-    if [ "$perms" -lt 640 ]; then
-      OK "$file에 $perms 권한이 있으며 이 권한은 640보다 작습니다"
+    if [ "$perms" -gt 640 ]; then
+      OK "$file 에 $perms 권한이 640보다 큽니다"
     else
-      WARN "$file에 $perms 권한이 있으며 이 권한은 640보다 큽니다"
+      WARN "$file 에 $perms 권한이 640보다 작습니다"
     fi
   else
     INFO "$file이 존재하지 않습니다"
