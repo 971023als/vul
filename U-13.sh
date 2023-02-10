@@ -32,7 +32,7 @@ do
   home_dir=${fields[5]}
 
   # 홈 디렉토리에서 SUID 또는 SGID 권한이 있는 파일 확인
-  output=$(find "$home_dir" -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls -al {} \;)
+  output=$(find "$home_dir" -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
 
   # 출력을 배열로 분할
   arr=($output)
