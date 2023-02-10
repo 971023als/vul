@@ -4,17 +4,9 @@
 
 . function.sh
 
- 
-
 TMP1=`SCRIPTNAME`.log
 
-TMP2=/tmp/tmp1
-
-TMP3=/tmp/tmp2
-
-TMP4=/tmp/tmp3
-
- 
+> $TMP1
 
 BAR
 
@@ -29,7 +21,6 @@ cat << EOF >> $result
 EOF
 
 BAR
-
 
 declare -a necessary_groups=("root" "sudo" "sys" "adm" "wheel" 
 "daemon" "bin" "lp" "dbus" "rpc" "rpcuser" "haldaemon" 
@@ -48,7 +39,9 @@ declare -a necessary_groups=("root" "sudo" "sys" "adm" "wheel"
 "ntp" "saslauth" "postdrop"
 "pulse" "pulse-access" "fuse" 
 "sshd" "slocate" "stapusr"
-"stapsys" "tcpdump" "named")
+"stapsys" "tcpdump" "named"
+"www-data" "sasl" "nogroup"
+"ssh" )
 
 all_groups=$(getent group | cut -d: -f1)
 
