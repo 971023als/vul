@@ -1,19 +1,10 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
- 
 
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1
-
-TMP2=/tmp/tmp2
-
-> $TMP2
-
  
 
 BAR
@@ -30,14 +21,29 @@ EOF
 
 BAR
 
-services=$(ls -alL /etc/xinetd.d/* | egrep "rsh|rlogin|rexec" | egrep -v "grep|klogin|kshell|kexec")
 
-if [ -z "$services" ]; then
-  OK "rsh, rlogin 및 exec 서비스가 실행되고 있지 않습니다."
-else
-  WARN "하나 이상의 rsh, rlogin 및 exec 서비스가 실행 중"
-fi
+files=(/etc/xinetd.d/rlogin /etc/xinetd.d/rsh /etc/xinetd.d/rexec)
+expected_settings=(
+"socket_type= stream"
+"wait= no"
+"user= nobody"
+"log_on_success+= USERID"
+"log_on_failure+= USERID"
+"server= /usr/sdin/in.fingerd"
+"disable= yes"
+)
 
+for file in "${files[@]}"; do
+  INFO "파일 확인 중: $file"
+
+  for setting in "${expected_settings[@]}"; do
+    if grep -q "$setting" "$file"; then
+      OK "'$setting'이 올바르게 설정되었습니다."
+    else
+      WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
+    fi
+  done
+done
 
 cat $result
 
