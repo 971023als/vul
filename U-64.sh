@@ -30,19 +30,24 @@ TMP1=`SCRIPTNAME`.log
 
 # ftp 프로세스가 실행 중인지 확인합니다
 ftp_process=`ps -ef | grep ftp`
-if [ -z "$ftp_process" ]; then
-  OK "프로세스가 실행되고 있지 않습니다."
-else
-  WARN "프로세스가 실행되고 있습니다."
+if [ ! -f "$ftp_process" ]; then
+  INFO "ftp 서비스를 확인할 수 없습니다."
+else  
+  if [ -z "$ftp_process" ]; then
+    OK "프로세스가 실행되고 있지 않습니다."
+  else
+    WARN "프로세스가 실행되고 있습니다."
+  fi
 fi
 
 # /etc/ftp* 또는 /etc/vsftp* 파일이 있는지 확인하십시오
 ftp_files=`ls -al /etc/ftp*`
 vsftp_files=`ls -al /etc/vsftp*`
+ 
 if [ -z "$ftp_files" ] && [ -z "$vsftp_files" ]; then
-  OK "/etc/vsftp* 및 /etc/vsftp* 파일이 존재하지 않습니다"
+    OK "/etc/vsftp* 및 /etc/vsftp* 파일이 존재하지 않습니다"
 else
-  WARN "/etc/vsftp* 및 /etc/vsftp* 파일이 존재합니다"
+    WARN "/etc/vsftp* 및 /etc/vsftp* 파일이 존재합니다"
 fi
 
 # ftp 계정의 셸에 /bin/false가 있는지 확인합니다

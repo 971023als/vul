@@ -30,7 +30,7 @@ do
   elif [[ $line == *"r-S"* ]]; then
     WARN "$line : SGID가 다음에 대해 설정됨"
   else
-    OK "$line UID와 SGID에 대한 설정이 부여"
+    OK "$line SUID와 SGID에 대한 설정이 부여"
   fi
 done
 
