@@ -28,32 +28,30 @@ TMP1=`SCRIPTNAME`.log
 
 > $TMP1 
 
-# /etc/ftpusers 파일이 있고 내용이 있는지 확인하십시오
-if [ -s /etc/ftpusers ]; then
-  OK "일부 사용자에 대해 FTP 서비스가 비활성화되었습니다. 자세한 내용은 /etc/ftpusers를 확인하십시오."
+# ftp 프로세스가 실행 중인지 확인합니다
+ftp_process=`ps -ef | grep ftp`
+if [ -z "$ftp_process" ]; then
+  OK "프로세스가 실행되고 있지 않습니다."
 else
-  INFO "/etc/ftp 사용자에서 제한을 찾을 수 없습니다. 루트 로그인 제한을 확인합니다."
+  WARN "프로세스가 실행되고 있습니다."
 fi
 
-# /etc/proftpd.conf에서 RootLogin이 off로 설정되어 있는지 확인합니다
-root_login=$(grep -i "RootLogin" /etc/proftpd.conf)
-if [ -n "$root_login" ]; then
-  if [ "$root_login" == "RootLogin off" ]; then
-    OK "루트 로그인이 /etc/proftpd.conf에서 비활성화되었습니다."
-  else
-    WARN "루트 로그인이 /etc/proftpd.conf에서 활성화되었습니다."
-  fi
+# /etc/ftp* 또는 /etc/vsftp* 파일이 있는지 확인하십시오
+ftp_files=`ls -al /etc/ftp*`
+vsftp_files=`ls -al /etc/vsftp*`
+if [ -z "$ftp_files" ] && [ -z "$vsftp_files" ]; then
+  OK "/etc/vsftp* 및 /etc/vsftp* 파일이 존재하지 않습니다"
 else
-  INFO "/etc/proftpd.conf에서 정보를 찾을 수 없습니다. /etc/vsftp/ftp 사용자를 확인합니다."
+  WARN "/etc/vsftp* 및 /etc/vsftp* 파일이 존재합니다"
 fi
 
-# Check if /etc/vsftp/ftpusers file exists and has content
-if [ -s /etc/vsftp/ftpusers ]; then
-  OK "일부 사용자에 대해 FTP 서비스가 비활성화되었습니다. 자세한 내용은 /etc/vsftp/ftpusers를 확인하십시오."
+# ftp 계정의 셸에 /bin/false가 있는지 확인합니다
+ftp_user=`grep ftp /etc/passwd`
+if [ -z "$ftp_user" ]; then
+  OK "/etc/passwd에서 사용자를 찾을 수 없음"
 else
-  WARN "/etc/vsftp/ftp 사용자에서 제한을 찾을 수 없습니다."
+  WARN "/etc/passwd에서 사용자를 찾을 수 있음"
 fi
-	
 
 
 cat $result
