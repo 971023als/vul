@@ -23,7 +23,7 @@ BAR
 HTTPD_ROOT="/etc/apache2/apache2.conf"
 UNWANTED_ITEMS="manual samples docs"
 
-if [ `ps -ef | grep apache2 | grep -v "grep" | wc -l` -eq 0 ]; then
+if [ `ps aux | grep apache2 | grep -v "grep" | wc -l` -eq 0 ]; then
     INFO "아파치가 실행되지 않습니다."
 else
     for item in $UNWANTED_ITEMS
