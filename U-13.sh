@@ -46,10 +46,10 @@ do
     group=$(ls -ld "$file_line" | awk '{print $4}')
 
     # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
-    if [[ $permissions == *"r-s"* ]]; then
+    if [[ $permissions = *"s"* && $permissions = *"x"* ]]; then
       file=$(echo "$file_line" | awk '{print $9}')
       WARN "$file SUID 권한이 탐지되었습니다"
-    elif [[ $permissions == *"r-S"* ]]; then
+    elif [[ $permissions = *"s"* && $permissions = *"w"* ]]; then
       file=$(echo "$file_line" | awk '{print $9}')
       WARN "$file SGID 권한이 파일에서 탐지됨"
     else
