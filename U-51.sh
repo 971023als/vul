@@ -41,7 +41,7 @@ declare -a necessary_groups=("root" "sudo" "sys" "adm" "wheel"
 "sshd" "slocate" "stapusr"
 "stapsys" "tcpdump" "named"
 "www-data" "sasl" "nogroup"
-"ssh" )
+"ssh" "nfsnobody" "stapdev")
 
 all_groups=$(getent group | cut -d: -f1)
 
@@ -52,9 +52,6 @@ for group in $all_groups; do
     OK "Group ${group}은(는) 시스템 관리 또는 운영에 필요합니다."
   fi
 done
-
-
- 
 
 cat $result
 
