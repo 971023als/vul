@@ -35,14 +35,17 @@ expected_settings=(
 
 for file in "${files[@]}"; do
   INFO "파일 확인 중: $file"
-
-  for setting in "${expected_settings[@]}"; do
-    if grep -q "$setting" "$file"; then
-      OK "'$setting'이 올바르게 설정되었습니다."
-    else
-      WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
-    fi
-  done
+  if [ ! -f "$file" ]; then
+	  INFO "$file 파일이 없습니다."
+  else
+    for setting in "${expected_settings[@]}"; do
+      if grep -q "$setting" "$file"; then
+        OK "'$setting'이 올바르게 설정되었습니다."
+      else
+        WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
+      fi
+    done
+  fi
 done
 
 cat $result
