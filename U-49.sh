@@ -24,8 +24,10 @@ BAR
 results=$(cat /etc/passwd | grep "lp\|uucp\|nuucp")
 
 if [ -n "$results" ]; then
+  echo "$results" | while read line; do
   WARN "사용자 이름 lp, uucp 또는 nuucp를 가진 하나 이상의 시스템 계정이 있습니다."
   INFO "이러한 계정은 시스템 구성에 따라 로그인할 수 있습니다."
+  done
 else
   OK "사용자 이름 lp, uucp 또는 nuucp를 가진 시스템 계정이 없습니다."
 fi
