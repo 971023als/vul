@@ -43,22 +43,18 @@ else
 fi
 
 PAM_FILE="/etc/pam.d/common-auth"
-EXPECTED_OPTIONS="retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
 
-if [ ! -f "$PAM_FILE" ]; then
-    WARN "$PAM_FILE  찾을 수 없습니다."
-else
-    OPTIONS=$(grep "pam_cracklib.so" "$PAM_FILE" | awk '{print $NF}')
 
-    if [ "$OPTIONS" == "$EXPECTED_OPTIONS" ]; then
-        OK "옵션이 $PAM_FILE의 예상 값과 일치합니다."
+if [ -f "$PAM_FILE" ]; then
+    if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
+        OK " "$PAM_FILE" 에 $EXPECTED_OPTIONS 있음  "
     else
-        WARN "옵션이 $PAM_FILE의 예상 값과 일치하지 않습니다."
+        WARN " "$PAM_FILE" 에 $EXPECTED_OPTIONS 없음  "
     fi
-fi
-
-
- 
+else
+    INFO " "$PAM_FILE" 못 찾음"
+fi 
 
 cat $result
 
