@@ -24,10 +24,14 @@ BAR
 NFS=$(ps -ef | egrep "nfsd|statd|lockd" | grep -v grep)
 
 # 결과 변수가 비어 있지 않으면 NFS 서비스 데몬이 실행되고 있습니다
-if [ -n "$NFS" ]; then
-  WARN "NFS 서비스 데몬이 실행 중입니다."
+if [ ! -f "$NFS" ]; then
+  INFO "NFS 관련 파일이 없습니다"
 else
-  OK "NFS 서비스 데몬이 실행되고 있지 않습니다."
+  if [ -n "$NFS" ]; then
+    WARN "NFS 서비스 데몬이 실행 중입니다."
+  else
+    OK "NFS 서비스 데몬이 실행되고 있지 않습니다."
+  fi
 fi
  
 cat $result
