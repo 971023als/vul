@@ -33,16 +33,16 @@ if [ ! -e "$filename" ]; then
   WARN "$filename 가 존재하지 않습니다"
 fi
 
-server_tokens=$(grep -i 'ServerTokens' "$filename" | awk '{print $2}')
-server_signature=$(grep -i 'ServerSignature' "$filename" | awk '{print $2}')
+server_tokens=$(grep -i 'ServerTokens Prod' "$filename")
+server_signature=$(grep -i 'ServerSignature Off' "$filename")
 
-if [ "$server_tokens" == "Prod" ]; then
+if [ "$server_tokens" == "ServerTokens Prod" ]; then
   OK "서버 토큰 설정이 Prod로 설정되었습니다."
 else
   WARN "서버 토큰 설정이 Prod로 설정되지 않았습니다."
 fi
 
-if [ "$server_signature" == "Off" ]; then
+if [ "$server_signature" == "ServerSignature Off" ]; then
   OK "Server Signature 설정이 Off로 설정되었습니다."
 else
   WARN "Server Signature 설정이 Off로 설정되지 않았습니다."
