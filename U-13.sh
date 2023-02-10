@@ -48,10 +48,10 @@ do
     # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
     if [[ $permissions == *"r-s"* ]]; then
       file=$(echo "$file_line" | awk '{print $9}')
-      WARN "파일에서 SUID 권한이 탐지되었습니다: $file"
+      WARN "$file SUID 권한이 탐지되었습니다"
     elif [[ $permissions == *"r-S"* ]]; then
       file=$(echo "$file_line" | awk '{print $9}')
-      WARN "SGID 권한이 파일에서 탐지됨: $file"
+      WARN "$file SGID 권한이 파일에서 탐지됨"
     else
       OK "$file SUID와 SGID에 대한 설정이 부여"
     fi
