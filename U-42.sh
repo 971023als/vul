@@ -1,15 +1,11 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
  
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1 
  
-
 BAR
 
 CODE [U-42] 최신 보안패치 및 벤더 권고사항 적용
