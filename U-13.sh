@@ -17,7 +17,7 @@ EOF
 BAR
 
 # SUID 또는 SGID 권한이 있는 모든 파일 찾기
-output=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -xdev -exec ls -al {} \;)
+output=$(find / -xdev -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
 
 # 출력을 배열로 분할
 arr=($output)
@@ -33,6 +33,7 @@ do
     OK "$line UID와 SGID에 대한 설정이 부여"
   fi
 done
+
 
 cat $result
 
