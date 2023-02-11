@@ -26,11 +26,10 @@ pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
 min=8
 
 if [ "$pass_min_len" -le "$min" ]; then
-  WARN "8 글자 미만의 패스워드가 설정."
-else
   OK "8 글자 이상의 패스워드가 설정."
+else
+  WARN "8 글자 미만의 패스워드가 설정."
 fi
-
 
 
 PAM_FILE="/etc/pam.d/common-auth"
