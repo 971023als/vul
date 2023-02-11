@@ -37,10 +37,10 @@ while read line; do
 done < "$LOGIN_DEFS_FILE"
 
 # PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
-if [ "$highest_value" -le "$min" ]; then
-   WARN "8 글자 미만의 패스워드가 설정된 경우"
-else
+if [ "$highest_value" -gt "$min" ]; then
    OK "8 글자 이상의 패스워드가 설정된 경우"
+else
+   WARN "8 글자 미만의 패스워드가 설정된 경우"
 fi
 
 
