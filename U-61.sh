@@ -24,15 +24,18 @@ EOF
 
 BAR
 
+# FTP 서비스 조회
+hidden_files=$(ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1)
 
-# vsftpd 서비스가 활성 상태인지 확인합니다
-if systemctl is-active --quiet vsftpd; then
-    WARN "FTP 서비스가 활성화되어 있습니다"
+if [ $hidden_files -eq 0 ] ; then
+
+    WARN FTP 서비스를 사용하고 있습니다.
+
 else
-    OK "FTP 서비스가 활성화되지 않았습니다."
+
+    OK FTP 서비스를 사용하고 있지 않습니다. 
+
 fi
-
-
 
 cat $result
 
