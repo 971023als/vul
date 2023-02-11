@@ -35,10 +35,12 @@ if ps -ef | grep -q 'ftp'; then
     OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
   else
     INFO "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
+  fi
 else
   OK "FTP 서비스가 실행되고 있지 않습니다."
   INFO "서비스 상태: $ftp_status"
 fi
+
 
 cat $result
 
