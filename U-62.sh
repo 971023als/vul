@@ -21,7 +21,7 @@ EOF
 BAR
 
 # FTP 서비스 조회
-hidden_files=$(ps -ef | grep vsftpd | grep -v grep >/dev/null 2>&1)
+hidden_files=$(ps -ef | grep vsftpd | grep -v grep)
 
 # /etc/passwd 파일에서 FTP 계정의 항목을 가져옵니다
 ftp_entry=$(grep "^ftp:" /etc/passwd)
