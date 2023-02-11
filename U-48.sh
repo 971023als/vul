@@ -41,9 +41,6 @@ if grep -q "^#PASS_MIN_DAYS" /etc/login.defs; then
   fi
 fi 
 
-
-
-
  
 
 cat $result

@@ -28,20 +28,19 @@ EOF
 
 BAR
 
-
-
 # 파일이 루트에 의해 소유되는지 확인합니다
 if [ $(stat -c "%U" /etc/shadow) != "root" ]; then
     WARN "/etc/shadow 파일이 루트에 의해 소유되지 않습니다."
+else
+    OK "/etc/shadow 파일이 루트에 의해 소유됩니다."
 fi
 
 # 파일 사용 권한이 400보다 작은지 확인합니다
 if [ $(stat -c "%a" /etc/shadow) -lt 400 ]; then
     WARN "/etc/shadow 파일에 400 미만의 권한이 있습니다."
+else
+    OK "/etc/shadow 파일에 400 이상의 권한이 있습니다."
 fi
-
-OK "/etc/messages 파일은 루트에 의해 소유되며 400 이상의 권한을 가집니다."
-
 
 cat $result
 

@@ -39,7 +39,7 @@ done
 for file in "${files[@]}"; do
   if [ -e "$file" ]; then
     perms=$(stat -c %a "$file")
-    if [ "$perms" -gt 640 ]; then
+    if [ "$perms" -lt 640 ]; then
       WARN "$file 에 $perms 권한이 640보다 큽니다"
     else
       OK "$file 에 $perms 권한이 640보다 작습니다"
