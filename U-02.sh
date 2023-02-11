@@ -2,11 +2,6 @@
 
 . function.sh
 
-TMP1=$(SCRIPTNAME).log
-
-> $TMP1
-
- 
 BAR
 
 CODE [U-02] 패스워드 복잡성 설정
@@ -20,6 +15,10 @@ cat << EOF >> $result
 EOF
 
 BAR
+
+TMP1=`SCRIPTNAME`.log
+
+>$TMP1 
 
 LOGIN_DEFS_FILE="/etc/login.defs"
 PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
