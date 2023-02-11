@@ -21,14 +21,26 @@ TMP1=`SCRIPTNAME`.log
 >$TMP1 
 
 # login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
-pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
-
+LOGIN_DEFS_FILE="/etc/login.defs"
+PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
 min=8
 
-if [ "$pass_min_len" -le "$min" ]; then
-  OK "8 글자 이상의 패스워드가 설정."
+# PASS_MIN_LEN 가장 높은 값
+highest_value=0
+while read line; do
+  if [[ $line =~ ^$PASS_MIN_LEN_OPTION[[:space:]]+([0-9]+) ]]; then
+    value=${BASH_REMATCH[1]}
+    if [ $value -gt $highest_value ]; then
+      highest_value=$value
+    fi
+  fi
+done < "$LOGIN_DEFS_FILE"
+
+# PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
+if [ "$highest_value" -le "$min" ]; then
+   WARN "8 글자 미만의 패스워드가 설정된 경우"
 else
-  WARN "8 글자 미만의 패스워드가 설정."
+   OK "8 글자 이상의 패스워드가 설정된 경우"
 fi
 
 
