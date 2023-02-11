@@ -20,8 +20,8 @@ EOF
 
 BAR
 
-# FTP 서비스 조회
-hidden_files=$(ps -ef | grep vsftpd | grep -v grep)
+# FTP 서비스의 상태를 확인합니다
+ftp_status=$(service ftp status 2>&1)
 
 # /etc/passwd 파일에서 FTP 계정의 항목을 가져옵니다
 ftp_entry=$(grep "^ftp:" /etc/passwd)
@@ -30,14 +30,14 @@ ftp_entry=$(grep "^ftp:" /etc/passwd)
 ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
 
 
-if [ ! -f $hidden_files ]; then
-  WARN FTP 서비스를 사용하고 있습니다.
-else
+if ps -ef | grep -q 'ftp'; then
   if [ "$ftp_shell" == "/bin/false" ]; then
     OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
   else
     INFO "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
-  fi
+else
+  OK "FTP 서비스가 실행되고 있지 않습니다."
+  INFO "서비스 상태: $ftp_status"
 fi
 
 cat $result

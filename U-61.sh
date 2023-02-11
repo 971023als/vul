@@ -24,18 +24,17 @@ EOF
 
 BAR
 
-# FTP 서비스 조회
-hidden_files=$(ps -ef | grep vsftpd | grep -v grep)
+# FTP 서비스의 상태를 확인합니다
+ftp_status=$(service ftp status 2>&1)
 
-if [ $hidden_files -eq 0 ] ; then
-
-    WARN FTP 서비스를 사용하고 있습니다.
-
+# FTP 서비스가 실행 중인지 확인합니다
+if ps -ef | grep -q 'ftp'; then
+  WARN "FTP 서비스가 실행 중입니다."
 else
-
-    OK FTP 서비스를 사용하고 있지 않습니다. 
-
+  OK "FTP 서비스가 실행되고 있지 않습니다."
+  INFO "서비스 상태: $ftp_status"
 fi
+
 
 cat $result
 
