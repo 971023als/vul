@@ -32,9 +32,9 @@ else
     # PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
     if [ "$pass_min_len" -ge 0 ] && [ "$pass_min_len" -le 99999999 ]; then
       if [ "$pass_min_len" -le "$min" ]; then
-        WARN "PASS_MAX_DAYS가 $min 보다 작거나 같은 $pass_min_len 로 설정되었습니다."
+        WARN "8 글자 미만의 패스워드가 설정."
       else
-        OK "PASS_MAX_DAYS가 $min 보다 큰 $pass_min_len 로 설정되었습니다."
+        OK "8 글자 이상의 패스워드가 설정."
       fi
     else
       INFO "PASS_MIN_LEN 값이 범위를 벗어났습니다."
