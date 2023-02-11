@@ -24,7 +24,11 @@ EOF
 
 BAR
 
-if grep -q "PASS_MIN_DAYS" /etc/login.defs; then
+# /etc/login.defs에서 PASS_MIN_DAYS 값을 읽습니다
+pass_min_days=$(grep "^PASS_MIN_DAYS" /etc/login.defs | awk '{print $2}')
+
+# PASS_MIN_DAYS 값이 1 이상인지 확인합니다
+if [ "$pass_min_days" -ge 7 ]; then
   OK "PASS_MIN_DAYS가 /etc/login.defs에 있습니다."
 else
   WARN "PASS_MIN_DAYS가 /etc/login.defs에 없습니다."
