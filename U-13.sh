@@ -28,11 +28,8 @@ do
   # 구분 기호 ':'를 사용하여 줄을 필드로 나눕니다
   IFS=':' read -r -a fields <<< "$line"
 
-  # 필드에서 홈 디렉토리 추출
-  home_dir=${fields[5]}
-
   # 홈 디렉토리에서 SUID 또는 SGID 권한이 있는 파일 확인
-  output=$(find "$home_dir" -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
+  output=$(find -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
 
   # 출력을 배열로 분할
   arr=($output)
@@ -57,8 +54,6 @@ do
     fi
   done
 done
-
-
 
 cat $result
 
