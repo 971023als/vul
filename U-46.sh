@@ -31,22 +31,26 @@ pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
 
 pass=8
 
-# 값이 8보다 크거나 같은지 점검하십시오
+# PASS_MIN_LEN 값이 코멘트 아웃되었는지 확인합니다
 if grep -q "^#PASS_MIN_LEN" /etc/login.defs; then
-  WARN "PASS_MIN_LEN이 주석 처리되었습니다."
+  INFO "PASS_MIN_LEN이 주석 처리되었습니다."
 else
-  if [ "$pass_min_len" -ge 0 ] && [ "$pass_min_len" -le 99999999 ]; then
-    if [ $pass_min_len -ge $pass ]; then
-      OK "PASS_MIN_LEN이 $pass 이상으로 설정되었습니다."
+  # PASS_MIN_LEN의 값이 올바른 정수인지 확인하십시오
+  if [ "$pass_min_len" -eq "$pass_min_len" ] 2>/dev/null; then
+    # PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
+    if [ "$pass_min_len" -ge 0 ] && [ "$pass_min_len" -le 99999999 ]; then
+      if [ "$pass_min_len" -ge "$pass" ]; then
+        WARN "PASS_MIN_LEN이 $pass_min_len으로 설정되어 $pass보다 크거나 같습니다."
+      else
+        OK "PASS_MIN_LEN이 $pass보다 작은 $pass_min_len으로 설정되었습니다."
+      fi
     else
-      WARN "PASS_MIN_LEN이 $pass 보다 작습니다."
+      INFO " PASS_MIN_LEN 값이 범위를 벗어났습니다."
     fi
   else
-    INFO "PASS_MIN_LEN 값이 숫자가 아닙니다."
+    INFO " PASS_MIN_LEN 값이 올바른 정수가 아닙니다."
   fi
 fi
-
- 
 
 cat $result
 

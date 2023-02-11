@@ -28,18 +28,24 @@ pass_max_days=$(grep -E "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
 
 max=90
 
-# 값이 90보다 작거나 같은지 확인합니다
-if grep -q "^PASS_MAX_DAYS" /etc/login.defs; then
-  WARN "PASS_MAX_DAYS이 주석 처리되었습니다."
+# PASS_MAX_DAYS 값이 주석 처리되었는지 확인합니다
+if grep -q "^#PASS_MAX_DAYS" /etc/login.defs; then
+  INFO "PASS_MAX_DAYS가 주석 처리되었습니다."
 else
-  if [ "$pass_max_days" -ge 0 ] && [ "$pass_max_days" -le 99999999 ]; then
-    if [ $pass_max_days -le $max ]; then
-      OK "PASS_MAX_DAYS가 90 이하인 $pass_max_days 로 설정되었습니다."
+  # PASS_MAX_DAYS 값이 올바른 정수인지 확인하십시오
+  if [ "$pass_max_days" -eq "$pass_max_days" ] 2>/dev/null; then
+    # PASS_MAX_DAYS의 값이 지정된 범위 내에 있는지 확인합니다
+    if [ "$pass_max_days" -ge 0 ] && [ "$pass_max_days" -le 99999999 ]; then
+      if [ "$pass_max_days" -le "$max" ]; then
+        OK "PASS_MAX_DAYS가 $max 보다 작거나 같은 $pass_max_days 로 설정되었습니다."
+      else
+        WARN "PASS_MAX_DAYS가 $max 보다 큰 $pass_max_days 로 설정되었습니다."
+      fi
     else
-      WARN "PASS_MAX_DAYS가 90보다 큰 $pass_max_days 로 설정되었습니다."
+      INFO "PASS_MAX_DAYS 값이 범위를 벗어났습니다."
     fi
   else
-    INFO "PASS_MAX_DAYS 값이 숫자가 아닙니다."
+    INFO "PASS_MAX_DAYS 값이 올바른 정수가 아닙니다."
   fi
 fi
  
