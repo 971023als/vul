@@ -27,14 +27,16 @@ BAR
 # /etc/login.defs에서 PASS_MIN_DAYS 값을 읽습니다
 pass_min_days=$(grep "^PASS_MIN_DAYS" /etc/login.defs | awk '{print $2}')
 
+min_days=7
+
 if grep -q "^#PASS_MIN_DAYS" /etc/login.defs; then
   WARN "PASS_MIN_DAYS이 주석 처리되었습니다."
   # PASS_MIN_DAYS 값이 7 이상인지 확인합니다
   if [ "$pass_min_len" -ge 0 ] && [ "$pass_min_len" -le 99999999 ]; then
-    if [ "$pass_min_days" -ge 7 ]; then
-      OK "PASS_MIN_DAYS가 /etc/login.defs에 있습니다."
+    if [ "$pass_min_days" -ge "$min_days" ]; then
+      OK "PASS_MIN_DAYS 가 /etc/login.defs에 있습니다."
     else
-      WARN "PASS_MIN_DAYS가 /etc/login.defs에 없습니다."
+      WARN "PASS_MIN_DAYS 가 /etc/login.defs에 없습니다."
     fi
   else
     INFO "PASS_MIN_DAYS 값이 숫자가 아닙니다."
