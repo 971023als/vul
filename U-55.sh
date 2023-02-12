@@ -28,23 +28,21 @@ BAR
 if [ ! -f /etc/hosts.lpd ]; then
   INFO "hosts.lpd 파일이 없습니다. 확인해주세요."
 else
-  INFO "hosts.lpd 파일이 있습니다. 확인해주세요."
-fi
+  hosts=$(stat -c '%U' /etc/hosts.lpd)
+  if [[ $hosts = "root" ]]; then
+    OK "hosts.lpd의 소유자는 루트입니다. 이것은 허용됩니다."
+  else
+    WARN "hosts.lpd의 소유자는 루트가 아닙니다. 이것은 허용되지 않습니다."
+  fi
+  
+  # 파일에 대한 사용 권한 확인
 
-hosts=$(stat -c '%U' /etc/hosts.lpd)
-if [[ $hosts = "root" ]]; then
-  OK "hosts.lpd의 소유자는 루트입니다. 이것은 허용됩니다."
-else
-  WARN "hosts.lpd의 소유자는 루트가 아닙니다. 이것은 허용되지 않습니다."
-fi
-
-# 파일에 대한 사용 권한 확인
-
-host=$(stat -c %a /etc/hosts.lpd)
-if [[ $host -gt 600 ]]; then
-  WARN "hosts.lpd에 대한 권한이 600보다 큽니다."
-else
-  OK "hosts.lpd에 대한 권한이 600이하 입니다."
+  host=$(stat -c %a /etc/hosts.lpd)
+  if [[ $host -gt 600 ]]; then
+    WARN "hosts.lpd에 대한 권한이 600보다 큽니다."
+  else
+    OK "hosts.lpd에 대한 권한이 600이하 입니다."
+  fi
 fi
 
 
