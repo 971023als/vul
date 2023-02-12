@@ -35,7 +35,7 @@ do
     elif [ -g "$main_exec" ]; then
       WARN "$main_exec SGID 권한이 파일에서 탐지됨"
     else
-      INFO "$main_exec SUID와 SGID에 대한 설정이 부여"
+      OK "$main_exec SUID와 SGID에 대한 설정이 부여"
     fi
   fi
 done < /etc/passwd
