@@ -34,15 +34,14 @@ else
   else
     # 파일의 사용 권한 확인
     file_perms=$(stat -c %a /etc/xinetd.conf)
-    if [ "$file_perms" != "600" ]; then
-      WARN " /etc/xinetd.conf에 잘못된 권한이 있습니다. 600이어야 합니다"
+    if [ "$file_perms" -lt 600 ]; then
+      WARN " /etc/xinetd.conf에 권한이 600 초과입니다"
     else
       # 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
-      OK "/etc/xinetd.conf에 올바른 소유권 및 사용 권한이 있습니다."
+      OK "/etc/xinetd.conf에 권한은 600 이하 입니다."
     fi
   fi
 fi
-
 
 cat $result
 

@@ -26,7 +26,7 @@ if [ $UIDCHECK -ge 2 ]; then
    INFO "자세한 내용은 $TMP1 을 확인하십시오."
 else
    OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-   sudo rm $TMP1
+   rm $TMP1
 fi
  
 cat $result

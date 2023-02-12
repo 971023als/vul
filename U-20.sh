@@ -37,7 +37,6 @@ else
   OK "FTP 계정이 /etc/passwd 파일에 없습니다."
 fi
 
- 
 
 cat $result
 

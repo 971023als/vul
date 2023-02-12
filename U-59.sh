@@ -37,16 +37,18 @@ hidden_dirs=$(find "$rootdir" -type d -name ".*" ! -name ".*.swp")
 for file in $hidden_files; do
   if [[ $(basename $file) =~ "unwanted-file" ]]; then
     WARN "원하지 않는 파일 발견: $file"
+  else
+    OK "원하지 않는 파일를 찾을 수 없습니다."
   fi
 done
 
 for dir in $hidden_dirs; do
   if [[ $(basename $dir) =~ "suspicious-dir" ]]; then
     WARN "의심스러운 디렉토리를 찾았습니다: $dir"
+  else
+    OK "의심스러운 디렉터리를 찾을 수 없습니다."
   fi
 done
-
-OK "원하지 않거나 의심스러운 숨겨진 파일 또는 디렉터리를 찾을 수 없습니다."
 
 
 cat $result

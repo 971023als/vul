@@ -42,9 +42,6 @@ else
   OK "$file의 권한이 644 이하입니다."
 fi
 
-
-
-
 cat $result
 
 echo ; echo

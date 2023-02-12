@@ -23,7 +23,6 @@ EOF
 
 BAR
 
-
 # 확인할 Apache2 Document Root 디렉토리 설정
 config_file="/etc/apache2/apache2.conf"
 

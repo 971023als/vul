@@ -1,15 +1,12 @@
 #!/bin/bash
 
  
-
 . function.sh
-
  
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1  
  
-
 BAR
 
 CODE [U-26] automountd 제거 '확인 필요'
@@ -23,7 +20,6 @@ cat << EOF >> $result
 EOF
 
 BAR
-
 
 status=$(ps -ef | grep automount | awk '{print $1}')
 

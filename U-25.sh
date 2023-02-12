@@ -1,14 +1,10 @@
 #!/bin/bash
 
- 
-
 . function.sh
 
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1  
-
- 
 
 BAR
 
@@ -25,13 +21,11 @@ EOF
 BAR
 
 
-
 if grep -q -E '^[^#].*\s+everyone(?!.*no_root_squash)' /etc/exports; then
     WARN "NFS는 '모두' 그룹에 대한 제한 없이 수출을 공유하고 있습니다"
 else
     OK "NFS는 '모두' 그룹에 대한 제한 없이 수출을 공유하지 않습니다."
 fi
-
 
 cat $result
 

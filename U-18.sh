@@ -32,9 +32,7 @@ if [ -n "$CHECK1" ] && [ -n "$CHECK2" ] ; then
 else
 	WARN "접속을 허용할 특정 호스트에 대한 IP 주소 및 포트 제한을 설정하지 않은 경우"
 fi
- 
 
- 
 
 cat $result
 

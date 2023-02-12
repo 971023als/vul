@@ -36,12 +36,15 @@ else
   if [[ $owner == "root" ]]; then
       OK "root가 users 파일을 소유하고 있습니다."
   else
-      INFO "root가 users 파일을 소유하고 있지 않습니다."
+      WARN "root가 users 파일을 소유하고 있지 않습니다."
   fi
   # ftp 사용자에 대한 권한
 
   if [[ `stat -c '%a' $ftpusers_file` -lt 640 ]]; then
-    INFO "ftp 사용자에 대한 권한이 640 미만입니다."
+    WARN "권한이 640 초과입니다"
+  else
+      # 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
+      OK "권한이 600 이하입니다."
   fi
 fi
 

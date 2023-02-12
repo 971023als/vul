@@ -42,8 +42,6 @@ else
   OK "$file의 권한은 최소 600 입니다."
 fi
 
-
-
 cat $result
 
 echo ; echo

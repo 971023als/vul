@@ -49,10 +49,6 @@ for file in "${files[@]}"; do
   fi
 done
 
- 
-
- 
-
 
 
 cat $result

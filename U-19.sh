@@ -32,9 +32,6 @@ if pgrep -x "fingerd" > /dev/null; then
 else
     OK "Finger 서비스가 실행되고 있지 않습니다"
 fi
-
-
-
  
 
 cat $result

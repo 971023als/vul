@@ -1,9 +1,6 @@
 #!/bin/bash
 
- 
-
 . function.sh
-
  
 TMP1=`SCRIPTNAME`.log
 
@@ -25,7 +22,6 @@ EOF
 BAR
 
 
-
 # 모든 계정 목록 가져오기
 accounts=`cat /etc/passwd | cut -d: -f1`
 
@@ -42,7 +38,6 @@ for account in $accounts; do
 done
 
 OK "모든 계정에는 홈 디렉토리가 있습니다"
-
 
 
 cat $result
