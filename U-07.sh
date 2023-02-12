@@ -26,7 +26,6 @@ if [ $(stat -c "%U" /etc/passwd) != "root" ]; then
 else
     OK "/etc/passwd 파일이 루트에 의해 소유됩니다."
 fi
-fi
 
 # check if the file permissions are less than 644
 if [ $(stat -c "%a" /etc/passwd) -lt 644 ]; then
