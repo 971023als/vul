@@ -30,7 +30,7 @@ ftp_entry=$(grep "^ftp:" /etc/passwd)
 ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
 
 # FTP 포트가 수신 중인지 확인합니다
-if netstat -tnlp | grep -q ':21'; then
+if ss -tnlp | grep -q ':21'; then
   if [ "$ftp_shell" == "/bin/false" ]; then
     OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
   else
