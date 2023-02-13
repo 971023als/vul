@@ -22,6 +22,8 @@ BAR
 
 apt install net-tools -y
 
+apt-get install -y iproute2
+
 # FTP 서비스의 상태를 확인합니다
 ftp_status=$(service ftp status 2>&1)
 
