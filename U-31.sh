@@ -25,10 +25,11 @@ EOF
 BAR
 
 
-if grep -q "^relay_domains =" /etc/postfix/main.cf; then
-    WARN "SMTP 서비스를 사용하며 릴레이하도록 구성되었습니다"
+# snmp 서비스가 활성 상태인지 확인합니다
+if systemctl is-active --quiet snmpd; then
+    WARN "SNMP 서비스가 활성되어 있습니다"
 else
-    OK "SMTP 서비스를 사용하며 릴레이하도록 구성되지 않았습니다."
+    OK "SNMP 서비스가 활성화되지 않았습니다."
 fi
 
 cat $result
