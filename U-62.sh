@@ -34,7 +34,7 @@ if ss -tnlp | grep -q ':21'; then
   if [ "$ftp_shell" == "/bin/false" ]; then
     OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
   else
-    WARM "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
+    WARN "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
   fi
 else
   OK "FTP 포트(21)가 열려 있지 않습니다."
