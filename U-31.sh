@@ -25,11 +25,13 @@ EOF
 BAR
 
 
-# snmp 서비스가 활성 상태인지 확인합니다
-if systemctl is-active --quiet snmpd; then
-    WARN "SNMP 서비스가 활성되어 있습니다"
+# Sendmail 서비스가 실행 중인지 확인합니다
+sendmail_status=$(ps -ef | grep sendmail | grep -v "grep")
+
+if [ "$sendmail_status" == "active" ]; then
+  WARN "Sendmail 서비스가 실행 중입니다."
 else
-    OK "SNMP 서비스가 활성화되지 않았습니다."
+  OK "Sendmail 서비스가 실행되고 있지 않습니다."
 fi
 
 cat $result
