@@ -14,7 +14,7 @@ cat << EOF >> $result
 
 [양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
 
-[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않 경우
+[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우
 
 EOF
 
