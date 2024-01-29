@@ -1,47 +1,40 @@
-#!/bin/bash
+import subprocess
+import json
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-13": {
+        "title": "SUID,SGID,Sticky bit 설정 파일 점검",
+        "status": "",
+        "description": {
+            "good": "주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우",
+            "bad": "주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우",
+        },
+        "message": "",
+        "files": []
+    }
+}
 
-BAR
+def check_suid_sgid():
+    # SUID와 SGID 설정이 부여된 파일 찾기
+    cmd = ["find", "/", "-type", "f", "(", "-perm", "-04000", "-o", "-perm", "-02000", ")", "-exec", "ls", "-l", "{}", ";"]
+    result = subprocess.run(cmd, capture_output=True, text=True)
 
-CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
+    if result.stdout:
+        results["U-13"]["status"] = "취약"
+        results["U-13"]["message"] = results["U-13"]["description"]["bad"]
+        for line in result.stdout.splitlines():
+            results["U-13"]["files"].append(line)
+    else:
+        results["U-13"]["status"] = "양호"
+        results["U-13"]["message"] = results["U-13"]["description"]["good"]
 
-cat << EOF >> $result
+# 검사 수행
+check_suid_sgid()
 
-[양호]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-[취약]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우
-
-EOF
-
-BAR
-
-# /etc/passwd 파일을 읽고 홈 디렉토리 정보 추출
-while IFS=: read -r username passwd uid gid name home shell
-do
-  # 홈 디렉토리에서 기본 실행 파일의 사용 권한 정보를 가져옵니다
-  main_exec=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
-
-  # 주 실행 파일이 존재하는 경우
-  if [ -n "$main_exec" ]; then
-    # 권한 정보를 가져옵니다
-    permissions=$(ls -ld "$main_exec" | awk '{print $1}')
-    owner=$(ls -ld "$main_exec" | awk '{print $3}')
-    group=$(ls -ld "$main_exec" | awk '{print $4}')
-
-    # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
-    if [ -u "$main_exec" ]; then
-      WARN "$main_exec SUID 권한이 탐지됨"
-    elif [ -g "$main_exec" ]; then
-      WARN "$main_exec SGID 권한이 파일에서 탐지됨"
-    else
-      OK "$main_exec SUID와 SGID에 대한 설정이 부여"
-    fi
-  fi
-done < /etc/passwd
-
-cat $result
-
-echo ; echo
-
- 
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
