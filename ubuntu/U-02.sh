@@ -1,63 +1,59 @@
-#!/bin/bash 
+import re
+import json
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-02": {
+        "title": "패스워드 복잡성 설정",
+        "status": "",
+        "description": {
+            "good": "영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.",
+            "bad": "영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우."
+        },
+        "message": ""
+    }
+}
 
-BAR
+def check_pass_min_len():
+    min_len_required = 8
+    login_defs_file = "/etc/login.defs"
+    try:
+        with open(login_defs_file) as f:
+            for line in f:
+                if re.match(r'^PASS_MIN_LEN\s+(\d+)', line):
+                    min_len = int(re.findall(r'\d+', line)[0])
+                    if min_len >= min_len_required:
+                        results["U-02"]["status"] = "양호"
+                        results["U-02"]["message"] = results["U-02"]["description"]["good"]
+                        return
+        results["U-02"]["status"] = "취약"
+        results["U-02"]["message"] = results["U-02"]["description"]["bad"]
+    except FileNotFoundError:
+        results["U-02"]["status"] = "오류"
+        results["U-02"]["message"] = f"{login_defs_file} 파일을 찾을 수 없습니다."
 
-CODE [U-02] 패스워드 복잡성 설정
+def check_pam_complexity():
+    pam_file = "/etc/pam.d/common-auth"
+    expected_options = "password requisite pam_cracklib.so try_first_pass retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+    try:
+        with open(pam_file) as f:
+            content = f.read()
+            if expected_options in content:
+                results["U-02"]["status"] = "양호"
+                results["U-02"]["message"] += " 및 PAM 복잡성 설정이 적절하게 구성됨."
+            else:
+                results["U-02"]["status"] = "취약"
+                results["U-02"]["message"] += " 하지만 PAM 복잡성 설정이 적절하지 않음."
+    except FileNotFoundError:
+        results["U-02"]["message"] += " 또한, PAM 설정 파일을 찾을 수 없습니다."
 
-cat << EOF >> $result
+# 검사 수행
+check_pass_min_len()
+check_pam_complexity()
 
-[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.
+# 결과를 JSON 파일로 저장
+with open('U-02.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우.
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
->$TMP1 
-
-# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
-LOGIN_DEFS_FILE="/etc/login.defs"
-PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
-min=8
-
-# PASS_MIN_LEN 가장 높은 값
-highest_value=0
-while read line; do
-  if [[ $line =~ ^$PASS_MIN_LEN_OPTION[[:space:]]+([0-9]+) ]]; then
-    value=${BASH_REMATCH[1]}
-    if [ $value -gt $highest_value ]; then
-      highest_value=$value
-    fi
-  fi
-done < "$LOGIN_DEFS_FILE"
-
-# PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
-if [ "$highest_value" -ge "$min" ]; then
-   OK "8 글자 이상의 패스워드가 설정된 경우"
-else
-   WARN "8 글자 미만의 패스워드가 설정된 경우"
-fi
-
-
-PAM_FILE="/etc/pam.d/common-auth"
-EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
-
-
-if [ -f "$PAM_FILE" ]; then
-    if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
-        OK " $PAM_FILE 에 $EXPECTED_OPTIONS 있음  "
-    else
-        WARN " $PAM_FILE 에 $EXPECTED_OPTIONS 없음  "
-    fi
-else
-    INFO " $PAM_FILE 못 찾음"
-fi
-
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
