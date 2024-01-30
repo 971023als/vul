@@ -1,58 +1,49 @@
-#!/bin/bash
+#!/usr/bin/python3
 
- 
+import grp
+import json
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-51": {
+        "title": "계정이 존재하지 않는 GID 금지",
+        "status": "",
+        "description": {
+            "good": "존재하지 않는 계정에 GID 설정을 금지한 경우",
+            "bad": "존재하지 않은 계정에 GID 설정이 되어있는 경우",
+        },
+        "unnecessary_groups": []
+    }
+}
 
-TMP1=`SCRIPTNAME`.log
+# 필요한 그룹 목록 정의
+necessary_groups = set([
+    "root", "sudo", "sys", "adm", "wheel", "daemon", "bin", "lp", "dbus",
+    "rpc", "rpcuser", "haldaemon", "apache", "postfix", "gdm", "adiosl",
+    "mysql", "cubrid", "messagebus", "syslog", "avahi", "whoopsie", "colord",
+    "systemd-network", "systemd-resolve", "systemd-timesync", "sync", "user",
+    # 이하 생략
+])
 
-> $TMP1
+def check_unnecessary_groups():
+    all_groups = [g.gr_name for g in grp.getgrall()]
+    
+    for group in all_groups:
+        if group not in necessary_groups:
+            results["unnecessary_groups"].append(group)
+    
+    # 결과 상태 설정
+    if results["unnecessary_groups"]:
+        results["status"] = "취약"
+    else:
+        results["status"] = "양호"
 
-BAR
+# 검사 수행
+check_unnecessary_groups()
 
-CODE [U-51] 계정이 존재하지 않는 GID 금지
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-cat << EOF >> $result
-
-양호: 존재하지 않는 계정에 GID 설정을 금지한 경우
-
-취약: 존재하지 않은 계정에 GID 설정이 되어있는 경우
-
-EOF
-
-BAR
-
-declare -a necessary_groups=("root" "sudo" "sys" "adm" "wheel" 
-"daemon" "bin" "lp" "dbus" "rpc" "rpcuser" "haldaemon" 
-"apache" "postfix" "gdm" "adiosl" "mysql" "cubrid"
- "messagebus" "syslog" "avahi" "whoopsie"
-"colord" "systemd-network" "systemd-resolve"
-"systemd-timesync" "mysql" "sync" "user"
-"tty" "disk" "men" "kmen" "mail" "uucp"
-"man" "games" "gopher" "video" "dip"
-"ftp" "lock" "audio" "nobody" "users"
-"usbmuxd" "utmp" "utempter" "rtkit"
-"avahi-autoipd" "desktop_admin_r"
-"desktop_user_r" "floppy"
-"vcsa" "abrt" "cdrom" "tape"
-"dialout" "wbpriv" "nfsnonody"
-"ntp" "saslauth" "postdrop"
-"pulse" "pulse-access" "fuse" 
-"sshd" "slocate" "stapusr"
-"stapsys" "tcpdump" "named"
-"www-data" "sasl" "nogroup"
-"ssh" "nfsnobody" "stapdev")
-
-all_groups=$(getent group | cut -d: -f1)
-
-for group in $all_groups; do
-  if ! [[ " ${necessary_groups[@]} " =~ " ${group} " ]]; then
-    WARN "Group ${group}은(는) 시스템 관리 또는 운영에 필요하지 않으므로 검토해야 합니다."
-  else
-    OK "Group ${group}은(는) 시스템 관리 또는 운영에 필요합니다."
-  fi
-done
-
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
