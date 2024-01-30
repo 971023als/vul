@@ -1,64 +1,60 @@
-#!/bin/bash
+import subprocess
+import os
+import json
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-45": {
+        "title": "root 계정 su 제한",
+        "status": "",
+        "description": {
+            "good": "su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우",
+            "bad": "su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우",
+        },
+        "details": []
+    }
+}
 
+def check_su_command_restriction():
+    wheel_group_exists = subprocess.run(["grep", "^wheel:", "/etc/group"], capture_output=True).returncode == 0
+    su_command_group = subprocess.run(["stat", "-c", "%G", "/bin/su"], capture_output=True, text=True).stdout.strip()
+    su_command_permissions = subprocess.run(["stat", "-c", "%a", "/bin/su"], capture_output=True, text=True).stdout.strip()
+    
+    if not wheel_group_exists:
+        results["details"].append("휠 그룹이 존재하지 않습니다.")
+        results["status"] = "취약"
+    else:
+        results["details"].append("휠 그룹이 존재합니다.")
+        
+    if su_command_group != "wheel":
+        results["details"].append("su 명령은 휠 그룹이 소유하지 않습니다.")
+        results["status"] = "취약"
+    else:
+        results["details"].append("su 명령은 휠 그룹이 소유합니다.")
+    
+    if su_command_permissions != "4750":
+        results["details"].append("su 명령에 올바른 권한이 없습니다.")
+        results["status"] = "취약"
+    else:
+        results["details"].append("su 명령에 올바른 권한이 있습니다.")
 
-TMP1=`SCRIPTNAME`.log
+    # 휠 그룹에 속한 사용자가 있는지 확인
+    wheel_group_users = subprocess.run(["grep", "^wheel:", "/etc/group"], capture_output=True, text=True).stdout.split(":")[-1].strip()
+    if wheel_group_users:
+        results["details"].append("휠 그룹의 어떤 계정도 su 명령을 사용할 수 있습니다.")
+    else:
+        results["details"].append("휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다.")
+        results["status"] = "취약"
 
-> $TMP1
+    if not results["status"]:
+        results["status"] = "양호"
 
-BAR
+# 검사 수행
+check_su_command_restriction()
 
-CODE [U-45] root 계정 su 제한
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-cat << EOF >> $result
-
-[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
-
-[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
-
-EOF
-
-BAR
-
-
-# 휠 그룹이 존재하는지 점검하십시오
-if ! grep -q "^wheel:" /etc/group; then
-  WARN "휠 그룹이 존재하지 않습니다."
-else
-  OK "휠 그룹이 존재합니다."
-fi
-
-# su 명령이 휠 그룹에 의해 소유되는지 점검하십시오
-if ! [ $(stat -c %G /bin/su) == "wheel" ]; then
-  WARN "su 명령은 휠 그룹이 소유하지 않습니다."
-else
-  OK "su 명령은 휠 그룹이 소유합니다."
-fi
-
-# su 명령에 권한 4750이 있는지 확인하십시오
-if ! [ $(stat -c %a /bin/su) == "4750" ]; then
-  WARN "su 명령에 올바른 권한이 없습니다."
-else
-  OK "su 명령에 올바른 권한이 있습니다."
-fi
-
-# 휠 그룹에 su 명령을 사용할 수 있는 계정이 있는지 확인하십시오
-found=false
-for user in $(grep "^wheel:" /etc/group | cut -d ":" -f4 | tr "," "\n"); do
-  if id -nG "$user" | grep -qw "wheel"; then
-    found=true
-    break
-  fi
-done
-
-if ! $found; then
-  WARN "휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다."
-else
-  OK "휠 그룹의 어떤 계정도 su 명령을 사용할 수 있습니다."
-fi
- 
-
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
