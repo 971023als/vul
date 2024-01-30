@@ -1,42 +1,45 @@
-#!/bin/bash
+import subprocess
+import json
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-29": {
+        "title": "tftp, talk 서비스 비활성화",
+        "status": "",
+        "description": {
+            "good": "tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우",
+            "bad": "tftp, talk, ntalk 서비스가 활성화 되어 있는 경우",
+        },
+        "services": {}
+    }
+}
 
-. function.sh
+def check_service_status(service_name):
+    try:
+        # 서비스의 활성화 상태 확인
+        result = subprocess.run(["systemctl", "is-enabled", service_name], capture_output=True, text=True)
+        if result.returncode == 0:
+            results["services"][service_name] = "활성화"
+            results["status"] = "취약"
+        else:
+            results["services"][service_name] = "비활성화"
+    except Exception as e:
+        results["services"][service_name] = f"오류: {str(e)}"
 
- 
-TMP1=`SCRIPTNAME`.log
+def check_services():
+    services = ["tftp", "talk", "ntalk"]
+    for service in services:
+        check_service_status(service)
+    
+    if not results["status"]:
+        results["status"] = "양호"
 
-> $TMP1
- 
+# 검사 수행
+check_services()
 
-BAR
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-CODE [U-29] tftp, talk 서비스 비활성화
-
-cat << EOF >> $result
-
-[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우
-
-[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-
-services="tftp talk ntalk"
-
-for service in $services
-do
-    if systemctl is-enabled $service >/dev/null 2>&1; then
-        WARN "$service 서비스가 사용하는 중입니다."
-    else
-        OK "$service 서비스가 사용하는 중이 아닙니다."
-    fi
-done
-
-cat $result
-
-echo ; echo
- 
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
