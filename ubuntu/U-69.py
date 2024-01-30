@@ -1,58 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import os
+import stat
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-69": {
+        "title": "NFS 설정파일 접근권한",
+        "status": "",
+        "description": {
+            "good": "NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하인 경우",
+            "bad": "NFS 접근제어 설정파일의 소유자가 root 가 아니거나, 권한이 644 초과인 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+def check_nfs_config_permissions():
+    filename = "/etc/exports"
 
- 
-TMP1=`SCRIPTNAME`.log
+    if not os.path.exists(filename):
+        results["U-69"]["details"].append(f"{filename} 가 존재하지 않습니다")
+        results["U-69"]["status"] = "정보"
+        return
 
-> $TMP1   
- 
+    file_stat = os.stat(filename)
+    owner_uid = file_stat.st_uid
+    permissions = stat.S_IMODE(file_stat.st_mode)
+    owner = os.popen(f'stat -c "%U" {filename}').read().strip()
 
-BAR
+    if owner != "root":
+        results["U-69"]["status"] = "취약"
+        results["U-69"]["details"].append(f"{filename}의 소유자가 루트가 아닙니다.")
+    else:
+        results["U-69"]["details"].append(f"{filename}의 소유자가 루트가 맞습니다.")
 
-CODE [U-69] NFS 설정파일 접근권한
+    if permissions > 0o644:
+        results["U-69"]["status"] = "취약"
+        results["U-69"]["details"].append(f"{filename}의 권한이 644보다 큽니다.")
+    else:
+        results["U-69"]["details"].append(f"{filename}의 권한이 644 이하입니다.")
+        if results["U-69"]["status"] != "취약":
+            results["U-69"]["status"] = "양호"
 
-cat << EOF >> $result
+check_nfs_config_permissions()
 
-[양호]: NFS 접근제어 설정파일의 소유자가 root 이고, 권한이 644 이하인 경우
+# 결과 파일에 JSON 형태로 저장
+result_file = 'nfs_config_permissions_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-[취약]: NFS 접근제어 설정파일의 소유자가 root 가 아니거나, 권한이 644 초과인 경우
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-
-filename="/etc/exports"
-
-owner=$(stat -c '%U' "$filename")
-permission=$(stat -c '%a' "$filename")
-
-if [ ! -e "$filename" ]; then
-  INFO "$filename 가 존재하지 않습니다"
-else 
-  if [ "$owner" != "root" ]; then
-    WARN "$filename의 소유자가 루트가 아닙니다."
-  else
-    OK "$filename의 소유자가 루트가 맞습니다."
-  fi
-
-  if [ "$permission" -gt 644 ] 2>/dev/null; then
-    WARN "$filename의 권한이 644보다 큽니다."
-  else
-    OK "$filename의 권한이 644 이하니다."
-  fi
-fi 
-
-
-
-
-cat $result
-
-echo ; echo 
-
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
