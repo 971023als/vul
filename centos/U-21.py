@@ -1,52 +1,53 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import os
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-21": {
+        "title": "r 계열 서비스 비활성화",
+        "status": "양호",
+        "description": {
+            "good": "r 계열 서비스가 비활성화 되어 있는 경우",
+            "bad": "r 계열 서비스가 활성화 되어 있는 경우"
+        },
+        "details": []
+    }
+}
 
-TMP1=`SCRIPTNAME`.log
+# 검사할 파일과 예상 설정
+files = ["/etc/xinetd.d/rlogin", "/etc/xinetd.d/rsh", "/etc/xinetd.d/rexec"]
+expected_settings = [
+    "socket_type= stream",
+    "wait= no",
+    "user= nobody",
+    "log_on_success+= USERID",
+    "log_on_failure+= USERID",
+    "disable= yes"
+]
 
-> $TMP1
- 
+def check_r_services():
+    for file in files:
+        if not os.path.exists(file):
+            results["U-21"]["details"].append(f"{file} 파일이 없습니다.")
+            continue
+        
+        with open(file, 'r') as f:
+            file_content = f.read()
+        
+        missing_settings = [setting for setting in expected_settings if setting not in file_content]
+        if missing_settings:
+            results["U-21"]["status"] = "취약"
+            results["U-21"]["details"].append(f"{file} 파일에서 누락된 설정: {', '.join(missing_settings)}")
+        else:
+            results["U-21"]["details"].append(f"{file}의 모든 예상 설정이 올바르게 적용되었습니다.")
 
-BAR
+check_r_services()
 
-CODE [U-21] r 계열 서비스 비활성화
+# 결과 파일에 JSON 형태로 저장
+result_file = 'r_services_disable_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-cat << EOF >> $result
-
-[양호]: r 계열 서비스가 비활성화 되어 있는 경우
-
-[취약]: r 계열 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-files=(/etc/xinetd.d/rlogin /etc/xinetd.d/rsh /etc/xinetd.d/rexec)
-expected_settings=(
-"socket_type= stream"
-"wait= no"
-"user= nobody"
-"log_on_success+= USERID"
-"log_on_failure+= USERID"
-"server= /usr/sdin/in.fingerd"
-"disable= yes"
-)
-
-for file in "${files[@]}"; do
-  INFO "파일 확인 중: $file"
-  if [ ! -f "$file" ]; then
-	  INFO "$file 파일이 없습니다."
-  else
-    for setting in "${expected_settings[@]}"; do
-      if grep -q "$setting" "$file"; then
-        OK "'$setting'이 올바르게 설정되었습니다."
-      else
-        WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
-      fi
-    done
-  fi
-done
-
-cat $result
-
-echo ; echo
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
