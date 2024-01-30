@@ -1,57 +1,47 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import os
+import pwd
+import stat
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-14": {
+        "title": "사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정",
+        "status": "",
+        "description": {
+            "good": "환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고, 쓰기 권한이 제한된 경우",
+            "bad": "환경변수 파일 소유자가 부적절하거나 쓰기 권한이 부적절하게 설정된 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+def check_home_directory_files():
+    files = [".profile", ".kshrc", ".cshrc", ".bashrc", ".bash_profile", ".login", ".exrc", ".netrc"]
+    home_dir = os.path.expanduser('~')
+    
+    for file_name in files:
+        file_path = os.path.join(home_dir, file_name)
+        if os.path.isfile(file_path):
+            file_stat = os.stat(file_path)
+            owner = pwd.getpwuid(file_stat.st_uid).pw_name
+            permissions = stat.S_IMODE(file_stat.st_mode)
+            
+            if owner not in ["root", os.getlogin()] or permissions not in [0o600, 0o700]:
+                results["U-14"]["status"] = "취약"
+                results["U-14"]["details"].append(f"{file_path}의 소유자나 권한 설정이 부적절합니다. (소유자: {owner}, 권한: {permissions})")
+            else:
+                results["U-14"]["details"].append(f"{file_path}의 소유자와 권한 설정이 적절합니다. (소유자: {owner}, 권한: {permissions})")
+        else:
+            results["U-14"]["details"].append(f"{file_path} 파일이 존재하지 않습니다.")
 
-TMP1=`SCRIPTNAME`.log
+check_home_directory_files()
 
->$TMP1  
- 
+# 결과 파일에 JSON 형태로 저장
+result_file = 'home_directory_files_ownership_and_permissions_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-BAR
-
-CODE [U-14] 사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정 
-
-cat << EOF >> $result  
-
-[양호]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고 
-
-홈 디렉터리 환경변수 파일에 root와 소유자만 쓰기 권한이 부여된 경우
-
-[취약]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되지 않고 
-
-홈 디렉터리 환경변수 파일에 root와 소유자 외에 쓰기 권한이 부여된 경우
-
-EOF
-
-BAR
-
-files=(".profile" ".kshrc" ".cshrc" ".bashrc" ".bash_profile" ".login" ".exrc" ".netrc")
-
-for file in "${files[@]}"; do
-
-  if [ -f "${file}" ]; then
-    owner=$(stat -c '%U' $file)
-    if [ "$owner" != "root" ] && [ "$owner" != "$USER" ]; then
-      WARN "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다."
-    else
-      OK "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다." 
-    fi
-
-    permission=$(stat -c '%a' $file)
-    if [ "$permission" != "600" ] && [ "$permission" != "700" ]; then
-      WARN "$file 에 잘못된 권한($permission)이 있습니다. 600 또는 700이 예상됩니다."
-    else
-      OK "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다." 
-    fi
-  else
-    INFO " $file 을 찾을 수 없습니다"
-  fi
-done
-
-
-cat $result
-
-echo ; echo
- 
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
