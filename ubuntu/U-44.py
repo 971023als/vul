@@ -1,34 +1,38 @@
-#!/bin/bash
+import json
 
-. function.sh
+# 결과를 저장할 딕셔너리
+results = {
+    "U-44": {
+        "title": "root 이외의 UID가 '0' 금지",
+        "status": "",
+        "description": {
+            "good": "root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우",
+            "bad": "root 계정과 동일한 UID를 갖는 계정이 존재하는 경우",
+        },
+        "details": []
+    }
+}
 
-BAR
+def check_root_uid():
+    with open('/etc/passwd', 'r') as f:
+        for line in f:
+            parts = line.split(':')
+            if len(parts) > 2 and parts[2] == '0' and parts[0] != 'root':
+                results["status"] = "취약"
+                results["details"].append(f"계정명: {parts[0]}, UID: {parts[2]}")
+                
+    if not results["details"]:
+        results["status"] = "양호"
+        results["description"]["good"] += " 모든 확인된 계정이 적절한 UID 값을 가지고 있습니다."
+    else:
+        results["description"]["bad"] += " 다음 계정이 root와 동일한 UID(0)를 가집니다: " + ", ".join(results["details"])
 
-CODE [U-44] root 이외의 UID가 '0' 금지
+# 검사 수행
+check_root_uid()
 
-cat << EOF >> $result
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-[양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
-
-[취약]: root 계정과 동일한 UID를 갖는 계정이 존재하는 경우
-
-EOF
-
-BAR
-
-FILE=/etc/passwd
-
-# 루트 계정과 동일한 UID를 가진 계정 확인(UID 값 0)
-awk -F: '$3=="0"{print $1":"$3}' $FILE > $TMP1
-UIDCHECK=$(wc -l < $TMP1)
-if [ $UIDCHECK -ge 2 ]; then
-   WARN "루트 계정과 동일한 UID를 가진 계정이 있습니다."
-   INFO "자세한 내용은 $TMP1 을 확인하십시오."
-else
-   OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-   rm $TMP1
-fi
- 
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
