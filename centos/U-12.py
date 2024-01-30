@@ -1,48 +1,52 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import os
+import stat
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-12": {
+        "title": "/etc/services 파일 소유자 및 권한 설정",
+        "status": "",
+        "description": {
+            "good": "/etc/services 파일의 소유자가 root이고, 권한이 644인 경우",
+            "bad": "/etc/services 파일의 소유자가 root가 아니거나, 권한이 644가 아닌 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+def check_services_file_ownership_and_permissions():
+    services_file = "/etc/services"
+    
+    if os.path.exists(services_file):
+        file_stat = os.stat(services_file)
+        owner = os.popen(f'stat -c "%U" {services_file}').read().strip()
+        permissions = stat.S_IMODE(file_stat.st_mode)
+        
+        if owner != "root":
+            results["U-12"]["status"] = "취약"
+            results["U-12"]["details"].append(f"/etc/services 파일의 소유자가 {owner}로, root가 아닙니다.")
+        else:
+            results["U-12"]["details"].append("/etc/services 파일이 root에 의해 소유됩니다.")
+            
+        if permissions > 0o644:
+            results["U-12"]["status"] = "취약"
+            results["U-12"]["details"].append(f"/etc/services 파일 사용 권한이 644보다 큽니다. 현재 권한: {permissions}")
+        else:
+            results["U-12"]["details"].append("/etc/services 파일은 644 이하의 권한이 있습니다.")
+            if results["U-12"]["status"] != "취약":
+                results["U-12"]["status"] = "양호"
+    else:
+        results["U-12"]["status"] = "정보"
+        results["U-12"]["details"].append("/etc/services 파일이 없습니다.")
 
- 
-TMP1=`SCRIPTNAME`.log
+check_services_file_ownership_and_permissions()
 
->$TMP1  
+# 결과 파일에 JSON 형태로 저장
+result_file = 'services_file_ownership_and_permissions_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-BAR
-
-CODE [U-12] /etc/services 파일 소유자 및 권한 설정 
-
-cat << EOF >> $result  
-
-[양호]: /etc/services 파일의 소유자가 root이고, 권한이 644인 경우
-
-[취약]: /etc/services 파일의 소유자가 root가 아니거나, 권한이 644가 아닌경우
-
-EOF
-
-BAR
-
-
-# 파일이 있는지 확인하십시오
-if [ -e "/etc/services" ]; then
-
-# 파일 소유권 확인
-    if [ $(stat -c "%U" /etc/services) == "root" ] || [ $(stat -c "%U" /etc/services) == "bin" ] || [ $(stat -c "%U" /etc/services) == "sys" ]; then
-        OK "/etc/services 파일이 루트(또는 bin, sys)에 의해 소유됩니다."
-    fi
-
-# 파일 사용 권한 확인
-    if [ $(stat -c "%a" /etc/services) -gt 644 ]; then
-        WARN "/etc/services 파일 사용 권한이 644보다 큽니다."
-    else
-        OK "/etc/services 파일은 루트(또는 bin, sys)에 의해 소유되며 644개 이하의 권한이 있습니다."
-    fi
-    else
-OK "/etc/services 파일이 없습니다"
-fi
-
-
-cat $result
-
-echo ; echo
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
