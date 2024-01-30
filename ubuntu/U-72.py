@@ -1,64 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import re
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-72": {
+        "title": "정책에 따른 시스템 로깅 설정",
+        "status": "",
+        "description": {
+            "good": "로그 기록 정책이 정책에 따라 설정되어 수립되어 있는 경우",
+            "bad": "로그 기록 정책이 정책에 따라 설정되어 수립되어 있지 않은 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+def check_rsyslog_config():
+    filename = "/etc/rsyslog.conf"
+    
+    try:
+        with open(filename, 'r') as file:
+            config_content = file.read()
+        
+        expected_content = [
+            "*.info;mail.none;authpriv.none;cron.none /var/log/messages",
+            "authpriv.* /var/log/secure",
+            "mail.* /var/log/maillog",
+            "cron.* /var/log/cron",
+            "*.alert /dev/console",
+            "*.emerg *"
+        ]
+        
+        match_count = 0
+        for content in expected_content:
+            if re.search(re.escape(content), config_content):
+                match_count += 1
+        
+        if match_count == len(expected_content):
+            results["U-72"]["status"] = "양호"
+            results["U-72"]["details"].append(f"{filename}의 내용이 정책에 따라 적절히 설정되어 있습니다.")
+        else:
+            results["U-72"]["status"] = "취약"
+            results["U-72"]["details"].append(f"{filename}의 내용이 일부 누락되었거나 정책에 맞지 않습니다.")
+    except FileNotFoundError:
+        results["U-72"]["status"] = "취약"
+        results["U-72"]["details"].append(f"{filename} 가 존재하지 않습니다.")
 
- 
-TMP1=`SCRIPTNAME`.log
+check_rsyslog_config()
 
-> $TMP1 
- 
+# 결과 파일에 JSON 형태로 저장
+result_file = 'rsyslog_policy_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-BAR
-
-CODE [U-72] 정책에 따른 시스템 로깅 설정
-
-cat << EOF >> $result
-
-[양호]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있는 경우
-
-[취약]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있지 않은 경우
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-
-filename="/etc/rsyslog.conf"
-
-if [ ! -e "$filename" ]; then
-  WARN "$filename 가 존재하지 않습니다"
-fi
-
-expected_content=(
-  "*.info;mail.none;authpriv.none;cron.none /var/log/messages"
-  "authpriv.* /var/log/secure"
-  "mail.* /var/log/maillog"
-  "cron.* /var/log/cron"
-  "*.alert /dev/console"
-  "*.emerg *"
-)
-
-match=0
-for content in "${expected_content[@]}"; do
-  if grep -q "$content" "$filename"; then
-    match=$((match + 1))
-  fi
-done
-
-if [ "$match" -eq "${#expected_content[@]}" ]; then
-  OK "$filename의 내용이 정확합니다."
-else
-  WARN "$filename의 내용이 잘못되었습니다."
-fi
-
-
-cat $result
-
-echo ; echo 
-
- 
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
