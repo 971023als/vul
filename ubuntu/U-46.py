@@ -1,57 +1,44 @@
-#!/bin/bash
+import subprocess
+import json
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-46": {
+        "title": "패스워드 최소 길이 설정",
+        "status": "",
+        "description": {
+            "good": "패스워드 최소 길이가 8자 이상으로 설정되어 있는 경우",
+            "bad": "패스워드 최소 길이가 8자 미만으로 설정되어 있는 경우",
+        },
+        "message": ""
+    }
+}
 
-. function.sh
+def check_password_minimum_length():
+    try:
+        # /etc/login.defs 파일에서 PASS_MIN_LEN 값을 가져옵니다
+        result = subprocess.run(["grep", "^PASS_MIN_LEN", "/etc/login.defs"], capture_output=True, text=True)
+        if result.stdout:
+            pass_min_len = int(result.stdout.split()[1])
+            if pass_min_len >= 8:
+                results["status"] = "양호"
+                results["message"] = f"패스워드 최소 길이가 {pass_min_len}자로 설정되어 있습니다."
+            else:
+                results["status"] = "취약"
+                results["message"] = f"패스워드 최소 길이가 {pass_min_len}자로 설정되어 있어 8자 미만입니다."
+        else:
+            results["status"] = "정보"
+            results["message"] = "PASS_MIN_LEN 설정을 찾을 수 없습니다."
+    except Exception as e:
+        results["status"] = "오류"
+        results["message"] = f"패스워드 최소 길이 설정 검사 중 오류 발생: {e}"
 
-TMP1=`SCRIPTNAME`.log
+# 검사 수행
+check_password_minimum_length()
 
-> $TMP1 
+# 결과를 JSON 파일로 저장
+with open('result.json', 'w', encoding='utf-8') as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-BAR
-
-CODE [U-46] 패스워드 최소 길이 설정
-
-cat << EOF >> $result
-
-[양호]: 패스워드 최소 길이가 8자 이상으로 설정되어 있는 경우
-
-[취약]: 패스워드 최소 길이가 8자 미만으로 설정되어 있는 경우
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
-# login.defs 파일에서 PASS_MIN_LEN 값을 가져옵니다
-pass_min_len=$(grep -E "^PASS_MIN_LEN" /etc/login.defs | awk '{print $2}')
-
-pass=8
-
-# PASS_MIN_LEN 값이 주석 처리되었는지 확인합니다
-if grep -q "^#PASS_MIN_LEN" /etc/login.defs; then
-  INFO "PASS_MIN_LEN가 주석 처리되었습니다."
-else
-  # PASS_MIN_LENS 값이 올바른 정수인지 확인하십시오
-  if [ "$pass_min_len" -eq "$pass_min_len" ] 2>/dev/null; then
-    # PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
-    if [ "$pass_min_len" -ge 0 ] && [ "$pass_min_len" -le 99999999 ]; then
-      if [ "$pass_min_len" -ge "$pass" ]; then
-        OK "PASS_MIN_LEN이 $pass_min_len 으로 설정되어 $pass 보다 크거나 같습니다."
-      else
-        WARN "PASS_MIN_LEN이 $pass 보다 작은 $pass_min_len 으로 설정되었습니다."
-      fi
-    else
-      INFO " PASS_MIN_LEN 값이 범위를 벗어났습니다."
-    fi
-  else
-    INFO " PASS_MIN_LEN 값이 올바른 정수가 아닙니다."
-  fi
-fi
-
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
