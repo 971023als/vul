@@ -1,44 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import subprocess
+from datetime import datetime
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-42": {
+        "title": "최신 보안패치 및 벤더 권고사항 적용",
+        "status": "",
+        "description": {
+            "good": "패치 적용 정책을 수립하여 주기적으로 패치를 관리하고 있는 경우",
+            "bad": "패치 적용 정책을 수립하지 않고 주기적으로 패치관리를 하지 않는 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+# 패치 로그 파일 경로 설정
+patch_log_file = "/var/log/patch.log"
+current_date = datetime.now().strftime('%Y-%m-%d')
 
- 
-TMP1=`SCRIPTNAME`.log
+def check_patch_installation():
+    try:
+        # 패치 로그 파일에서 현재 날짜에 해당하는 패치 설치 기록을 확인
+        with open(patch_log_file, 'r') as file:
+            if f"Patches installed on {current_date}" in file.read():
+                results["U-42"]["status"] = "양호"
+                results["U-42"]["details"].append(f"'{current_date}에 설치된 패치' 기록이 {patch_log_file}에 있습니다.")
+            else:
+                results["U-42"]["status"] = "취약"
+                results["U-42"]["details"].append(f"'{current_date}에 설치된 패치' 기록이 {patch_log_file}에 없습니다.")
+    except FileNotFoundError:
+        results["U-42"]["details"].append(f"{patch_log_file} 파일을 찾을 수 없습니다.")
+        results["U-42"]["status"] = "정보"
 
-> $TMP1 
- 
+check_patch_installation()
 
-BAR
+# 결과 파일에 JSON 형태로 저장
+result_file = 'security_patch_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-CODE [U-42] 최신 보안패치 및 벤더 권고사항 적용
-
-cat << EOF >> $result
-
-[양호]: 패치 적용 정책을 수립하여 주기적으로 패치를 관리하고 있는 경우
-
-[취약]: 패치 적용 정책을 수립하지 않고 주기적으로 패치관리를 하지 않는 경우
-
-EOF
-
-BAR
-
-# 현재 날짜 가져오기
-current_date=$(date +%Y-%m-%d)
-
-# /var/log/patch.log에 "$current_date에 설치된 패치" 행이 있는지 확인합니다
-grep "Patches installed on $current_date" /var/log/patch.log > /dev/null 2>&1
-
-# If the exit status of grep is 0, the line exists in the file
-if [ $? -eq 0 ]; then
-  OK "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 있습니다."
-else
-  WARN "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 없습니다."
-fi
-
-cat $result
-
-echo ; echo 
-
- 
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
