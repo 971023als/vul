@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import json
 
 # 결과를 저장할 딕셔너리
