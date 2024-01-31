@@ -1,51 +1,47 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import json
+import os
+import stat
 
- 
+# 결과를 저장할 딕셔너리
+results = {
+    "U-55": {
+        "title": "hosts.lpd 파일 소유자 및 권한 설정",
+        "status": "",
+        "description": {
+            "good": "파일의 소유자가 root이고 권한이 600이하인 경우",
+            "bad": "파일의 소유자가 root가 아니고 권한이 600 초과인 경우"
+        },
+        "details": []
+    }
+}
 
-. function.sh
+def check_hosts_lpd():
+    file_path = '/etc/hosts.lpd'
+    if not os.path.isfile(file_path):
+        results["U-55"]["status"] = "정보"
+        results["U-55"]["details"].append(f"{file_path} 파일이 없습니다.")
+    else:
+        file_stat = os.stat(file_path)
+        owner = file_stat.st_uid
+        permissions = stat.S_IMODE(file_stat.st_mode)
+        
+        if owner == 0 and permissions <= 0o600:
+            results["U-55"]["status"] = "양호"
+            results["U-55"]["details"].append(f"{file_path}의 소유자는 root이며, 권한이 600이하입니다.")
+        else:
+            results["U-55"]["status"] = "취약"
+            if owner != 0:
+                results["U-55"]["details"].append(f"{file_path}의 소유자가 root가 아닙니다.")
+            if permissions > 0o600:
+                results["U-55"]["details"].append(f"{file_path}의 권한이 600을 초과합니다.")
 
- 
-TMP1=`SCRIPTNAME`.log
+check_hosts_lpd()
 
-> $TMP1
- 
+# 결과 파일에 JSON 형태로 저장
+result_file = 'hosts_lpd_owner_permission_check_result.json'
+with open(result_file, 'w') as file:
+    json.dump(results, file, indent=4, ensure_ascii=False)
 
-BAR
-
-CODE [U-55] hosts.lpd 파일 소유자 및 권한 설정
-
-cat << EOF >> $result
-
-[양호]: 파일의 소유자가 root이고 권한이 600인 경우
-
-[취약]: 파일의 소유자가 root가 아니고 권한이 600이 아닌 경우
-
-EOF
-
-BAR
-
-# 파일이 있는지 확인하십시오
-if [ ! -f /etc/hosts.lpd ]; then
-  INFO "hosts.lpd 파일이 없습니다. 확인해주세요."
-else
-  hosts=$(stat -c '%U' /etc/hosts.lpd)
-  if [[ $hosts = "root" ]]; then
-    OK "hosts.lpd의 소유자는 루트입니다. 이것은 허용됩니다."
-  else
-    WARN "hosts.lpd의 소유자는 루트가 아닙니다. 이것은 허용되지 않습니다."
-  fi
-  
-  # 파일에 대한 사용 권한 확인
-
-  host=$(stat -c %a /etc/hosts.lpd)
-  if [[ $host -gt 600 ]]; then
-    WARN "hosts.lpd에 대한 권한이 600보다 큽니다."
-  else
-    OK "hosts.lpd에 대한 권한이 600이하 입니다."
-  fi
-fi
-
-
-cat $result
-
-echo ; echo
+# 결과 콘솔에 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
