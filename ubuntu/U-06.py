@@ -3,42 +3,38 @@
 import subprocess
 import json
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-06": {
-        "title": "파일 및 디렉토리 소유자 설정",
-        "status": "",
-        "description": {
-            "good": "소유자가 존재하지 않은 파일 및 디렉터리가 존재하지 않는 경우",
-            "bad": "소유자가 존재하지 않은 파일 및 디렉터리가 존재하는 경우"
-        },
-        "message": "",
-        "invalid_owners": []
-    }
-}
-
-def check_file_ownership():
+def find_files_without_owners(directory):
+    """
+    주어진 디렉토리에서 소유자가 없는 파일 및 디렉터리를 찾습니다.
+    """
     try:
-        # 소유자가 없는 파일 및 디렉터리 검색
-        cmd = ["find", "/root/", "-nouser", "-print"]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.stdout:
-            results["U-06"]["status"] = "취약"
-            results["U-06"]["message"] = "소유자가 존재하지 않은 파일 및 디렉터리가 존재합니다."
-            results["U-06"]["invalid_owners"] = result.stdout.splitlines()
-        else:
-            results["U-06"]["status"] = "양호"
-            results["U-06"]["message"] = "잘못된 소유자가 있는 파일 또는 디렉터리를 찾을 수 없습니다."
-    except Exception as e:
-        results["U-06"]["status"] = "오류"
-        results["U-06"]["message"] = str(e)
+        result = subprocess.check_output(['find', directory, '-nouser'], stderr=subprocess.STDOUT, text=True)
+        return result.strip().split('\n') if result else []
+    except subprocess.CalledProcessError as e:
+        return []
 
-# 검사 수행
-check_file_ownership()
+def main():
+    directory_to_check = "/root/"
+    files_without_owners = find_files_without_owners(directory_to_check)
+    
+    results = {
+        "분류": "파일 시스템 관리",
+        "코드": "U-06",
+        "위험도": "상",
+        "진단 항목": "파일 및 디렉토리 소유자 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "소유자가 존재하지 않는 파일 및 디렉터리에 적절한 소유자를 할당하세요."
+    }
+    
+    if files_without_owners:
+        results["진단 결과"] = "취약"
+        results["현황"].append(f"소유자가 없는 파일 및 디렉터리가 존재합니다: {', '.join(files_without_owners)}")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("소유자가 존재하지 않은 파일 및 디렉터리가 존재하지 않습니다.")
 
-# 결과를 JSON 파일로 저장
-with open('result.json', 'w', encoding='utf-8') as f:
-    json.dump(results, f, ensure_ascii=False, indent=4)
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+if __name__ == "__main__":
+    main()
