@@ -1,39 +1,52 @@
 #!/usr/bin/python3
 
-. function.sh
- 
-TMP1=`SCRIPTNAME`.log
+import os
+import subprocess
+import json
 
->$TMP1
+def check_shadow_file_ownership_and_permission():
+    # Define the path to the shadow file
+    shadow_file = '/etc/shadow'
+    result = {
+        "분류": "시스템 설정",
+        "코드": "U-08",
+        "위험도": "상",
+        "진단 항목": "/etc/shadow 파일 소유자 및 권한 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "/etc/shadow 파일의 소유자를 root로 설정하고, 권한을 400으로 설정하세요."
+    }
 
-BAR 
+    # Check if the shadow file exists
+    if not os.path.exists(shadow_file):
+        result["현황"].append(f"{shadow_file} 파일이 존재하지 않습니다.")
+        result["진단 결과"] = "정보 부족"
+        return result
 
-CODE [U-08] /etc/shadow 파일 소유자 및 권한 설정
+    # Check ownership of the shadow file
+    owner = subprocess.getoutput(f'stat -c "%U" {shadow_file}')
+    if owner != "root":
+        result["현황"].append(f"{shadow_file} 파일의 소유자가 root가 아닙니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{shadow_file} 파일의 소유자가 root입니다.")
 
-cat << EOF >> $result
+    # Check permissions of the shadow file
+    permissions = int(subprocess.getoutput(f'stat -c "%a" {shadow_file}'))
+    if permissions != 400:
+        result["현황"].append(f"{shadow_file} 파일의 권한이 400이 아닙니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{shadow_file} 파일의 권한이 400입니다.")
 
-[양호]: /etc/shadow 파일의 소유자가 root이고, 권한이 400인 경우
+    if result["진단 결과"] != "취약":
+        result["진단 결과"] = "양호"
 
-[취약]: /etc/shadow 파일의 소유자가 root가 아니거나, 권한이 400이 아닌 경우
+    return result
 
-EOF
+def main():
+    result = check_shadow_file_ownership_and_permission()
+    print(json.dumps(result, ensure_ascii=False, indent=4))
 
-BAR
-
-# 파일이 루트에 의해 소유되는지 확인합니다
-if [ $(stat -c "%U" /etc/shadow) != "root" ]; then
-    WARN "/etc/shadow 파일이 루트에 의해 소유되지 않습니다."
-else
-    OK "/etc/shadow 파일이 루트에 의해 소유됩니다."
-fi
-
-# 파일 사용 권한이 400보다 작은지 확인합니다
-if [ $(stat -c "%a" /etc/shadow) -lt 400 ]; then
-    WARN "/etc/shadow 파일에 400 미만의 권한이 있습니다."
-else
-    OK "/etc/shadow 파일에 400 이상의 권한이 있습니다."
-fi
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
