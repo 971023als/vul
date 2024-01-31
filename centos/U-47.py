@@ -1,43 +1,51 @@
-#!/usr/bin/env python3
-import json
-import re
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-47": {
-        "title": "패스워드 최대 사용기간 설정",
-        "status": "",
-        "description": {
-            "good": "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우",
-            "bad": "패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않은 경우"
-        },
-        "details": []
-    }
-}
+. function.sh
 
-def check_password_max_age():
-    max_days = 90
-    with open('/etc/login.defs', 'r') as file:
-        for line in file:
-            if line.startswith("PASS_MAX_DAYS"):
-                pass_max_days = int(line.split()[1])
-                if pass_max_days <= max_days:
-                    results["U-47"]["status"] = "양호"
-                    results["U-47"]["details"].append(f"패스워드 최대 사용기간이 {pass_max_days}일로 설정되어 있습니다.")
-                else:
-                    results["U-47"]["status"] = "취약"
-                    results["U-47"]["details"].append(f"패스워드 최대 사용기간이 {pass_max_days}일로 설정되어 있어, 권장 기간 {max_days}일을 초과합니다.")
-                return
+TMP1=`SCRIPTNAME`.log
 
-    results["U-47"]["status"] = "취약"
-    results["U-47"]["details"].append("/etc/login.defs 파일에서 PASS_MAX_DAYS 설정을 찾을 수 없습니다.")
+> $TMP1  
 
-check_password_max_age()
+BAR
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'password_max_age_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+CODE [U-47] 패스워드 최대 사용기간 설정
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+cat << EOF >> $result
+
+[양호]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우
+
+[취약]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않은 경우
+
+EOF
+
+BAR
+
+# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
+pass_max_days=$(grep -E "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
+
+max=90
+
+# PASS_MAX_DAYS 값이 주석 처리되었는지 확인합니다
+if grep -q "^#PASS_MAX_DAYS" /etc/login.defs; then
+  INFO "PASS_MAX_DAYS가 주석 처리되었습니다."
+else
+  # PASS_MAX_DAYS 값이 올바른 정수인지 확인하십시오
+  if [ "$pass_max_days" -eq "$pass_max_days" ] 2>/dev/null; then
+    # PASS_MAX_DAYS의 값이 지정된 범위 내에 있는지 확인합니다
+    if [ "$pass_max_days" -ge 0 ] && [ "$pass_max_days" -le 99999999 ]; then
+      if [ "$pass_max_days" -le "$max" ]; then
+        OK "PASS_MAX_DAYS가 $max 보다 작거나 같은 $pass_max_days 로 설정되었습니다."
+      else
+        WARN "PASS_MAX_DAYS가 $max 보다 큰 $pass_max_days 로 설정되었습니다."
+      fi
+    else
+      INFO "PASS_MAX_DAYS 값이 범위를 벗어났습니다."
+    fi
+  else
+    INFO "PASS_MAX_DAYS 값이 올바른 정수가 아닙니다."
+  fi
+fi
+
+cat $result
+
+echo ; echo

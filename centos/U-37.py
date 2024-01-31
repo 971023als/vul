@@ -1,69 +1,55 @@
 #!/bin/python3
 
-. function.sh
+import subprocess
+import json
 
- 
-TMP1=`SCRIPTNAME`.log
+# 결과 저장을 위한 리스트
+results = []
 
-> $TMP1 
- 
+# Apache 구성 파일 경로 설정
+httpd_conf_file = "/etc/httpd/conf/httpd.conf"
+allow_override_option = "AllowOverride AuthConfig"
 
-BAR
+def check_directory_access_restriction():
+    """
+    Apache 구성 파일에서 상위 디렉터리 접근 제한 설정을 확인합니다.
+    """
+    try:
+        with open(httpd_conf_file, 'r') as file:
+            contents = file.read()
+            if allow_override_option in contents:
+                return True  # 설정이 존재
+            else:
+                return False  # 설정이 존재하지 않음
+    except FileNotFoundError:
+        return None  # 구성 파일을 찾을 수 없음
 
-CODE [U-37] Apache 상위 디렉터리 접근 금지 
+# 상위 디렉터리 접근 제한 설정 확인
+access_restriction = check_directory_access_restriction()
 
-cat << EOF >> $result
+diagnostic_item = "웹 서비스(Apache) 상위 디렉터리 접근 금지"
+if access_restriction is True:
+    status = "양호"
+    situation = f"{httpd_conf_file}에서 {allow_override_option} 설정을 찾았습니다."
+    countermeasure = "상위 디렉터리로의 접근을 제한하는 설정 유지"
+elif access_restriction is False:
+    status = "취약"
+    situation = f"{httpd_conf_file}에서 {allow_override_option} 설정을 찾을 수 없습니다."
+    countermeasure = "상위 디렉터리로의 접근을 제한하는 설정 적용"
+else:
+    status = "정보 부족"
+    situation = f"{httpd_conf_file} 파일을 찾을 수 없습니다."
+    countermeasure = f"{httpd_conf_file} 파일 위치 확인 및 접근 제한 설정 적용"
 
-[양호]: 상위 디렉터리에 이동제한을 설정한 경우
+results.append({
+    "분류": "서비스 관리",
+    "코드": "U-37",
+    "위험도": "상",
+    "진단 항목": diagnostic_item,
+    "진단 결과": status,
+    "현황": situation,
+    "대응방안": countermeasure
+})
 
-[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우
-
-EOF
-
-BAR
-
-HTTPD_CONF_FILE="/etc/httpd/conf/httpd.conf"
-ALLOW_OVERRIDE_OPTION="AllowOverride AuthConfig"
-
-if [ ! -f "$HTTPD_CONF_FILE" ]; then
-    INFO "$HTTPD_CONF_FILE 을 찾을 수 없습니다."
-else
-    if grep -q "$ALLOW_OVERRIDE_OPTION" "$HTTPD_CONF_FILE"; then
-        OK "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾았습니다."
-    else
-        WARN "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾을 수 없습니다."
-    fi
-fi
-
-
-
-cat $result
-
-echo ; echo
-
- 
-if nonexistent_device_files:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-37",
-            "위험도": "상",
-            "진단 항목": "웹 서비스(Apache) 상위 디렉토리 접근 금지",
-            "진단 결과": "취약",
-            "현황": "사용하고 있는 모든 웹 디렉터리가 상위 디렉터리로의 접근이 가능한 옵션(AllowOverride None)으로 설정되어 있는 상태",
-            "대응방안": "사용하고 있는 모든 웹 디렉터리가 상위 디렉터리로의 접근이 불가능하도록 설정"
-        })
-    else:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-37",
-            "위험도": "상",
-            "진단 항목": "웹 서비스(Apache) 상위 디렉토리 접근 금지",
-            "진단 결과": "양호",
-            "현황": "사용하고 있는 모든 웹 디렉터리가 상위 디렉터리로의 접근이 가능한 옵션(AllowOverride None)으로 설정 안되어 있는 상태",
-            "대응방안": "사용하고 있는 모든 웹 디렉터리가 상위 디렉터리로의 접근이 불가능하도록 설정"
-        })
-
-return results
- 
- 
-
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
