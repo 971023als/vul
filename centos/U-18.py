@@ -38,3 +38,27 @@ fi
 cat $result
 
 echo ; echo
+
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "파일 및 디렉터리 관리",
+            "코드": "U-18",
+            "위험도": "상",
+            "진단 항목": "접속 IP 및 포트 제한",
+            "진단 결과": "취약",
+            "현황": " /etc/hosts.deny 파일에 ALL Deny 설정후 /etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록 안 한 경우",
+            "대응방안": " /etc/hosts.deny 파일에 ALL Deny 설정후 /etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록"
+        })
+    else:
+        results.append({
+            "분류": "파일 및 디렉터리 관리",
+            "코드": "U-18",
+            "위험도": "상",
+            "진단 항목": "접속 IP 및 포트 제한",
+            "진단 결과": "양호",
+            "현황": " /etc/hosts.deny 파일에 ALL Deny 설정후 /etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록한 경우",
+            "대응방안": " /etc/hosts.deny 파일에 ALL Deny 설정후 /etc/hosts.allow 파일에 접근을 허용할 특정 호스트를 등록"
+        })
+
+return results

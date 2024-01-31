@@ -39,3 +39,26 @@ fi
 cat $result
 
 echo ; echo
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-20",
+            "위험도": "상",
+            "진단 항목": "Anonymous FTP 비활성화",
+            "진단 결과": "취약",
+            "현황": " Anonymous FTP 활성화 되어 있는 경우",
+            "대응방안": " Anonymous FTP 비활성화"
+        })
+    else:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-20",
+            "위험도": "상",
+            "진단 항목": "Anonymous FTP 비활성화",
+            "진단 결과": "양호",
+            "현황": " Anonymous FTP 비활성화 되어 있는 경우",
+            "대응방안": " Anonymous FTP 비활성화"
+        })
+
+return results

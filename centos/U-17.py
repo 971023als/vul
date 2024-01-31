@@ -103,3 +103,25 @@ cat $result
 
 echo ; echo
  
+if nonexistent_device_files:
+        results.append({
+            "분류": "파일 및 디렉터리 관리",
+            "코드": "U-17",
+            "위험도": "상",
+            "진단 항목": "$HOME/.rhosts, hosts.equiv 사용 금지",
+            "진단 결과": "취약",
+            "현황": " login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 ",
+            "대응방안": " etc/hosts.equiv" 파일 및 사용자 홈 디렉터리 내 ".rhosts" 파일 삭제"
+        })
+    else:
+        results.append({
+            "분류": "파일 및 디렉터리 관리",
+            "코드": "U-17",
+            "위험도": "상",
+            "진단 항목": "$HOME/.rhosts, hosts.equiv 사용 금지",
+            "진단 결과": "양호",
+            "현황": " login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 .",
+             "대응방안": " etc/hosts.equiv" 파일 및 사용자 홈 디렉터리 내 ".rhosts" 파일 삭제"
+        })
+
+return results
