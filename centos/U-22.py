@@ -1,77 +1,55 @@
-#!/bin/bash
+#!/bin/python3
 
-. function.sh
+import os
+import json
+import glob
+import stat
+import pwd
 
-TMP1=`SCRIPTNAME`.log
+# 결과를 저장할 리스트 초기화
+results = []
 
-> $TMP1
+# cron 파일 목록 정의 (glob 패턴 사용)
+files = [
+    "/etc/crontab", "/etc/cron.hourly", "/etc/cron.daily",
+    "/etc/cron.weekly", "/etc/cron.monthly", "/etc/cron.allow",
+    "/etc/cron.deny", "/var/spool/cron/*", "/var/spool/cron/crontabs/*"
+]
 
-BAR
+# 파일 소유자 및 권한 검사 함수
+def check_cron_file_security(files):
+    checked_files = []
+    for pattern in files:
+        for file_path in glob.glob(pattern):
+            if os.path.exists(file_path):
+                stat_info = os.stat(file_path)
+                owner = pwd.getpwuid(stat_info.st_uid).pw_name
+                perms = oct(stat_info.st_mode & 0o777)
+                if owner != "root" or int(perms, 8) > 0o640:
+                    status = "취약"
+                    message = f"{file_path} 소유자: {owner}, 권한: {perms} (640 이하가 아님)"
+                else:
+                    status = "양호"
+                    message = f"{file_path} 소유자: {owner}, 권한: {perms}"
+                checked_files.append({"파일": file_path, "상태": status, "메시지": message})
+            else:
+                checked_files.append({"파일": file_path, "상태": "정보", "메시지": f"{file_path}이 존재하지 않습니다"})
+    return checked_files
 
-CODE [U-22] cron 파일 소유자 및 권한 설정
+# cron 파일 소유자 및 권한 검사 실행
+file_results = check_cron_file_security(files)
 
-cat << EOF >> $result
+# 결과 추가
+for result in file_results:
+    results.append({
+        "분류": "서비스 관리",
+        "코드": "U-22",
+        "위험도": "상",
+        "진단 항목": "cron 파일 소유자 및 권한 설정",
+        "진단 결과": result["상태"],
+        "현황": result["메시지"],
+        "대응방안": "cron 접근 제어 파일 소유자를 root로 설정하고, 권한을 640 이하로 설정"
+    })
 
-[양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우
-
-[취약]: cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우
-
-EOF
-
-BAR
-
-# 파일 정의
-files=(/etc/crontab /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly /etc/cron.allow /etc/cron.deny /var/spool/cron* /var/spool/cron/crontabs/)
-
-for file in "${files[@]}"; do
-  if [ -e "$file" ]; then
-    owner=$(stat -c %U "$file")
-    if [ "$owner" != "root" ]; then
-      WARN "$file 은 root가 아닌 $owner가 소유합니다"
-    else
-      OK "$file 은 root가 소유합니다"
-    fi
-  else
-    INFO "$file이 존재하지 않습니다"
-  fi
-done
-
-for file in "${files[@]}"; do
-  if [ -e "$file" ]; then
-    perms=$(stat -c %a "$file")
-    if [ "$perms" -lt 640 ]; then
-      WARN "$file 에 $perms 권한이 640보다 큽니다"
-    else
-      OK "$file 에 $perms 권한이 640보다 작습니다"
-    fi
-  else
-    INFO "$file이 존재하지 않습니다"
-  fi
-done
-
-cat $result
-
-echo ; echo
-
-if nonexistent_device_files:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-22",
-            "위험도": "상",
-            "진단 항목": "cron 파일 소유자 및 권한설정",
-            "진단 결과": "취약",
-            "현황": " /usr/bin/crontab 파일에 2755(-rwxr-sr-x)이 부여되거나 Crontab 관련 파일에 타사용자 권한이 부여",
-            "대응방안": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정"
-        })
-    else:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-22",
-            "위험도": "상",
-            "진단 항목": "cron 파일 소유자 및 권한설정",
-            "진단 결과": "양호",
-            "현황": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정",
-            "대응방안": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정"
-        })
-
-return results
+# JSON 형태로 결과 출력
+print(json.dumps(results, indent=4, ensure_ascii=False))
