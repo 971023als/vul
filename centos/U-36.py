@@ -53,7 +53,7 @@ echo ; echo
 if nonexistent_device_files:
         results.append({
             "분류": "서비스 관리",
-            "코드": "U-35",
+            "코드": "U-36",
             "위험도": "상",
             "진단 항목": "웹 서비스(Apache) 프로세스 권한 제한",
             "진단 결과": "취약",
@@ -63,7 +63,7 @@ if nonexistent_device_files:
     else:
         results.append({
             "분류": "서비스 관리",
-            "코드": "U-35",
+            "코드": "U-36",
             "위험도": "상",
             "진단 항목": "웹 서비스(Apache) 프로세스 권한 제한",
             "진단 결과": "양호",
