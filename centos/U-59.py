@@ -1,69 +1,77 @@
 #!/bin/python3
 
-import os
-import json
-import re
+. function.sh
 
-def find_hidden_files(dir_path):
-    hidden_files = []
-    hidden_dirs = []
-    for root, dirs, files in os.walk(dir_path):
-        for name in files:
-            if name.startswith('.') and not name.endswith('.swp'):
-                hidden_files.append(os.path.join(root, name))
-        for name in dirs:
-            if name.startswith('.') and not name.endswith('.swp'):
-                hidden_dirs.append(os.path.join(root, name))
-    return hidden_files, hidden_dirs
+ 
 
-def evaluate_files_dirs(files_dirs):
-    results = []
-    for item in files_dirs:
-        item_name = os.path.basename(item)
-        if re.search("unwanted-file|suspicious-dir", item_name):
-            print(f"경고: 원하지 않는 파일 또는 의심스러운 디렉터리 발견: {item}")
-            results.append({
-                "분류": "파일/디렉터리",
-                "코드": "U-59",
-                "위험도": "중",
-                "진단 항목": "숨겨진 파일 및 디렉터리 검사",
-                "진단 결과": "취약",
-                "현황": f"원하지 않는 파일 또는 의심스러운 디렉터리: {item}",
-                "대응방안": "불필요하거나 의심스러운 파일/디렉터리 삭제",
-                "결과": "경고 발생"
-            })
-        else:
-            print(f"정상: 정상적인 파일 또는 디렉터리: {item}")
-            results.append({
-                "분류": "파일/디렉터리",
-                "코드": "U-59",
-                "위험도": "낮음",
-                "진단 항목": "숨겨진 파일 및 디렉터리 검사",
-                "진단 결과": "양호",
-                "현황": f"정상적인 파일 또는 디렉터리: {item}",
-                "대응방안": "유지",
-                "결과": "정상"
-            })
-    return results
+TMP1=`SCRIPTNAME`.log
 
-def save_results_to_json(results, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
+> $TMP1  
 
-def main():
-    directories = ["/home/adiosl/", "/home/cubrid/"]
-    all_results = []
-    
-    for dir_path in directories:
-        print(f"{dir_path} 내 숨겨진 파일 및 디렉터리 점검 중...\n")
-        hidden_files, hidden_dirs = find_hidden_files(dir_path)
-        files_results = evaluate_files_dirs(hidden_files)
-        dirs_results = evaluate_files_dirs(hidden_dirs)
-        all_results.extend(files_results)
-        all_results.extend(dirs_results)
-    
-    save_results_to_json(all_results, "result.json")
-    print("\n진단 결과를 result.json 파일에 저장하였습니다.")
+ 
+BAR
 
-if __name__ == "__main__":
-    main()
+CODE [U-59] 숨겨진 파일 및 디렉터리 검색 및 제거
+
+cat << EOF >> $result
+
+[양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
+
+[취약]: 디렉터리 내 숨겨진 파일을 확인하지 않고, 불필요한 파일을 방치한 경우
+
+EOF
+
+BAR
+
+
+adiosdir="/home/adiosl/"
+
+# List all hidden files and directories
+hidden_files=$(find "$adiosdir" -type f -name ".*" ! -name ".*.swp")
+hidden_dirs=$(find "$adiosdir" -type d -name ".*" ! -name ".*.swp")
+
+# Check if any unwanted or suspicious files or directories exist
+for file in $hidden_files; do
+  if [[ $(basename $file) =~ "unwanted-file" ]]; then
+    WARN "원하지 않는 파일: $file"
+  else
+    OK "정상적인 파일: $file"
+  fi
+done
+
+for dir in $hidden_dirs; do
+  if [[ $(basename $dir) =~ "suspicious-dir" ]]; then
+    WARN "의심스러운 디렉토리: $dir"
+  else
+    OK "정상적인 디렉터리: $dir"
+  fi
+done
+
+
+cubridir="/home/cubrid/"
+
+# List all hidden files and directories
+hidden_file=$(find "$cubridir" -type f -name ".*" ! -name ".*.swp")
+hidden_dir=$(find "$cubridir" -type d -name ".*" ! -name ".*.swp")
+
+# Check if any unwanted or suspicious files or directories exist
+for file in $hidden_file; do
+  if [[ $(basename $file) =~ "unwanted-file" ]]; then
+    WARN "원하지 않는 파일: $file"
+  else
+    OK "정상적인 파일: $file"
+  fi
+done
+
+for dir in $hidden_dir; do
+  if [[ $(basename $dir) =~ "suspicious-dir" ]]; then
+    WARN "의심스러운 디렉토리: $dir"
+  else
+    OK "정상적인 디렉터리: $dir"
+  fi
+done
+
+
+cat $result
+
+echo ; echo 
