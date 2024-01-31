@@ -1,47 +1,48 @@
 #!/usr/bin/python3
 
+import os
+import json
 
-. function.sh
+def check_xinetd_conf_ownership_and_permissions():
+    # Define the path to the /etc/xinetd.conf file
+    xinetd_conf_file = "/etc/xinetd.conf"
+    result = {
+        "분류": "시스템 설정",
+        "코드": "U-10",
+        "위험도": "상",
+        "진단 항목": "/etc/xinetd.conf 파일 소유자 및 권한 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "/etc/xinetd.conf 파일의 소유자를 root로 설정하고, 권한을 600으로 설정하세요."
+    }
 
- 
-TMP1=`SCRIPTNAME`.log
+    # Check if the /etc/xinetd.conf file exists
+    if not os.path.exists(xinetd_conf_file):
+        result["현황"].append(f"{xinetd_conf_file} 파일이 존재하지 않습니다.")
+        result["진단 결과"] = "양호"
+        return result
 
->$TMP1
+    # Check the ownership of the /etc/xinetd.conf file
+    file_owner = os.stat(xinetd_conf_file).st_uid
+    if file_owner != 0:  # UID 0 is root
+        result["현황"].append(f"{xinetd_conf_file} 파일의 소유자가 root가 아닙니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{xinetd_conf_file} 파일의 소유자가 root입니다.")
 
-BAR
+    # Check the permissions of the /etc/xinetd.conf file
+    file_permissions = os.stat(xinetd_conf_file).st_mode & 0o777
+    if file_permissions > 0o600:
+        result["현황"].append(f"{xinetd_conf_file} 파일의 권한이 600 초과입니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{xinetd_conf_file} 파일의 권한이 600 이하입니다.")
 
-CODE [U-10] /etc/xinetd.conf 파일 소유자 및 권한 설정 
+    return result
 
-cat << EOF >> $result
+def main():
+    result = check_xinetd_conf_ownership_and_permissions()
+    print(json.dumps(result, ensure_ascii=False, indent=4))
 
-[양호]: /etc/xinetd.conf 파일의 소유자가 root이고, 권한이 600인 경우
-
-[취약]: /etc/xinetd.conf 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우
-
-EOF
-
-BAR
-
-# 파일이 있는지 확인하십시오
-if [ ! -f /etc/xinetd.conf ]; then
-  OK "/etc/xinetd.conf 파일이 없습니다"
-else
-  # 파일 소유권 확인
-  file_owner=$(stat -c %U /etc/xinetd.conf)
-  if [ "$file_owner" != "root" ]; then
-    WARN " /etc/xinetd.conf가 루트에 의해 소유되지 않음"
-  else
-    # 파일의 사용 권한 확인
-    file_perms=$(stat -c %a /etc/xinetd.conf)
-    if [ "$file_perms" -lt 600 ]; then
-      WARN " /etc/xinetd.conf에 권한이 600 초과입니다"
-    else
-      # 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
-      OK "/etc/xinetd.conf에 권한은 600 이하 입니다."
-    fi
-  fi
-fi
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
