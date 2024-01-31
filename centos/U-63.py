@@ -1,14 +1,10 @@
 #!/bin/python3
 
- 
-
 . function.sh
-
  
 TMP1=`SCRIPTNAME`.log
 
-> $TMP1 
- 
+> $TMP1  
 
 BAR
 
