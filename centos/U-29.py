@@ -1,60 +1,48 @@
 #!/bin/python3
 
-. function.sh
+import subprocess
+import json
 
- 
+# 결과 저장을 위한 리스트
+results = []
 
-BAR
+# 확인할 서비스 목록
+services = ["tftp", "talk", "ntalk"]
 
-CODE [U-29] tftp, talk 서비스 비활성화
+def check_service_status(service):
+    """
+    주어진 서비스의 활성화 여부를 확인합니다.
+    """
+    try:
+        subprocess.check_output(f"systemctl is-enabled {service}", shell=True, stderr=subprocess.STDOUT)
+        # 서비스가 활성화되어 있으면 True 반환
+        return True
+    except subprocess.CalledProcessError:
+        # 서비스가 비활성화되어 있으면 False 반환
+        return False
 
-cat << EOF >> $result
-
-[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우
-
-[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-
-services="tftp talk ntalk"
-
-for service in $services
-do
-    if systemctl is-enabled $service >/dev/null 2>&1; then
-        WARN "$service 서비스가 사용하는 중입니다."
-    else
-        OK "$service 서비스가 사용하는 중입니다."
-    fi
-done
-
-
-cat $result
-
-echo ; echo
- 
-
-if nonexistent_device_files:
+# 각 서비스의 상태 확인 및 결과 추가
+for service in services:
+    if check_service_status(service):
         results.append({
             "분류": "서비스 관리",
             "코드": "U-29",
             "위험도": "상",
-            "진단 항목": "tftp, talk 서비스 비활성화",
+            "진단 항목": f"{service} 서비스 비활성화",
             "진단 결과": "취약",
-            "현황": "tftp, talk, ntalk 데몬이 활성화되어 있거나 xinetd(인터넷슈퍼데몬)에 존재하는 상태",
-            "대응방안": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬) 비활성화"
+            "현황": f"{service} 데몬이 활성화되어 있는 상태",
+            "대응방안": f"{service} 데몬 비활성화 및 xinetd(인터넷슈퍼데몬) 비활성화"
         })
     else:
         results.append({
             "분류": "서비스 관리",
             "코드": "U-29",
             "위험도": "상",
-            "진단 항목": "tftp, talk 서비스 비활성화",
+            "진단 항목": f"{service} 서비스 비활성화",
             "진단 결과": "양호",
-            "현황": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬)에 존재하지 않는 상태",
-            "대응방안": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬) 비활성화"
+            "현황": f"{service} 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬)에 존재하지 않는 상태",
+            "대응방안": f"{service} 데몬 비활성화 및 xinetd(인터넷슈퍼데몬) 비활성화"
         })
 
-return results
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))

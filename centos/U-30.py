@@ -1,6 +1,4 @@
-#!/bin/bash
-
- 
+#!/bin/python3
 
 . function.sh
 
