@@ -1,54 +1,73 @@
-#!/bin/bash
+#!/bin/python3
 
- 
+import os
+import stat
+import json
 
-. function.sh
+def check_hosts_file_ownership_and_permission():
+    results = []
+    hosts_file = "/etc/hosts"
+    expected_permission = 0o600  # Octal notation
 
- 
+    try:
+        file_stat = os.stat(hosts_file)
+        owner_uid = file_stat.st_uid
+        file_permission = stat.S_IMODE(file_stat.st_mode)
+        owner_name = os.getpwuid(owner_uid).pw_name
 
-TMP1=`SCRIPTNAME`.log
+        if owner_name != "root":
+            results.append({
+                "코드": "U-09",
+                "진단 결과": "취약",
+                "현황": f"{hosts_file} 파일의 소유자가 root가 아님",
+                "대응방안": f"{hosts_file} 파일의 소유자를 root로 변경 권장",
+                "결과": "경고"
+            })
+        else:
+            results.append({
+                "코드": "U-09",
+                "진단 결과": "양호",
+                "현황": f"{hosts_file} 파일의 소유자가 root임",
+                "대응방안": "현재 설정 유지",
+                "결과": "정상"
+            })
 
->$TMP1
+        if file_permission > expected_permission:
+            results.append({
+                "코드": "U-09",
+                "진단 결과": "취약",
+                "현황": f"{hosts_file} 파일의 권한이 {oct(file_permission)}로 설정됨, 600 이하 권장",
+                "대응방안": f"{hosts_file} 파일의 권한을 600 이하로 설정 권장",
+                "결과": "경고"
+            })
+        else:
+            results.append({
+                "코드": "U-09",
+                "진단 결과": "양호",
+                "현황": f"{hosts_file} 파일의 권한이 적절함",
+                "대응방안": "현재 설정 유지",
+                "결과": "정상"
+            })
 
- 
+    except FileNotFoundError:
+        results.append({
+            "코드": "U-09",
+            "진단 결과": "정보",
+            "현황": f"{hosts_file} 파일을 찾을 수 없음",
+            "대응방안": f"{hosts_file} 파일의 존재 여부 확인 필요",
+            "결과": "정보"
+        })
 
- 
+    return results
 
-BAR
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-CODE [U-09] /etc/hosts 파일 소유자 및 권한 설정.
+def main():
+    results = check_hosts_file_ownership_and_permission()
+    save_results_to_json(results, "hosts_file_ownership_permission_check_result.json")
+    print("'/etc/hosts' 파일 소유자 및 권한 설정 점검 결과를 hosts_file_ownership_permission_check_result.json 파일에 저장하였습니다.")
 
-cat << EOF >> $result
-
-[양호]: /etc/hosts 파일의 소유자가 root이고, 권한이 600 이하경우
-
-[취약]: /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600 이상인 경우
-
-EOF
-
-BAR
- 
-
-file="/etc/hosts"
-
-# 소유권 확인
-owner=$(stat -c '%U' "$file")
-if [ "$owner" != "root" ]; then
-  WARN "$file의 소유자가 루트가 아니라 $owner가 소유하고 있다."
-else
-  OK "$file의 소유자는 루트입니다."
-fi
-
-# 권한 확인
-permissions=$(stat -c '%a' "$file")
-if [ "$permissions" -lt 600 ]; then
-  WARN "$file의 권한이 600 미만입니다. $permissions 설정."
-else
-  OK "$file의 권한은 최소 600 입니다."
-fi
- 
-
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

@@ -1,41 +1,53 @@
-#!/usr/bin/env python3
-import json
-import subprocess
+#!/bin/python3
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-13": {
-        "title": "SUID, SGID, Sticky bit 설정 파일 점검",
-        "status": "",
-        "description": {
-            "good": "주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우",
-            "bad": "주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우"
-        },
-        "details": []
-    }
-}
+import subprocess
+import json
 
 def check_suid_sgid_files():
-    # 시스템에서 SUID와 SGID 설정이 부여된 파일을 찾습니다.
-    command = "find / -type f \( -perm -4000 -o -perm -2000 \) -exec ls -l {} \;"
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    stdout, stderr = process.communicate()
+    results = []
+    # root 소유이며 SUID 또는 SGID 권한이 설정된 파일들을 찾습니다.
+    command = ["find", "/", "-user", "root", "-type", "f", "\\(", "-perm", "-4000", "-o", "-perm", "-2000", "\\)", "-exec", "ls", "-l", "{}", ";"]
+    try:
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        files_with_permissions = stdout.decode().strip()
 
-    if stdout:
-        results["U-13"]["status"] = "취약"
-        for line in stdout.split('\n'):
-            if line:
-                results["U-13"]["details"].append(line)
-    else:
-        results["U-13"]["status"] = "양호"
-        results["U-13"]["details"].append("SUID와 SGID에 대한 설정이 부여된 파일이 없습니다.")
+        if files_with_permissions:
+            results.append({
+                "코드": "U-13",
+                "진단 결과": "취약",
+                "현황": "주요 파일의 권한에 SUID와 SGID 설정이 부여되어 있음",
+                "대응방안": "불필요한 SUID/SGID 설정 제거 권장",
+                "결과": "경고",
+                "탐지된 파일": files_with_permissions.split("\n")
+            })
+        else:
+            results.append({
+                "코드": "U-13",
+                "진단 결과": "양호",
+                "현황": "주요 파일의 권한에 SUID와 SGID 설정이 부여되어 있지 않음",
+                "대응방안": "현재 설정 유지",
+                "결과": "정상"
+            })
+    except subprocess.CalledProcessError as e:
+        results.append({
+            "코드": "U-13",
+            "진단 결과": "오류",
+            "현황": "SUID/SGID 설정 파일 점검 중 오류 발생",
+            "대응방안": "점검 스크립트 오류 확인 및 수정 필요",
+            "결과": "오류"
+        })
 
-check_suid_sgid_files()
+    return results
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'suid_sgid_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+def main():
+    results = check_suid_sgid_files()
+    save_results_to_json(results, "suid_sgid_files_check_result.json")
+    print("SUID, SGID, Sticky bit 설정 파일 점검 결과를 suid_sgid_files_check_result.json 파일에 저장하였습니다.")
+
+if __name__ == "__main__":
+    main()

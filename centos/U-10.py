@@ -1,48 +1,64 @@
-#!/usr/bin/env python3
-import json
+#!/bin/python3
+
 import os
 import stat
+import json
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-10": {
-        "title": "/etc/xinetd.conf 파일 소유자 및 권한 설정",
-        "status": "",
-        "description": {
-            "good": "/etc/xinetd.conf 파일의 소유자가 root이고, 권한이 600인 경우",
-            "bad": "/etc/xinetd.conf 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우"
-        },
-        "details": []
-    }
-}
-
-def check_xinetd_conf_ownership_and_permissions():
+def check_xinetd_conf_file_ownership_and_permission():
+    results = []
     xinetd_conf_file = "/etc/xinetd.conf"
-    
-    if not os.path.exists(xinetd_conf_file):
-        results["U-10"]["details"].append(f"{xinetd_conf_file} 파일이 없습니다.")
-        results["U-10"]["status"] = "양호"
+    expected_permission = 0o600  # Octal notation
+
+    if not os.path.isfile(xinetd_conf_file):
+        results.append({
+            "코드": "U-10",
+            "진단 결과": "정보",
+            "현황": f"{xinetd_conf_file} 파일이 없습니다.",
+            "대응방안": "필요한 경우 {xinetd_conf_file} 파일 생성 및 적절한 권한 설정 권장",
+            "결과": "정보"
+        })
     else:
         file_stat = os.stat(xinetd_conf_file)
         owner_uid = file_stat.st_uid
-        permissions = stat.S_IMODE(file_stat.st_mode)
-        
-        if owner_uid == 0 and permissions == 0o600:
-            results["U-10"]["status"] = "양호"
-            results["U-10"]["details"].append(f"{xinetd_conf_file}의 소유자가 root이며, 권한이 600입니다.")
+        file_permission = stat.S_IMODE(file_stat.st_mode)
+        owner_name = os.getpwuid(owner_uid).pw_name
+
+        if owner_name != "root":
+            results.append({
+                "코드": "U-10",
+                "진단 결과": "취약",
+                "현황": f"{xinetd_conf_file} 파일의 소유자가 root가 아님",
+                "대응방안": f"{xinetd_conf_file} 파일의 소유자를 root로 변경 권장",
+                "결과": "경고"
+            })
+
+        if file_permission != expected_permission:
+            results.append({
+                "코드": "U-10",
+                "진단 결과": "취약",
+                "현황": f"{xinetd_conf_file} 파일의 권한이 {oct(file_permission)}로 설정됨, 600 권장",
+                "대응방안": f"{xinetd_conf_file} 파일의 권한을 600으로 설정 권장",
+                "결과": "경고"
+            })
         else:
-            results["U-10"]["status"] = "취약"
-            if owner_uid != 0:
-                results["U-10"]["details"].append(f"{xinetd_conf_file}가 루트에 의해 소유되지 않음")
-            if permissions != 0o600:
-                results["U-10"]["details"].append(f"{xinetd_conf_file}에 권한이 600이 아닙니다. 현재 권한: {permissions}")
+            results.append({
+                "코드": "U-10",
+                "진단 결과": "양호",
+                "현황": f"{xinetd_conf_file} 파일의 소유자가 root이며 권한이 600임",
+                "대응방안": "현재 설정 유지",
+                "결과": "정상"
+            })
 
-check_xinetd_conf_ownership_and_permissions()
+    return results
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'xinetd_conf_ownership_and_permissions_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+def main():
+    results = check_xinetd_conf_file_ownership_and_permission()
+    save_results_to_json(results, "xinetd_conf_file_ownership_permission_check_result.json")
+    print("'/etc/xinetd.conf' 파일 소유자 및 권한 설정 점검 결과를 xinetd_conf_file_ownership_permission_check_result.json 파일에 저장하였습니다.")
+
+if __name__ == "__main__":
+    main()
