@@ -21,6 +21,7 @@ def evaluate_files_dirs(files_dirs):
     for item in files_dirs:
         item_name = os.path.basename(item)
         if re.search("unwanted-file|suspicious-dir", item_name):
+            print(f"경고: 원하지 않는 파일 또는 의심스러운 디렉터리 발견: {item}")
             results.append({
                 "분류": "파일/디렉터리",
                 "코드": "U-59",
@@ -32,6 +33,7 @@ def evaluate_files_dirs(files_dirs):
                 "결과": "경고 발생"
             })
         else:
+            print(f"정상: 정상적인 파일 또는 디렉터리: {item}")
             results.append({
                 "분류": "파일/디렉터리",
                 "코드": "U-59",
@@ -53,6 +55,7 @@ def main():
     all_results = []
     
     for dir_path in directories:
+        print(f"{dir_path} 내 숨겨진 파일 및 디렉터리 점검 중...\n")
         hidden_files, hidden_dirs = find_hidden_files(dir_path)
         files_results = evaluate_files_dirs(hidden_files)
         dirs_results = evaluate_files_dirs(hidden_dirs)
@@ -60,11 +63,7 @@ def main():
         all_results.extend(dirs_results)
     
     save_results_to_json(all_results, "result.json")
-    print("진단 결과를 result.json 파일에 저장하였습니다.")
+    print("\n진단 결과를 result.json 파일에 저장하였습니다.")
 
 if __name__ == "__main__":
     main()
-
-
-
- 
