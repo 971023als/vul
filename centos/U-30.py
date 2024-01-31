@@ -2,13 +2,10 @@
 
 . function.sh
 
- 
 TMP1=`SCRIPTNAME`.log
 
 > $TMP1
  
- 
-
 BAR
 
 CODE [U-30] Sendmail 버전 점검
