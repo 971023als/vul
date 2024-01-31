@@ -1,53 +1,73 @@
-#!/bin/bash
+#!/bin/python3
 
- 
+import subprocess
+import json
 
-. function.sh
+def check_ftp_service():
+    results = []
+    # FTP 서비스 상태를 확인합니다.
+    try:
+        ftp_status = subprocess.check_output(['systemctl', 'status', 'vsftpd'], stderr=subprocess.STDOUT).decode('utf-8')
+        ftp_active = "active (running)" in ftp_status
+        if ftp_active:
+            result = {
+                "분류": "네트워크 서비스",
+                "코드": "U-61",
+                "위험도": "높음",
+                "진단 항목": "FTP 서비스 확인",
+                "진단 결과": "취약",
+                "현황": "FTP 서비스가 활성화 되어 있습니다.",
+                "대응방안": "FTP 서비스 비활성화 권장",
+                "결과": "경고"
+            }
+            print("경고: FTP 서비스가 활성화 되어 있습니다.")
+        else:
+            result = {
+                "분류": "네트워크 서비스",
+                "코드": "U-61",
+                "위험도": "낮음",
+                "진단 항목": "FTP 서비스 확인",
+                "진단 결과": "양호",
+                "현황": "FTP 서비스가 비활성화 되어 있습니다.",
+                "대응방안": "현재 상태 유지",
+                "결과": "정상"
+            }
+            print("OK: FTP 서비스가 비활성화 되어 있습니다.")
+    except subprocess.CalledProcessError:
+        result = {
+            "분류": "네트워크 서비스",
+            "코드": "U-61",
+            "위험도": "낮음",
+            "진단 항목": "FTP 서비스 확인",
+            "진단 결과": "양호",
+            "현황": "FTP 서비스가 설치되지 않았거나 확인할 수 없습니다.",
+            "대응방안": "필요에 따라 FTP 서비스 설치 및 구성",
+            "결과": "정상"
+        }
+        print("정보: FTP 서비스가 설치되지 않았거나 확인할 수 없습니다.")
 
-TMP1=`SCRIPTNAME`.log
+    results.append(result)
 
-> $TMP1   
+    # FTP 포트가 수신 중인지 확인합니다.
+    try:
+        netstat_output = subprocess.check_output(['netstat', '-tnlp'], stderr=subprocess.STDOUT).decode('utf-8')
+        if ":21 " in netstat_output:
+            print("경고: FTP 포트(21)가 열려 있습니다.")
+        else:
+            print("OK: FTP 포트(21)가 열려 있지 않습니다.")
+    except subprocess.CalledProcessError:
+        print("정보: netstat 명령을 실행할 수 없습니다.")
 
- 
+    return results
 
-BAR
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-CODE [U-61] ftp 서비스 확인
+def main():
+    results = check_ftp_service()
+    save_results_to_json(results, "ftp_service_check_result.json")
+    print("FTP 서비스 점검 결과를 ftp_service_check_result.json 파일에 저장하였습니다.")
 
-cat << EOF >> $result
-
-[양호]: FTP 서비스가 비활성화 되어 있는 경우
-
-[취약]: FTP 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-yum install net-tools -y
-
-yum install -y iproute2
-
-# FTP 서비스의 상태를 확인합니다
-ftp_status=$(service ftp status 2>&1)
-
-# /etc/passwd에서 FTP 계정을 확인합니다
-ftp_entry=$(grep "^ftp:" /etc/passwd)
-
-# FTP 계정의 셸을 확인합니다
-ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
-
-# FTP 포트가 수신 중인지 확인합니다
-if netstat -tnlp | grep -q ':21'; then
-  if [ "$ftp_shell" == "/bin/false" ]; then
-    OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
-  else
-    WARN "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
-  fi
-else
-  OK "FTP 포트(21)가 열려 있지 않습니다."
-fi
-
-cat $result
-
-echo ; echo 
+if __name__ == "__main__":
+    main()

@@ -1,48 +1,82 @@
-#!/bin/bash
+#!/bin/python3
 
-. function.sh
+import subprocess
+import re
+import json
 
-TMP1=`SCRIPTNAME`.log
+def check_ftp_account_shell():
+    results = []
+    ftp_shell = None
 
-> $TMP1 
- 
-BAR
+    # /etc/passwd에서 FTP 계정의 셸을 확인합니다.
+    with open('/etc/passwd', 'r') as f:
+        for line in f:
+            if line.startswith('ftp:'):
+                ftp_shell = line.strip().split(':')[-1]
+                break
 
-CODE [U-62] ftp 계정 shell 제한
+    # FTP 포트가 수신 중인지 확인합니다.
+    try:
+        netstat_output = subprocess.check_output(['netstat', '-tnlp'], stderr=subprocess.STDOUT).decode('utf-8')
+        ftp_port_open = ":21 " in netstat_output
+    except subprocess.CalledProcessError:
+        ftp_port_open = False
 
-cat << EOF >> $result
+    # 결과를 분석하여 추가합니다.
+    if ftp_shell == '/bin/false':
+        shell_status = "양호"
+        action = "현재 상태 유지"
+        result = "정상"
+    else:
+        shell_status = "취약"
+        action = "FTP 계정의 셸을 /bin/false로 설정 권장"
+        result = "경고"
 
-[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
+    results.append({
+        "분류": "사용자 계정",
+        "코드": "U-62",
+        "위험도": "높음" if shell_status == "취약" else "낮음",
+        "진단 항목": "FTP 계정 shell 제한",
+        "진단 결과": shell_status,
+        "현황": f"FTP 계정의 셸 설정: {ftp_shell}",
+        "대응방안": action,
+        "결과": result
+    })
 
-[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우
+    # FTP 포트 상태 추가 분석
+    if ftp_port_open and shell_status == "양호":
+        results.append({
+            "분류": "네트워크 서비스",
+            "코드": "U-62-1",
+            "위험도": "낮음",
+            "진단 항목": "FTP 포트 상태",
+            "진단 결과": "양호",
+            "현황": "FTP 포트(21)가 열려 있지만, 셸 제한이 적절히 설정됨",
+            "대응방안": "현재 상태 유지",
+            "결과": "정상"
+        })
+    elif ftp_port_open:
+        results.append({
+            "분류": "네트워크 서비스",
+            "코드": "U-62-1",
+            "위험도": "높음",
+            "진단 항목": "FTP 포트 상태",
+            "진단 결과": "취약",
+            "현황": "FTP 포트(21)가 열려 있음",
+            "대응방안": "FTP 포트 닫기 또는 셸 제한 설정 권장",
+            "결과": "경고"
+        })
 
-EOF
+    return results
 
-BAR
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-# FTP 서비스의 상태를 확인합니다
-ftp_status=$(service ftp status 2>&1)
+def main():
+    results = check_ftp_account_shell()
+    save_results_to_json(results, "ftp_account_shell_check_result.json")
+    print("FTP 계정의 셸 제한 점검 결과를 ftp_account_shell_check_result.json 파일에 저장하였습니다.")
 
-# /etc/passwd에서 FTP 계정을 확인합니다
-ftp_entry=$(grep "^ftp:" /etc/passwd)
-
-# FTP 계정의 셸을 확인합니다
-ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
-
-# FTP 포트가 수신 중인지 확인합니다
-if netstat -tnlp | grep -q ':21'; then
-  if [ "$ftp_shell" == "/bin/false" ]; then
-    OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
-  else
-    WARN "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
-  fi
-else
-  OK "FTP 포트(21)가 열려 있지 않습니다."
-fi
-
-
-cat $result
-
-echo ; echo 
-
- 
+if __name__ == "__main__":
+    main()
