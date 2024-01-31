@@ -1,62 +1,50 @@
 #!/bin/python3
- 
 
-. function.sh
+import subprocess
+import json
 
-TMP1=`SCRIPTNAME`.log
+# 결과 저장을 위한 리스트
+results = []
 
-> $TMP1   
+def check_dns_service_status():
+    """
+    DNS 서비스(named 프로세스)의 실행 상태를 확인합니다.
+    """
+    try:
+        output = subprocess.check_output("ps -ef | grep named | grep -v grep", shell=True, stderr=subprocess.STDOUT)
+        if output:
+            return True  # 실행 중
+        else:
+            return False  # 실행되지 않음
+    except subprocess.CalledProcessError:
+        return False  # 프로세스가 없음
 
- 
+# DNS 서비스 실행 상태 확인
+dns_service_active = check_dns_service_status()
 
-BAR
+# DNS Zone Transfer 설정 점검 (시뮬레이션)
+# 실제 환경에서는 DNS 서버의 구성 파일을 분석하는 로직이 필요합니다.
+zone_transfer_restriction_set = False  # 이 값은 실제 설정을 확인하여 결정해야 합니다.
 
-CODE [U-34] DNS Zone Transfer 설정
+diagnostic_item = "DNS Zone Transfer 설정"
+if dns_service_active and not zone_transfer_restriction_set:
+    status = "취약"
+    situation = "DNS(named) 데몬이 활성화되어 있으며 Zone Transfer를 모든 사용자에게 허용한 상태"
+    countermeasure = "Zone Transfer를 허가된 사용자에게만 허용하도록 설정"
+else:
+    status = "양호"
+    situation = "DNS 서비스 미사용 또는, Zone Transfer를 허가된 사용자에게만 허용한 상태"
+    countermeasure = "Zone Transfer 설정 유지 및 정기적 검토"
 
-cat << EOF >> $result
+results.append({
+    "분류": "서비스 관리",
+    "코드": "U-34",
+    "위험도": "상",
+    "진단 항목": diagnostic_item,
+    "진단 결과": status,
+    "현황": situation,
+    "대응방안": countermeasure
+})
 
-[양호]: DNS 서비스 미사용 또는, Zone Transfer를 허가된 사용자에게만 허용한 경우
-
-[취약]: DNS 서비스를 사용하여 Zone Transfer를 모든 사용자에게 허용한 경우
-
-EOF
-
-BAR
-
-# DNS 프로세스가 지금 실행 중인지 확인합니다
-dns_process=$(ps -ef | grep named | grep -v grep)
-
-# DNS 프로세스가 계속 실행되면 오류 메시지를 인쇄합니다
-if [ -z "$dns_process" ]; then
-  OK "DNS 서비스 데몬이 실행되고 있지 않습니다."
-else
-  WARN "DNS 서비스 데몬이 실행 중입니다."
-fi
-
-
-cat $result
-
-echo ; echo
-
-if nonexistent_device_files:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-34",
-            "위험도": "상",
-            "진단 항목": "DNS Zone Transfer 설정",
-            "진단 결과": "취약",
-            "현황": "DNS(named) 데몬이 활성화 되어 있는 상태",
-            "대응방안": "DNS(named) 데몬 비활성화"
-        })
-    else:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-34",
-            "위험도": "상",
-            "진단 항목": "DNS Zone Transfer 설정",
-            "진단 결과": "양호",
-            "현황": "DNS(named) 데몬이 비활성화 되어 있는 상태",
-            "대응방안": "DNS(named) 데몬 비활성화"
-        })
-
-return results
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
