@@ -1,62 +1,53 @@
 #!/bin/python3
 
-. function.sh
+import subprocess
+import json
 
-TMP1=`SCRIPTNAME`.log
+# 결과 리스트 초기화
+results = []
 
-> $TMP1 
+def check_nfs_services():
+    """
+    NFS 서비스 데몬(nfsd, statd, lockd)이 실행 중인지 확인합니다.
+    """
+    try:
+        # NFS 서비스 데몬이 실행 중인지 확인
+        nfs_services = subprocess.check_output("ps -ef | egrep 'nfsd|statd|lockd' | grep -v grep", shell=True)
+        
+        # 결과가 비어 있지 않은 경우, NFS 서비스가 실행 중임
+        if nfs_services:
+            return True
+        else:
+            return False
+    except subprocess.CalledProcessError:
+        # 에러가 발생한 경우(일반적으로 프로세스가 없을 때)
+        return False
 
-BAR
+# NFS 서비스 상태 확인
+nfs_active = check_nfs_services()
 
-CODE [U-24] NFS 서비스 비활성화 
+if nfs_active:
+    results.append({
+        "분류": "서비스 관리",
+        "코드": "U-24",
+        "위험도": "상",
+        "진단 항목": "NFS 서비스 비활성화",
+        "진단 결과": "취약",
+        "현황": "NFS 서비스가 활성화 되어 있는 상태",
+        "대응방안": "NFS 서비스 비활성화"
+    })
+    print("WARN: NFS 서비스 데몬이 실행 중입니다.")
+else:
+    results.append({
+        "분류": "서비스 관리",
+        "코드": "U-24",
+        "위험도": "상",
+        "진단 항목": "NFS 서비스 비활성화",
+        "진단 결과": "양호",
+        "현황": "NFS 서비스가 비활성화 되어 있는 상태",
+        "대응방안": "NFS 서비스 비활성화"
+    })
+    print("OK: NFS 서비스 데몬이 실행되고 있지 않습니다.")
 
-cat << EOF >> $result
-
-[양호]: 불필요한 NFS 서비스가 비활성화 되어있는 경우
-
-[취약]: 불필요한 NFS 서비스가 활성화 되어있는 경우
-
-EOF
-
-BAR
-
-# NFS 서비스 데몬(nfsd, statd 및 lockd)이 실행 중인지 확인합니다
-NFS=$(ps -ef | egrep "nfsd|statd|lockd" | grep -v grep)
-
-# 결과 변수가 비어 있지 않으면 NFS 서비스 데몬이 실행되고 있습니다
-if [ ! -f "$NFS" ]; then
-  INFO "NFS 관련 파일이 없습니다"
-else
-  if [ -n "$NFS" ]; then
-    WARN "NFS 서비스 데몬이 실행 중입니다."
-  else
-    OK "NFS 서비스 데몬이 실행되고 있지 않습니다."
-  fi
-fi
- 
-cat $result
-
-echo ; echo
-
-if nonexistent_device_files:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-24",
-            "위험도": "상",
-            "진단 항목": "NFS 서비스 비활성화",
-            "진단 결과": "취약",
-            "현황": " NFS 서비스가 활성화 되어 있는 상태",
-            "대응방안": " NFS 서비스 비활성화"
-        })
-    else:
-        results.append({
-            "분류": "서비스 관리",
-            "코드": "U-24",
-            "위험도": "상",
-            "진단 항목": "NFS 서비스 비활성화",
-            "진단 결과": "양호",
-            "현황": " NFS 서비스가 비활성화 되어 있는 상태",
-            "대응방안": " NFS 서비스 비활성화"
-        })
-
-return results
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
