@@ -1,47 +1,86 @@
-#!/usr/bin/env python3
-import json
-import os
-import glob
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-23": {
-        "title": "DoS 공격에 취약한 서비스 비활성화",
-        "status": "",
-        "description": {
-            "good": "DoS 공격에 취약한 서비스가 비활성화된 경우",
-            "bad": "DoS 공격에 취약한 서비스가 활성화된 경우"
-        },
-        "details": []
-    }
-}
+. function.sh
 
-def check_service_disabled(service_patterns):
-    for pattern in service_patterns:
-        for file_path in glob.glob(pattern):
-            with open(file_path, 'r') as file:
-                if "disable = yes" in file.read():
-                    results["U-23"]["details"].append(f"{file_path} 파일에 대한 서비스가 비활성화 되어 있습니다.")
-                else:
-                    results["U-23"]["status"] = "취약"
-                    results["U-23"]["details"].append(f"{file_path} 파일에 대한 서비스가 활성화 되어 있습니다.")
+TMP1=`SCRIPTNAME`.log
 
-service_patterns = [
-    "/etc/xinetd.d/echo*",
-    "/etc/xinetd.d/discard*",
-    "/etc/xinetd.d/daytime*",
-    "/etc/xinetd.d/chargen*"
-]
-check_service_disabled(service_patterns)
+> $TMP1
 
-# 결과 상태 결정
-if "취약" not in results["U-23"]["status"]:
-    results["U-23"]["status"] = "양호"
+BAR
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'dos_vulnerable_services_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+CODE [U-23] DoS 공격에 취약한 서비스 비활성화
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+cat << EOF >> $result
+
+[ 양호 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스가 비활성화 된 경우
+
+[ 취약 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우
+
+EOF
+
+BAR
+
+ls /etc/xinetd.d/echo* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/echo 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/echo*`
+do
+INFO $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+ls /etc/xinetd.d/discard* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/discard 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/discard*`
+do
+INFO $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+
+ls /etc/xinetd.d/daytime* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/daytime 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/daytime*`
+do
+INFO $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+ls /etc/xinetd.d/chargen* >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+OK /etc/xinetd.d/chargen 파일이 존재하지 않습니다.
+else
+for i in `ls /etc/xinetd.d/chargen*`
+do
+INFO $i 파일이 존재합니다.
+if [ `cat $i | grep disable | awk '{print $3}'` = yes ] ; then
+OK $i 파일에 대한 서비스가 비활성화 되어 있습니다.
+else
+WARN $i 파일에 대한 서비스가 활성화 되어 있습니다.
+fi
+done
+fi
+
+cat $result
+
+echo ; echo

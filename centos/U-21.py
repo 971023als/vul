@@ -1,53 +1,58 @@
-#!/usr/bin/env python3
-import json
-import os
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-21": {
-        "title": "r 계열 서비스 비활성화",
-        "status": "양호",
-        "description": {
-            "good": "r 계열 서비스가 비활성화 되어 있는 경우",
-            "bad": "r 계열 서비스가 활성화 되어 있는 경우"
-        },
-        "details": []
-    }
-}
+. function.sh
 
-# 검사할 파일과 예상 설정
-files = ["/etc/xinetd.d/rlogin", "/etc/xinetd.d/rsh", "/etc/xinetd.d/rexec"]
-expected_settings = [
-    "socket_type= stream",
-    "wait= no",
-    "user= nobody",
-    "log_on_success+= USERID",
-    "log_on_failure+= USERID",
-    "disable= yes"
-]
+TMP1=`SCRIPTNAME`.log
 
-def check_r_services():
-    for file in files:
-        if not os.path.exists(file):
-            results["U-21"]["details"].append(f"{file} 파일이 없습니다.")
-            continue
-        
-        with open(file, 'r') as f:
-            file_content = f.read()
-        
-        missing_settings = [setting for setting in expected_settings if setting not in file_content]
-        if missing_settings:
-            results["U-21"]["status"] = "취약"
-            results["U-21"]["details"].append(f"{file} 파일에서 누락된 설정: {', '.join(missing_settings)}")
-        else:
-            results["U-21"]["details"].append(f"{file}의 모든 예상 설정이 올바르게 적용되었습니다.")
+> $TMP1
 
-check_r_services()
+BAR
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'r_services_disable_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+CODE [U-22] cron 파일 소유자 및 권한 설정
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+cat << EOF >> $result
+
+[양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우
+
+[취약]: cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우
+
+EOF
+
+BAR
+
+# 파일 정의
+files=(/etc/crontab /etc/cron.hourly /etc/cron.daily /etc/cron.weekly /etc/cron.monthly /etc/cron.allow /etc/cron.deny /var/spool/cron* /var/spool/cron/crontabs/)
+
+for file in "${files[@]}"; do
+  if [ -e "$file" ]; then
+    owner=$(stat -c %U "$file")
+    if [ "$owner" != "root" ]; then
+      WARN "$file 은 root가 아닌 $owner가 소유합니다"
+    else
+      OK "$file 은 root가 소유합니다"
+    fi
+  else
+    INFO "$file이 존재하지 않습니다"
+  fi
+done
+
+for file in "${files[@]}"; do
+  if [ -e "$file" ]; then
+    perms=$(stat -c %a "$file")
+    if [ "$perms" -lt 640 ]; then
+      WARN "$file 에 $perms 권한이 640보다 큽니다"
+    else
+      OK "$file 에 $perms 권한이 640보다 작습니다"
+    fi
+  else
+    INFO "$file이 존재하지 않습니다"
+  fi
+done
+
+ 
+
+ 
+
+cat $result
+
+echo ; echo

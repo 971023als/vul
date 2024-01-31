@@ -1,37 +1,52 @@
-#!/bin/bash
- 
-. function.sh
+#!/bin/python3
 
-TMP1=`SCRIPTNAME`.log
+import os
+import json
 
->$TMP1  
- 
-BAR
+def check_nonexistent_device_files():
+    results = []
+    nonexistent_device_files = []
+    for file in os.listdir("/dev"):
+        file_path = os.path.join("/dev", file)
+        try:
+            # Skip if it is not a regular file
+            if not os.path.isfile(file_path):
+                continue
+            file_stat = os.stat(file_path)
+            # Check for major and minor numbers being 0
+            if os.major(file_stat.st_rdev) == 0 and os.minor(file_stat.st_rdev) == 0:
+                nonexistent_device_files.append(file_path)
+        except Exception as e:
+            # Ignoring files for which the script does not have permission to access
+            continue
 
-CODE [U-16] /dev에 존재하지 않는 device 파일 점검
+    if nonexistent_device_files:
+        results.append({
+            "코드": "U-16",
+            "진단 결과": "취약",
+            "현황": "/dev에 존재하지 않는 device 파일이 있습니다.",
+            "대응방안": "/dev에 존재하지 않는 device 파일 점검 후 제거 권장",
+            "결과": "경고"
+        })
+    else:
+        results.append({
+            "코드": "U-16",
+            "진단 결과": "양호",
+            "현황": "/dev에 존재하지 않는 device 파일이 없습니다.",
+            "대응방안": "현재 설정 유지",
+            "결과": "정상"
+        })
 
-cat << EOF >> $result  
+    return results
 
-[양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우
+def save_results_to_json(results, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-[취약]: dev에 대한 파일 미점검, 또는, 존재하지 않은 device 파일을 방치한 경우
+def main():
+    results = check_nonexistent_device_files()
+    save_results_to_json(results, "nonexistent_device_files_check_result.json")
+    print("/dev에 존재하지 않는 device 파일 점검 결과를 nonexistent_device_files_check_result.json 파일에 저장하였습니다.")
 
-EOF
-
-BAR
-
-results=$(find /dev -type f -exec ls -l {} \;)
-
-while read line; do
-  major_minor=$(echo $line | awk '{print $5,$6}')
-  if [ "$major_minor" == "0 0" ]; then
-    WARN "$line 메이저 및 마이너 번호가 없는 장치를 찾았습니다"
-  else
-    OK "$line 메이저 및 마이너 번호가 있습니다"
-  fi
-done <<< "$results"
-
-cat $result
-
-echo ; echo
-
+if __name__ == "__main__":
+    main()
