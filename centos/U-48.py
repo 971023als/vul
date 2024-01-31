@@ -1,51 +1,47 @@
 #!/bin/python3
 
-. function.sh
+import re
+import json
 
-TMP1=`SCRIPTNAME`.log
+# /etc/login.defs 파일 경로
+login_defs_file = "/etc/login.defs"
 
-> $TMP1
+# 결과 저장을 위한 딕셔너리
+results = {
+    "분류": "서비스 관리",
+    "코드": "U-48",
+    "위험도": "상",
+    "진단 항목": "패스워드 최소 사용기간 설정",
+    "진단 결과": "",
+    "현황": "",
+    "대응방안": ""
+}
 
-BAR
+try:
+    with open(login_defs_file, 'r') as file:
+        content = file.read()
 
-CODE [U-48] 패스워드 최소 사용기간 설정
+    # PASS_MIN_DAYS 값 추출
+    match = re.search(r'^PASS_MIN_DAYS\s+(\d+)', content, re.MULTILINE)
+    if match:
+        pass_min_days = int(match.group(1))
+        if pass_min_days >= 7:
+            results["진단 결과"] = "양호"
+            results["현황"] = f"패스워드 최소 사용기간이 {pass_min_days}일로 설정되어 있습니다."
+            results["대응방안"] = "현재 설정 유지"
+        else:
+            results["진단 결과"] = "취약"
+            results["현황"] = f"패스워드 최소 사용기간이 {pass_min_days}일로 설정되어 있습니다. 7일 이상으로 설정하는 것이 권장됩니다."
+            results["대응방안"] = "패스워드 최소 사용기간을 7일 이상으로 설정"
+    else:
+        results["진단 결과"] = "취약"
+        results["현황"] = "PASS_MIN_DAYS 설정이 /etc/login.defs 파일에 존재하지 않습니다."
+        results["대응방안"] = "/etc/login.defs 파일에 PASS_MIN_DAYS 설정을 추가하고, 7일 이상으로 설정"
 
-cat << EOF >> $result
+except FileNotFoundError:
+    results["진단 결과"] = "정보 부족"
+    results["현황"] = f"{login_defs_file} 파일을 찾을 수 없습니다."
+    results["대응방안"] = "/etc/login.defs 파일의 위치를 확인하고, 필요한 설정을 적용"
 
-[양호]: 패스워드 최소 사용기간이 1일(1주)로 설정되어 있는 경우
-
-[취약]: 패스워드 최소 사용기간이 설정되어 있지 않는 경우
-
-EOF
-
-BAR
-
-# /etc/login.defs에서 PASS_MIN_DAYS 값을 읽습니다
-pass_min_days=$(grep "^PASS_MIN_DAYS" /etc/login.defs | awk '{print $2}')
-
-min_days=7
-
-# PASS_MIN_DAYS 값이 주석 처리되었는지 확인합니다
-if grep -q "^#PASS_MIN_DAYS" /etc/login.defs; then
-  INFO "PASS_MIN_DAYS가 주석 처리되었습니다."
-else
-  # PASS_MIN_DAYS 값이 올바른 정수인지 확인하십시오
-  if [ "$pass_min_days" -eq "$pass_min_days" ] 2>/dev/null; then
-    # PASS_MIN_DAYS의 값이 지정된 범위 내에 있는지 확인합니다
-    if [ "$pass_min_days" -ge 0 ] && [ "$pass_min_days" -le 99999999 ]; then
-      if [ "$pass_min_days" -ge "$min_days" ]; then
-        OK "PASS_MIN_DAYS이 $pass_min_days 으로 설정되어 $min_days 보다 크거나 같습니다."
-      else
-        WARN "PASS_MIN_DAYS이 $min_days 보다 작은 $pass_min_days 으로 설정되었습니다."
-      fi
-    else
-      INFO " PASS_MIN_DAYS 값이 범위를 벗어났습니다."
-    fi
-  else
-    INFO " PASS_MIN_DAYS 값이 올바른 정수가 아닙니다."
-  fi
-fi
-
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
