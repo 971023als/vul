@@ -1,12 +1,7 @@
 #!/usr/bin/python3
 
- 
-
- 
-
 . function.sh
 
- 
  TMP1=`SCRIPTNAME`.log
 
 > $TMP1
@@ -24,7 +19,6 @@ cat << EOF >> $result
 EOF
 
 BAR
-
 
 FILENAME1=/etc/shadow
 FILENAME2=/etc/passwd
