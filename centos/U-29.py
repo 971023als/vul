@@ -1,45 +1,60 @@
-#!/usr/bin/env python3
-import json
-import subprocess
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-29": {
-        "title": "tftp, talk 서비스 비활성화",
-        "status": "",
-        "description": {
-            "good": "tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우",
-            "bad": "tftp, talk, ntalk 서비스가 활성화 되어 있는 경우"
-        },
-        "details": []
-    }
-}
+. function.sh
 
-services = ["tftp", "talk", "ntalk"]
+ 
 
-def check_services_status():
-    for service in services:
-        try:
-            # 서비스가 활성화되어 있는지 확인
-            process = subprocess.run(["systemctl", "is-enabled", service], capture_output=True, text=True)
-            if process.returncode == 0:
-                results["U-29"]["status"] = "취약"
-                results["U-29"]["details"].append(f"{service} 서비스가 사용 중입니다.")
-            else:
-                results["U-29"]["details"].append(f"{service} 서비스가 사용 중이지 않습니다.")
-        except Exception as e:
-            results["U-29"]["details"].append(f"{service} 서비스 검사 중 오류 발생: {e}")
+BAR
 
-check_services_status()
+CODE [U-29] tftp, talk 서비스 비활성화
 
-# 결과 상태 결정
-if "취약" not in results["U-29"]["status"]:
-    results["U-29"]["status"] = "양호"
+cat << EOF >> $result
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'tftp_talk_services_disable_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우
+
+EOF
+
+BAR
+
+
+services="tftp talk ntalk"
+
+for service in $services
+do
+    if systemctl is-enabled $service >/dev/null 2>&1; then
+        WARN "$service 서비스가 사용하는 중입니다."
+    else
+        OK "$service 서비스가 사용하는 중입니다."
+    fi
+done
+
+
+cat $result
+
+echo ; echo
+ 
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-29",
+            "위험도": "상",
+            "진단 항목": "tftp, talk 서비스 비활성화",
+            "진단 결과": "취약",
+            "현황": "tftp, talk, ntalk 데몬이 활성화되어 있거나 xinetd(인터넷슈퍼데몬)에 존재하는 상태",
+            "대응방안": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬) 비활성화"
+        })
+    else:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-29",
+            "위험도": "상",
+            "진단 항목": "tftp, talk 서비스 비활성화",
+            "진단 결과": "양호",
+            "현황": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬)에 존재하지 않는 상태",
+            "대응방안": "tftp, talk, ntalk 데몬이 비활성화되어 있고 xinetd(인터넷슈퍼데몬) 비활성화"
+        })
+
+return results

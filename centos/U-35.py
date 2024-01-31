@@ -1,42 +1,67 @@
-#!/usr/bin/env python3
-import json
-import subprocess
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-35": {
-        "title": "Apache 디렉터리 리스팅 제거",
-        "status": "",
-        "description": {
-            "good": "디렉터리 검색 기능을 사용하지 않는 경우",
-            "bad": "디렉터리 검색 기능을 사용하는 경우"
-        },
-        "details": []
-    }
-}
+ 
 
-# Apache 구성 파일 경로 설정
-config_file = "/etc/httpd/conf/httpd.conf"
+. function.sh
 
-def check_directory_listing():
-    try:
-        # grep을 사용하여 구성 파일에서 디렉터리 목록 설정을 확인합니다
-        process = subprocess.run(["grep", "-E", "^[ \t]*Options[ \t]+Indexes", config_file], capture_output=True, text=True)
-        if process.returncode == 0:
-            results["U-35"]["status"] = "취약"
-            results["U-35"]["details"].append("Apache 서버에서 디렉터리 목록이 사용 가능합니다.")
-        else:
-            results["U-35"]["status"] = "양호"
-            results["U-35"]["details"].append("Apache 서버에서 디렉터리 목록이 사용 가능하지 않습니다.")
-    except Exception as e:
-        results["U-35"]["details"].append(f"Apache 디렉터리 리스팅 설정 검사 중 오류 발생: {e}")
+TMP1=`SCRIPTNAME`.log
 
-check_directory_listing()
+> $TMP1  
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'apache_directory_listing_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+ 
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+BAR
+
+CODE [U-35] Apache 디렉터리 리스팅 제거
+
+cat << EOF >> $result
+
+[양호]: 디렉터리 검색 기능을 사용하지 않는 경우
+
+[취약]: 디렉터리 검색 기능을 사용하는 경우
+
+EOF
+
+BAR
+
+
+
+# Apache2 구성 파일 경로 설정
+config_file="/etc/httpd/conf/httpd.conf"
+
+# grep을 사용하여 구성 파일에서 디렉토리 목록이 사용 가능한지 확인합니다
+Result=$(grep -E "^[ \t]*Options[ \t]+Indexes" $config_file)
+
+if [ -n "$Result" ]; then
+    WARN "Apache2 서버에서 디렉터리 목록이 사용 가능합니다."
+else
+    OK "Apache2 서버에서 디렉터리 목록이 사용 가능하지 않습니다."
+fi
+
+
+cat $result
+
+echo ; echo
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-35",
+            "위험도": "상",
+            "진단 항목": "웹 서비스(Apache) 디렉토리 리스팅 제거",
+            "진단 결과": "취약",
+            "현황": "웹 디렉터리 내 설정된 Indexes 옵션을 활성화 되어 있는 상태",
+            "대응방안": "웹 디렉터리 내 설정된 Indexes 옵션을 비활성화"
+        })
+    else:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-35",
+            "위험도": "상",
+            "진단 항목": "웹 서비스(Apache) 디렉토리 리스팅 제거",
+            "진단 결과": "양호",
+            "현황": "웹 디렉터리 내 설정된 Indexes 옵션을 비활성화 되어 있는 상태",
+            "대응방안": "웹 디렉터리 내 설정된 Indexes 옵션을 비활성화"
+        })
+
+return results

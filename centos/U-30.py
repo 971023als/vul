@@ -1,39 +1,65 @@
-#!/usr/bin/env python3
-import json
-import subprocess
+#!/bin/bash
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-30": {
-        "title": "Sendmail 버전 점검",
-        "status": "",
-        "description": {
-            "good": "Sendmail 서비스가 실행되고 있지 않습니다.",
-            "bad": "Sendmail 서비스가 실행 중입니다."
-        },
-        "details": []
-    }
-}
+ 
 
-def check_sendmail_service():
-    try:
-        # Sendmail 서비스가 실행 중인지 확인
-        process = subprocess.run(["pgrep", "-f", "sendmail"], capture_output=True, text=True)
-        if process.returncode == 0:
-            results["U-30"]["status"] = "취약"
-            results["U-30"]["details"].append("Sendmail 서비스가 실행 중입니다.")
-        else:
-            results["U-30"]["status"] = "양호"
-            results["U-30"]["details"].append("Sendmail 서비스가 실행되고 있지 않습니다.")
-    except Exception as e:
-        results["U-30"]["details"].append(f"Sendmail 서비스 검사 중 오류 발생: {e}")
+. function.sh
 
-check_sendmail_service()
+ 
+TMP1=`SCRIPTNAME`.log
 
-# 결과 파일에 JSON 형태로 저장
-result_file = 'sendmail_service_check_result.json'
-with open(result_file, 'w') as file:
-    json.dump(results, file, indent=4, ensure_ascii=False)
+> $TMP1
+ 
+ 
 
-# 결과 콘솔에 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+BAR
+
+CODE [U-30] Sendmail 버전 점검
+
+cat << EOF >> $result
+
+[양호]: Sendmail 버전이 최신버전인 경우 
+
+[취약]: Sendmail 버전이 최신버전이 아닌 경우
+
+EOF
+
+BAR
+
+# Sendmail 서비스가 실행 중인지 확인합니다
+sendmail_status=$(ps -ef | grep sendmail | grep -v "grep")
+
+if [ "$sendmail_status" == "active" ]; then
+  WARN "Sendmail 서비스가 실행 중입니다."
+else
+  OK "메일 보내기 서비스가 실행되고 있지 않습니다."
+fi
+
+
+
+cat $result
+
+echo ; echo
+ 
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-30",
+            "위험도": "상",
+            "진단 항목": "Sendmail 버전 점검",
+            "진단 결과": "취약",
+            "현황": "sendmail 데몬이 활성화되어 있는 상태",
+            "대응방안": "sendmail 데몬 비활성화"
+        })
+    else:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-30",
+            "위험도": "상",
+            "진단 항목": "Sendmail 버전 점검",
+            "진단 결과": "양호",
+            "현황": "sendmail 데몬이 비활성화되어 있는 상태",
+            "대응방안": "sendmail 데몬 비활성화"
+        })
+
+return results

@@ -60,7 +60,7 @@ if nonexistent_device_files:
             "위험도": "상",
             "진단 항목": "cron 파일 소유자 및 권한설정",
             "진단 결과": "취약",
-            "현황": " r 계열 서비스 활성화 되어 있는 경우",
+            "현황": " /usr/bin/crontab 파일에 2755(-rwxr-sr-x)이 부여되거나 Crontab 관련 파일에 타사용자 권한이 부여",
             "대응방안": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정"
         })
     else:
@@ -70,7 +70,7 @@ if nonexistent_device_files:
             "위험도": "상",
             "진단 항목": "cron 파일 소유자 및 권한설정",
             "진단 결과": "양호",
-            "현황": " r 계열 서비스 비활성화 되어 있는 경우",
+            "현황": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정",
             "대응방안": " /usr/bin/crontab 파일과 Crontab 관련 파일의 권한을 640(-rw-r-----)으로 설정"
         })
 

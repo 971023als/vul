@@ -36,3 +36,26 @@ fi
 cat $result
 
 echo ; echo
+
+if nonexistent_device_files:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-26",
+            "위험도": "상",
+            "진단 항목": "automountd 제거",
+            "진단 결과": "취약",
+            "현황": " OS는 로컬 디스크를 마운트하여 사용 중에 있으며, automount 데몬은 활성화되어 있어서 불안전한 상태",
+            "대응방안": " automountd 제거"
+        })
+    else:
+        results.append({
+            "분류": "서비스 관리",
+            "코드": "U-26",
+            "위험도": "상",
+            "진단 항목": "automountd 제거",
+            "진단 결과": "양호",
+            "현황": "  OS는 로컬 디스크를 마운트하여 사용 중에 있으며, automount 데몬은 활성화되어 있지 않아 안전한 상태",
+            "대응방안": "automountd 제거"
+        })
+
+return results
