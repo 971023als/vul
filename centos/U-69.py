@@ -1,41 +1,47 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import os
 import stat
+import pwd
 import json
 
-# NFS 설정 파일 경로
-filename = "/etc/exports"
+def check_nfs_config_permissions():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-69",
+        "위험도": "상",
+        "진단 항목": "NFS 설정파일 접근권한",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: NFS 접근제어 설정파일의 소유자가 root이고, 권한이 644 이하인 경우\n[취약]: NFS 접근제어 설정파일의 소유자가 root가 아니거나, 권한이 644 초과인 경우"
+    }
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-69",
-    "위험도": "상",
-    "진단 항목": "NFS 설정파일 접근권한",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
-
-# 파일 존재 여부 및 소유자, 권한 검사
-if os.path.exists(filename):
-    file_stat = os.stat(filename)
-    owner_uid = file_stat.st_uid
-    file_permission = oct(file_stat.st_mode)[-3:]
-
-    if owner_uid == 0 and int(file_permission) <= 644:
-        results["진단 결과"] = "양호"
-        results["현황"] = f"{filename}의 소유자가 root이고, 권한이 644 이하입니다."
+    filename = "/etc/exports"
+    if not os.path.exists(filename):
+        results["현황"].append(f"{filename} 가 존재하지 않습니다.")
     else:
-        results["진단 결과"] = "취약"
-        results["현황"] = f"{filename}의 소유자가 root가 아니거나, 권한이 644를 초과합니다."
-else:
-    results["진단 결과"] = "정보 부족"
-    results["현황"] = f"{filename} 파일이 존재하지 않습니다."
+        file_stat = os.stat(filename)
+        file_owner = pwd.getpwuid(file_stat.st_uid).pw_name
+        file_permission = stat.S_IMODE(file_stat.st_mode)
 
-# 대응방안 설정
-results["대응방안"] = f"{filename}의 소유자를 root로 설정하고, 권한을 644 이하로 조정하세요."
+        if file_owner != "root":
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{filename}의 소유자가 루트가 아닙니다.")
+        else:
+            results["현황"].append(f"{filename}의 소유자가 루트가 맞습니다.")
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+        if file_permission > 0o644:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{filename}의 권한이 644보다 큽니다.")
+        else:
+            if "취약" not in results["진단 결과"]:
+                results["진단 결과"] = "양호"
+            results["현황"].append(f"{filename}의 권한이 644 이하입니다.")
+
+    return results
+
+def main():
+    results = check_nfs_config_permissions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
+
+if __name__ == "__main__":
+    main()
