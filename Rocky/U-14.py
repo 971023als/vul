@@ -40,6 +40,7 @@ def check_user_system_start_files():
         results["진단 결과"] = "취약"
         results["현황"] = vulnerable_files
     else:
+        results["진단 결과"] = "양호"
         results["현황"].append("모든 홈 디렉터리 내 시작파일 및 환경파일이 적절한 소유자와 권한 설정을 가지고 있습니다.")
 
     return results
