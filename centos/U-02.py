@@ -24,6 +24,7 @@ def check_password_complexity():
             pass_min_len_matches = re.findall(f"{PASS_MIN_LEN_OPTION}[ \t]+([0-9]+)", content)
             highest_value = max(map(int, pass_min_len_matches)) if pass_min_len_matches else 0
             if highest_value >= 8:
+                results["진단 결과"] = "양호"
                 results["현황"].append("8 글자 이상의 패스워드가 설정된 경우")
             else:
                 results["진단 결과"] = "취약"
@@ -36,6 +37,7 @@ def check_password_complexity():
         with open(pam_file, 'r') as file:
             content = file.read()
             if expected_options in content:
+                results["진단 결과"] = "양호"
                 results["현황"].append(f"{pam_file}에 {expected_options}이(가) 있습니다.")
             else:
                 results["진단 결과"] = "취약"
