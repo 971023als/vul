@@ -1,43 +1,39 @@
-import re
-import json
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-39": {
-        "title": "Apache 링크 사용 금지",
-        "status": "",
-        "description": {
-            "good": "심볼릭 링크, aliases 사용을 제한한 경우",
-            "bad": "심볼릭 링크, aliases 사용을 제한하지 않은 경우",
-        },
-        "message": ""
-    }
-}
+. function.sh
 
-def check_apache_link_restrictions(config_file="/etc/apache2/apache2.conf"):
-    try:
-        with open(config_file, 'r') as file:
-            content = file.read()
-            # "Options FollowSymLinks" 및 "Options SymLinksIfOwnerMatch" 설정을 검색합니다.
-            symlink_result = re.search(r'^\s*Options\s+.*FollowSymLinks', content, re.MULTILINE)
-            alias_result = re.search(r'^\s*Options\s+.*SymLinksIfOwnerMatch', content, re.MULTILINE)
+TMP1=`SCRIPTNAME`.log
 
-            if symlink_result and alias_result:
-                results["status"] = "취약"
-                results["message"] = "Apache에서 심볼릭 링크 및 별칭이 허용됩니다."
-            else:
-                results["status"] = "양호"
-                results["message"] = "Apache에서 심볼릭 링크 및 별칭 사용이 제한됩니다."
-    except FileNotFoundError:
-        results["status"] = "오류"
-        results["message"] = f"{config_file} 파일을 찾을 수 없습니다."
+> $TMP1 
+ 
 
-# 검사 수행
-check_apache_link_restrictions()
+BAR
 
-# 결과를 JSON 파일로 저장
-with open('result.json', 'w', encoding='utf-8') as f:
-    json.dump(results, f, ensure_ascii=False, indent=4)
+CODE [U-39] Apache 링크 사용 금지 
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+cat << EOF >> $result
+
+[양호]: 심볼릭 링크, aliases 사용을 제한한 경우
+
+[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우
+
+EOF
+
+BAR
+
+# 확인할 Apache2 Document Root 디렉토리 설정
+config_file="/etc/apache2/apache2.conf"
+
+# grep을 사용하여 구성 파일에서 FollowSymLinks 및 SymLinksIfOwnerMatch 옵션이 실행되었는지 확인합니다
+symlink_result=$(grep -E "^[ \t]*Options[ \t]+FollowSymLinks" $config_file)
+alias_result=$(grep -E "^[ \t]*Options[ \t]+SymLinksIfOwnerMatch" $config_file)
+
+if [ -n "$symlink_result" ] && [ -n "$alias_result" ]; then
+    WARN "Apache2에서 심볼릭 링크 및 별칭이 허용됨"
+else
+    OK "Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다."
+fi
+
+ 
+cat $result
+
+echo ; echo
