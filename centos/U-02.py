@@ -1,78 +1,65 @@
-#!/bin/python3
 
-import re
-import json
+. function.sh
 
-def check_password_complexity():
-    login_defs_file = "/etc/login.defs"
-    pam_file = "/etc/pam.d/system-auth"
-    results = []
-    pass_min_len = 8
+TMP1=$(SCRIPTNAME).log
 
-    # login.defs 파일에서 PASS_MIN_LEN 값을 확인합니다.
-    with open(login_defs_file, 'r') as file:
-        for line in file:
-            if line.startswith("PASS_MIN_LEN"):
-                value = int(line.split()[1])
-                if value >= pass_min_len:
-                    results.append({
-                        "코드": "U-02",
-                        "진단 결과": "양호",
-                        "현황": f"패스워드 최소 길이 {value}글자 설정됨",
-                        "대응방안": "현재 설정 유지",
-                        "결과": "정상"
-                    })
-                else:
-                    results.append({
-                        "코드": "U-02",
-                        "진단 결과": "취약",
-                        "현황": f"패스워드 최소 길이 {value}글자 설정됨, 권장 길이 미만",
-                        "대응방안": f"패스워드 최소 길이를 {pass_min_len}글자 이상으로 설정 권장",
-                        "결과": "경고"
-                    })
-                break
+> $TMP1
 
-    # PAM 설정 파일에서 패스워드 복잡성 정책 확인
-    expected_options = "password requisite pam_cracklib.so try_first_pass retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
-    if os.path.isfile(pam_file):
-        with open(pam_file, 'r') as file:
-            content = file.read()
-            if re.search(re.escape(expected_options), content):
-                results.append({
-                    "코드": "U-02",
-                    "진단 결과": "양호",
-                    "현황": f"{pam_file}에 필요한 패스워드 복잡성 정책 설정됨",
-                    "대응방안": "현재 설정 유지",
-                    "결과": "정상"
-                })
-            else:
-                results.append({
-                    "코드": "U-02",
-                    "진단 결과": "취약",
-                    "현황": f"{pam_file}에 필요한 패스워드 복잡성 정책 미설정",
-                    "대응방안": "권장 패스워드 복잡성 정책 적용 권장",
-                    "결과": "경고"
-                })
-    else:
-        results.append({
-            "코드": "U-02",
-            "진단 결과": "정보",
-            "현황": f"{pam_file} 파일을 찾을 수 없음",
-            "대응방안": "패스워드 복잡성 정책 적용을 위해 PAM 설정 확인 권장",
-            "결과": "정보"
-        })
+ 
+BAR
 
-    return results
+CODE [U-02] 패스워드 복잡성 설정
 
-def save_results_to_json(results, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
+cat << EOF >> $result
 
-def main():
-    results = check_password_complexity()
-    save_results_to_json(results, "password_complexity_check_result.json")
-        print("패스워드 복잡성 설정 점검 결과를 password_complexity_check_result.json 파일에 저장하였습니다.")
+[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.
 
-if __name__ == "__main__":
-    main()
+[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우.
 
+EOF
+
+BAR
+
+# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
+LOGIN_DEFS_FILE="/etc/login.defs"
+PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
+min=8
+
+# PASS_MIN_LEN 가장 높은 값
+highest_value=0
+while read line; do
+  if [[ $line =~ ^$PASS_MIN_LEN_OPTION[[:space:]]+([0-9]+) ]]; then
+    value=${BASH_REMATCH[1]}
+    if [ $value -gt $highest_value ]; then
+      highest_value=$value
+    fi
+  fi
+done < "$LOGIN_DEFS_FILE"
+
+# PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
+if [ "$highest_value" -ge "$min" ]; then
+   OK "8 글자 이상의 패스워드가 설정된 경우"
+else
+   WARN "8 글자 미만의 패스워드가 설정된 경우"
+fi
+
+
+
+PAM_FILE="/etc/pam.d/system-auth"
+EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+
+
+if [ -f "$PAM_FILE" ]; then
+    if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
+        OK " $PAM_FILE 에 $EXPECTED_OPTIONS 있음  "
+    else
+        WARN " $PAM_FILE 에 $EXPECTED_OPTIONS 없음  "
+    fi
+else
+    INFO " $PAM_FILE 못 찾음"
+fi
+
+
+cat $result
+
+echo ; echo
