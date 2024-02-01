@@ -26,7 +26,7 @@ def check_root_path_security():
     else:
         if "진단 결과" not in results:
             results["진단 결과"] = "양호"
-            results["현황"].append("PATH 변수의 중간 부분에서 '.' 발견 안 됨.")
+            results["현황"].append("PATH 변수의 시작 및 중간 부분에서 '.' 발견 안 됨.")
 
     return results
 
