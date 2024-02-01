@@ -1,48 +1,33 @@
-#!/bin/python3
-
-import subprocess
+#!/usr/bin/python3
 import json
 
-# 결과 저장을 위한 리스트
-results = []
+def check_for_non_root_uid_zero():
+    results = {
+        "분류": "계정관리",
+        "코드": "U-44",
+        "위험도": "중",
+        "진단 항목": "root 이외의 UID가 '0' 금지",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "root 계정 외 UID 0 사용 금지"
+    }
 
-# /etc/passwd 파일 경로
-passwd_file = "/etc/passwd"
+    with open('/etc/passwd', 'r') as passwd_file:
+        for line in passwd_file:
+            user_info = line.split(':')
+            if user_info[2] == '0' and user_info[0] != 'root':
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"root 계정과 동일한 UID(0)를 갖는 계정이 존재합니다: {user_info[0]}")
+                break
 
-def check_duplicate_root_uid(passwd_path):
-    """
-    /etc/passwd 파일에서 root 계정과 동일한 UID(0)를 갖는 계정이 있는지 확인합니다.
-    """
-    with open(passwd_path, 'r') as file:
-        root_uid_accounts = [line.split(':')[0] for line in file if line.split(':')[2] == "0"]
-    
-    if len(root_uid_accounts) > 1:
-        return True, root_uid_accounts
-    else:
-        return False, root_uid_accounts
+    if results["진단 결과"] == "양호":
+        results["현황"].append("root 계정 외에 UID 0을 갖는 계정이 존재하지 않습니다.")
 
-# 루트 계정과 동일한 UID를 가진 계정 확인
-duplicate_root_uid, accounts = check_duplicate_root_uid(passwd_file)
+    return results
 
-diagnostic_item = "root 이외의 UID가 '0' 금지"
-if duplicate_root_uid:
-    status = "취약"
-    situation = f"루트 계정과 동일한 UID를 가진 계정이 있습니다: {', '.join(accounts)}"
-    countermeasure = "루트 계정과 동일한 UID를 가진 추가 계정 제거"
-else:
-    status = "양호"
-    situation = "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-    countermeasure = "현재 상태 유지"
+def main():
+    uid_zero_check_results = check_for_non_root_uid_zero()
+    print(json.dumps(uid_zero_check_results, ensure_ascii=False, indent=4))
 
-results_summary = {
-    "분류": "서비스 관리",
-    "코드": "U-44",
-    "위험도": "상",
-    "진단 항목": diagnostic_item,
-    "진단 결과": status,
-    "현황": situation,
-    "대응방안": countermeasure
-}
-
-# 결과 출력
-print(json.dumps(results_summary, ensure_ascii=False, indent=4))
+if __name__ == "__main__":
+    main()
