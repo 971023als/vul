@@ -43,7 +43,7 @@ def check_password_complexity():
                 results["진단 결과"] = "취약"
                 results["현황"].append(f"{pam_file}에 {expected_options}이(가) 없습니다.")
     except FileNotFoundError:
-        results["진단 결과"] = "파일없음"
+        results["진단 결과"] = "정보부족"
         results["현황"].append(f"{pam_file} 파일을 찾을 수 없습니다.")
 
     return results

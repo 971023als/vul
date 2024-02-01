@@ -26,7 +26,7 @@ def check_account_lock_threshold():
                 results["진단 결과"] = "취약"
                 results["현황"].append("auth required pam_tally2.so deny=10 unlock_time=900 없음.")
     except FileNotFoundError:
-        results["진단 결과"] = "파일없음"
+        results["진단 결과"] = "정보부족"
         results["현황"].append(f"{pam_file} 파일이 존재하지 않습니다.")
 
     return results
