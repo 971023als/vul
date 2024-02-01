@@ -1,52 +1,45 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import os
+import stat
 import json
 
-def check_nonexistent_device_files():
-    results = []
-    nonexistent_device_files = []
-    for file in os.listdir("/dev"):
-        file_path = os.path.join("/dev", file)
-        try:
-            # Skip if it is not a regular file
-            if not os.path.isfile(file_path):
-                continue
-            file_stat = os.stat(file_path)
-            # Check for major and minor numbers being 0
-            if os.major(file_stat.st_rdev) == 0 and os.minor(file_stat.st_rdev) == 0:
-                nonexistent_device_files.append(file_path)
-        except Exception as e:
-            # Ignoring files for which the script does not have permission to access
-            continue
+def check_dev_device_files():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-16",
+        "위험도": "상",
+        "진단 항목": "/dev에 존재하지 않는 device 파일 점검",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우\n[취약]: dev에 대한 파일 미점검, 또는, 존재하지 않은 device 파일을 방치한 경우"
+    }
 
-    if nonexistent_device_files:
-        results.append({
-            "코드": "U-16",
-            "진단 결과": "취약",
-            "현황": "/dev에 존재하지 않는 device 파일이 있습니다.",
-            "대응방안": "/dev에 존재하지 않는 device 파일 점검 후 제거 권장",
-            "결과": "경고"
-        })
-    else:
-        results.append({
-            "코드": "U-16",
-            "진단 결과": "양호",
-            "현황": "/dev에 존재하지 않는 device 파일이 없습니다.",
-            "대응방안": "현재 설정 유지",
-            "결과": "정상"
-        })
+    dev_path = '/dev'
+    for root, dirs, files in os.walk(dev_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                file_stat = os.stat(file_path)
+                if stat.S_ISBLK(file_stat.st_mode) or stat.S_ISCHR(file_stat.st_mode):
+                    major = os.major(file_stat.st_rdev)
+                    minor = os.minor(file_stat.st_rdev)
+                    if major == 0 and minor == 0:
+                        results["현황"].append(f"{file_path} 메이저 및 마이너 번호가 없는 장치를 찾았습니다")
+                        results["진단 결과"] = "취약"
+                else:
+                    continue
+            except Exception as e:
+                continue  # Handle exceptions, e.g., symbolic links leading to nowhere
+
+    if not results["현황"]:
+        results["진단 결과"] = "양호"
+        results["현황"].append("메이저 및 마이너 번호가 없는 장치가 없습니다")
 
     return results
 
-def save_results_to_json(results, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
-
 def main():
-    results = check_nonexistent_device_files()
-    save_results_to_json(results, "nonexistent_device_files_check_result.json")
-    print("/dev에 존재하지 않는 device 파일 점검 결과를 nonexistent_device_files_check_result.json 파일에 저장하였습니다.")
+    results = check_dev_device_files()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

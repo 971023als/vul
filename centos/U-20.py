@@ -1,36 +1,31 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import json
-import subprocess
+import pwd
 
-# 결과를 저장할 리스트 초기화
-results = []
-
-# Anonymous FTP 활성화 여부 검사 함수
 def check_anonymous_ftp():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-20",
+        "위험도": "상",
+        "진단 항목": "Anonymous FTP 비활성화",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우\n[취약]: Anonymous FTP (익명 ftp) 접속을 차단하지 않은 경우"
+    }
+
     try:
-        # /etc/passwd 파일에서 ftp 계정 검색
-        process = subprocess.run(["grep", "ftp", "/etc/passwd"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if process.returncode == 0:
-            return "취약", "Anonymous FTP가 활성화 되어 있는 경우"
-        else:
-            return "양호", "Anonymous FTP가 비활성화 되어 있는 경우"
-    except Exception as e:
-        return "오류", str(e)
+        pwd.getpwnam('ftp')
+        results["진단 결과"] = "취약"
+        results["현황"].append("FTP 계정이 /etc/passwd 파일에 있습니다.")
+    except KeyError:
+        results["진단 결과"] = "양호"
+        results["현황"].append("FTP 계정이 /etc/passwd 파일에 없습니다.")
 
-# Anonymous FTP 검사 실행
-diagnosis_result, status_message = check_anonymous_ftp()
+    return results
 
-# 결과 추가
-results.append({
-    "분류": "서비스 관리",
-    "코드": "U-20",
-    "위험도": "상",
-    "진단 항목": "Anonymous FTP 비활성화",
-    "진단 결과": diagnosis_result,
-    "현황": status_message,
-    "대응방안": "Anonymous FTP 비활성화"
-})
+def main():
+    results = check_anonymous_ftp()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-# JSON 형태로 결과 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+if __name__ == "__main__":
+    main()
