@@ -1,56 +1,70 @@
 #!/usr/bin/python3
+import os
 import re
-import json
 
-def check_password_complexity():
+def check_password_settings():
     results = {
-        "분류": "시스템 설정",
+        "분류": "계정 관리",  # Account Management
         "코드": "U-02",
-        "위험도": "상",
-        "진단 항목": "패스워드 복잡성 설정",
-        "진단 결과": "",
+        "위험도": "상",  # High
+        "진단항목": "비밀번호 복잡성 설정",  # Password Complexity Setting
+        "진단결과": "",
         "현황": [],
-        "대응방안": "[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.\n[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우."
+        "대응방안": "비밀번호 최소 길이를 최소 8자 이상으로 설정하고, 문자, 숫자, 특수 문자를 포함하도록 하세요."  # Set password minimum length to at least 8 characters, including letters, numbers, and special characters.
     }
 
-    login_defs_file = "/etc/login.defs"
-    pam_file = "/etc/pam.d/system-auth"
-    expected_options = "password requisite pam_cracklib.so try_first_pass retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
+    # 파일 존재 여부 및 설정 확인을 위한 카운터 초기화
+    file_exists_count = 0
+    settings_check = {
+        "min_length_set": False,
+        "complexity_requirement_set": False
+    }
 
-    # Check /etc/login.defs for PASS_MIN_LEN
-    try:
-        with open(login_defs_file, 'r') as file:
+    # /etc/login.defs에서 PASS_MIN_LEN 확인
+    if os.path.isfile("/etc/login.defs"):
+        file_exists_count += 1
+        with open("/etc/login.defs", "r") as file:
             content = file.read()
-            pass_min_len_matches = re.findall(f"{PASS_MIN_LEN_OPTION}[ \t]+([0-9]+)", content)
-            highest_value = max(map(int, pass_min_len_matches)) if pass_min_len_matches else 0
-            if highest_value >= 8:
-                results["진단 결과"] = "양호"
-                results["현황"].append("8 글자 이상의 패스워드가 설정된 경우")
-            else:
-                results["진단 결과"] = "취약"
-                results["현황"].append("8 글자 미만의 패스워드가 설정된 경우")
-    except FileNotFoundError:
-        results["현황"].append(f"{login_defs_file} 파일이 존재하지 않습니다.")
+            min_len_match = re.search(r"^\s*PASS_MIN_LEN\s+(\d+)", content, re.MULTILINE)
+            if min_len_match and int(min_len_match.group(1)) >= 8:
+                settings_check["min_length_set"] = True
 
-    # Check /etc/pam.d/system-auth for expected options
-    try:
-        with open(pam_file, 'r') as file:
+    # 비밀번호 복잡성 요구사항을 위해 /etc/pam.d/system-auth 및 /etc/pam.d/password-auth 확인
+    pam_files = ["/etc/pam.d/system-auth", "/etc/pam.d/password-auth"]
+    for pam_file in pam_files:
+        if os.path.isfile(pam_file):
+            file_exists_count += 1
+            with open(pam_file, "r") as file:
+                content = file.read()
+                # pam_pwquality.so 또는 pam_cracklib.so가 적절한 설정으로 있는지 검색
+                if re.search(r"pam_pwquality\.so", content) or re.search(r"pam_cracklib\.so", content):
+                    settings_check["complexity_requirement_set"] = True
+
+    # minlen 및 credit 설정을 위해 /etc/security/pwquality.conf 확인
+    if os.path.isfile("/etc/security/pwquality.conf"):
+        file_exists_count += 1
+        with open("/etc/security/pwquality.conf", "r") as file:
             content = file.read()
-            if expected_options in content:
-                results["진단 결과"] = "양호"
-                results["현황"].append(f"{pam_file}에 {expected_options}이(가) 있습니다.")
-            else:
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"{pam_file}에 {expected_options}이(가) 없습니다.")
-    except FileNotFoundError:
-        results["진단 결과"] = "정보부족"
-        results["현황"].append(f"{pam_file} 파일을 찾을 수 없습니다.")
+            if re.search(r"^\s*minlen\s*=\s*(\d+)", content, re.MULTILINE) and int(min_len_match.group(1)) >= 8:
+                settings_check["min_length_set"] = True
+            if re.search(r"^\s*(dcredit|ucredit|ocredit|lcredit)\s*=\s*-\d+", content, re.MULTILINE):
+                settings_check["complexity_requirement_set"] = True
+
+    # 검사를 바탕으로 최종 결과 평가
+    if file_exists_count > 0 and all(settings_check.values()):
+        results["diagnosis_result"] = "양호"  # Good
+    else:
+        results["diagnosis_result"] = "취약"  # Vulnerable
+        if not settings_check["min_length_set"]:
+            results["status"].append("비밀번호 최소 길이 설정이 적절하게 구성되지 않았습니다.")  # Password minimum length setting is not adequately configured.
+        if not settings_check["complexity_requirement_set"]:
+            results["status"].append("비밀번호 복잡성 요구사항이 적절하게 구성되지 않았습니다.")  # Password complexity requirement is not adequately configured.
 
     return results
 
 def main():
-    results = check_password_complexity()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    results = check_password_settings()
+    print(results)
 
 if __name__ == "__main__":
     main()
