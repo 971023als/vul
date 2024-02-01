@@ -1,50 +1,47 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import subprocess
+import os
+import re
 import json
 
-# 결과 저장을 위한 리스트
-results = []
+def check_spam_mail_relay_restrictions():
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-31",
+        "위험도": "상",
+        "진단 항목": "스팸 메일 릴레이 제한",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "SMTP 서비스 릴레이 제한 설정"
+    }
 
-def check_sendmail_status():
-    """
-    Sendmail 서비스의 실행 상태를 확인합니다.
-    """
     try:
-        output = subprocess.check_output("ps -ef | grep sendmail | grep -v grep", shell=True, stderr=subprocess.STDOUT)
-        if output:
-            return True  # 실행 중
-        else:
-            return False  # 실행되지 않음
-    except subprocess.CalledProcessError:
-        return False  # 프로세스가 없음
+        # Find sendmail.cf files
+        find_command = "find / -name 'sendmail.cf' -type f 2>/dev/null"
+        sendmail_cf_files = subprocess.check_output(find_command, shell=True, text=True).strip().split('\n')
 
-# Sendmail 서비스 실행 상태 확인
-sendmail_active = check_sendmail_status()
+        if sendmail_cf_files:
+            for file_path in sendmail_cf_files:
+                if file_path:  # Check if file path is not empty
+                    with open(file_path, 'r') as file:
+                        content = file.read()
+                        if not re.search(r'^#|^\s#', content) and not re.search(r'R\$\*', content) and not re.search(r'Relaying denied', content, re.IGNORECASE):
+                            results["진단 결과"] = "취약"
+                            results["현황"].append(f"{file_path} 파일에 릴레이 제한이 설정되어 있지 않습니다.")
+                            break
 
-# Sendmail 릴레이 제한 설정 점검 (시뮬레이션)
-# 실제 환경에서는 Sendmail 설정 파일을 분석하는 로직이 필요합니다.
-relay_restriction_set = False  # 이 값은 실제 설정을 확인하여 결정해야 합니다.
+        if results["진단 결과"] == "양호":
+            results["현황"].append("모든 sendmail.cf 파일에 릴레이 제한이 적절히 설정되어 있습니다.")
 
-diagnostic_item = "스팸 메일 릴레이 제한"
-if sendmail_active and not relay_restriction_set:
-    status = "취약"
-    situation = "sendmail 데몬이 활성화되어 있으며 릴레이 제한이 설정되어 있지 않은 상태"
-    countermeasure = "sendmail 데몬에 대한 릴레이 제한 설정"
-else:
-    status = "양호"
-    situation = "SMTP 서비스가 비활성화되어 있거나 릴레이 제한이 설정되어 있는 상태"
-    countermeasure = "릴레이 제한 설정 유지 및 검토"
+    except subprocess.CalledProcessError as e:
+        results["진단 결과"] = "오류"
+        results["현황"].append(f"sendmail.cf 파일 검색 중 오류 발생: {e}")
 
-results.append({
-    "분류": "서비스 관리",
-    "코드": "U-31",
-    "위험도": "상",
-    "진단 항목": diagnostic_item,
-    "진단 결과": status,
-    "현황": situation,
-    "대응방안": countermeasure
-})
+    return results
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+def main():
+    results = check_spam_mail_relay_restrictions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
+
+if __name__ == "__main__":
+    main()
