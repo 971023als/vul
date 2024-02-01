@@ -1,40 +1,46 @@
 #!/usr/bin/python3
-import re
+import subprocess
+import os
 import json
 
-def check_apache_link_usage_restriction():
+def check_web_service_link_usage_restriction():
     results = {
-        "분류": "웹 서비스",
+        "분류": "서비스 관리",
         "코드": "U-39",
         "위험도": "상",
-        "진단 항목": "Apache 링크 사용 금지",
-        "진단 결과": "",
+        "진단 항목": "웹서비스 링크 사용금지",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: 심볼릭 링크, aliases 사용을 제한한 경우\n[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우"
+        "대응방안": "심볼릭 링크, aliases 사용 제한"
     }
 
-    config_file = "/etc/apache2/apache2.conf"
-    try:
-        with open(config_file, 'r') as file:
-            contents = file.read()
-            symlink_result = re.search(r'^\s*Options\s.*FollowSymLinks', contents, re.MULTILINE)
-            alias_result = re.search(r'^\s*Options\s.*SymLinksIfOwnerMatch', contents, re.MULTILINE)
+    webconf_files = [".htaccess", "httpd.conf", "apache2.conf", "userdir.conf"]
+    found_vulnerability = False
 
-            if symlink_result and alias_result:
-                results["진단 결과"] = "취약"
-                results["현황"].append("Apache2에서 심볼릭 링크 및 별칭이 허용됨")
-            else:
-                results["진단 결과"] = "양호"
-                results["현황"].append("Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다.")
-    except FileNotFoundError:
-        results["현황"].append(f"{config_file} 파일을 찾을 수 없습니다.")
-    except Exception as e:
-        results["현황"].append(f"파일 읽기 중 예외 발생: {str(e)}")
+    for conf_file in webconf_files:
+        find_command = f"find / -name {conf_file} -type f 2>/dev/null"
+        try:
+            find_output = subprocess.check_output(find_command, shell=True, text=True).strip().split('\n')
+            for file_path in find_output:
+                if file_path:
+                    with open(file_path, 'r') as file:
+                        content = file.read()
+                        if 'Options FollowSymLinks' in content and 'Options -FollowSymLinks' not in content:
+                            found_vulnerability = True
+                            results["진단 결과"] = "취약"
+                            results["현황"].append(f"{file_path} 파일에 심볼릭 링크 사용을 제한하지 않는 설정이 포함되어 있습니다.")
+                            break
+        except subprocess.CalledProcessError:
+            continue  # Skip to the next file if the find command encounters an error
+
+    if not found_vulnerability:
+        results["진단 결과"] = "양호"
+        results["현황"].append("웹서비스 설정 파일에서 심볼릭 링크 사용이 적절히 제한되어 있습니다.")
 
     return results
 
 def main():
-    results = check_apache_link_usage_restriction()
+    results = check_web_service_link_usage_restriction()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":

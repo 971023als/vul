@@ -3,48 +3,51 @@ import subprocess
 import os
 import json
 
-def check_unwanted_apache_files():
+def check_unnecessary_web_files_removal():
     results = {
-        "분류": "웹 서버 설정",
+        "분류": "서비스 관리",
         "코드": "U-38",
         "위험도": "상",
-        "진단 항목": "Apache 불필요한 파일 제거",
-        "진단 결과": "",
+        "진단 항목": "웹서비스 불필요한 파일 제거",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우\n[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우"
+        "대응방안": "기본으로 생성되는 불필요한 파일 및 디렉터리 제거"
     }
 
-    httpd_root = "/etc/httpd/conf"
-    unwanted_items = ["manual", "samples", "docs"]
+    webconf_files = [".htaccess", "httpd.conf", "apache2.conf"]
+    serverroot_directories = []
 
-    try:
-        # Check if Apache is running
-        process = subprocess.run(['pgrep', '-f', 'httpd'], capture_output=True, text=True)
-        if process.returncode == 0:
-            results["현황"].append("아파치가 실행 중입니다.")
-        else:
-            results["현황"].append("아파치가 실행되지 않습니다.")
-            return results
+    for conf_file in webconf_files:
+        find_command = f"find / -name {conf_file} -type f 2>/dev/null"
+        try:
+            find_output = subprocess.check_output(find_command, shell=True, text=True).strip().split('\n')
+            for file_path in find_output:
+                if file_path:
+                    with open(file_path, 'r') as file:
+                        for line in file:
+                            if 'ServerRoot' in line and not line.strip().startswith('#'):
+                                serverroot = line.split()[1].strip('"')
+                                if serverroot not in serverroot_directories:
+                                    serverroot_directories.append(serverroot)
+        except subprocess.CalledProcessError:
+            continue  # Skip to the next file if the find command encounters an error
 
-        # Check for unwanted items
-        for item in unwanted_items:
-            item_path = os.path.join(httpd_root, item)
-            if os.path.exists(item_path):
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"{item_path}이(가) 존재합니다.")
-            else:
-                results["현황"].append(f"{item_path}이(가) 존재하지 않습니다.")
-        
-        if results["진단 결과"] != "취약":
-            results["진단 결과"] = "양호"
+    vulnerable = False
+    for directory in serverroot_directories:
+        manual_path = os.path.join(directory, 'manual')
+        if os.path.exists(manual_path):
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"Apache 홈 디렉터리 내 기본으로 생성되는 불필요한 파일 및 디렉터리가 제거되어 있지 않습니다: {manual_path}")
+            vulnerable = True
 
-    except Exception as e:
-        results["현황"].append(f"오류 발생: {str(e)}")
+    if not vulnerable:
+        results["진단 결과"] = "양호"
+        results["현황"].append("Apache 홈 디렉터리 내 기본으로 생성되는 불필요한 파일 및 디렉터리가 제거되어 있습니다.")
 
     return results
 
 def main():
-    results = check_unwanted_apache_files()
+    results = check_unnecessary_web_files_removal()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":

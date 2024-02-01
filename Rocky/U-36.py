@@ -1,44 +1,51 @@
 #!/usr/bin/python3
 import subprocess
+import os
 import json
 
-def check_apache_process_permissions():
+def check_web_service_process_permissions():
     results = {
-        "분류": "웹 서버 설정",
+        "분류": "서비스 관리",
         "코드": "U-36",
         "위험도": "상",
-        "진단 항목": "Apache 웹 프로세스 권한 제한",
-        "진단 결과": "",
+        "진단 항목": "웹서비스 웹 프로세스 권한 제한",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: Apache 데몬이 root 권한으로 구동되지 않는 경우\n[취약]: Apache 데몬이 root 권한으로 구동되는 경우"
+        "대응방안": "Apache 데몬 root 권한 구동 방지"
     }
 
-    try:
-        # Check if the Apache daemon (httpd) is running
-        process = subprocess.run(['pgrep', '-x', 'httpd'], capture_output=True, text=True, check=False)
-        if process.returncode == 0:
-            results["현황"].append("아파치 데몬(httpd)이 실행 중입니다.")
-            # Get the user and group of the httpd process
-            process_id = process.stdout.strip()
-            user = subprocess.run(['ps', '-o', 'user=', '-p', process_id], capture_output=True, text=True).stdout.strip()
-            group = subprocess.run(['ps', '-o', 'group=', '-p', process_id], capture_output=True, text=True).stdout.strip()
+    webconf_files = [".htaccess", "httpd.conf", "apache2.conf"]
+    found_vulnerability = False
 
-            if user == "root" or group == "root":
-                results["진단 결과"] = "취약"
-                results["현황"].append("Apache 데몬(httpd)이 루트 권한으로 실행되고 있습니다.")
-            else:
-                results["진단 결과"] = "양호"
-                results["현황"].append("Apache 데몬(httpd)이 루트 권한으로 실행되지 않습니다.")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("아파치 데몬(httpd)이 실행되고 있지 않습니다.")
-    except Exception as e:
-        results["현황"].append(f"오류 발생: {str(e)}")
+    for conf_file in webconf_files:
+        find_command = f"find / -name {conf_file} -type f 2>/dev/null"
+        try:
+            find_output = subprocess.check_output(find_command, shell=True, text=True).strip().split('\n')
+            for file_path in find_output:
+                if file_path:
+                    with open(file_path, 'r') as file:
+                        content = file.readlines()
+                        for line in content:
+                            if 'Group' in line and not line.strip().startswith('#'):
+                                group_setting = line.split()
+                                if len(group_setting) > 1 and group_setting[1].strip().lower() == 'root':
+                                    results["진단 결과"] = "취약"
+                                    results["현황"].append(f"{file_path} 파일에서 Apache 데몬이 root 권한으로 구동되도록 설정되어 있습니다.")
+                                    found_vulnerability = True
+                                    break
+                if found_vulnerability:
+                    break
+        except subprocess.CalledProcessError:
+            continue  # Skip to the next file if the find command encounters an error
+
+    if not found_vulnerability:
+        results["진단 결과"] = "양호"
+        results["현황"].append("Apache 데몬이 root 권한으로 구동되도록 설정되어 있지 않습니다.")
 
     return results
 
 def main():
-    results = check_apache_process_permissions()
+    results = check_web_service_process_permissions()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
