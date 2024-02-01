@@ -1,53 +1,42 @@
 #!/usr/bin/python3
 
-. function.sh
+import subprocess
+import json
 
-TMP1=`SCRIPTNAME`.log
+def check_r_services_status():
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-21",
+        "위험도": "상",
+        "진단 항목": "r 계열 서비스 비활성화",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "r 계열 서비스(rlogin, rsh, rexec)를 비활성화하세요."
+    }
 
-> $TMP1
- 
+    services = ['rlogin', 'rsh', 'rexec']
+    active_services = []
 
-BAR
+    for service in services:
+        try:
+            process = subprocess.run(['systemctl', 'is-active', service], check=False, capture_output=True, text=True)
+            if process.returncode == 0:
+                active_services.append(service)
+        except Exception as e:
+            results["현황"].append(f"{service} 서비스 상태 확인 실패: {str(e)}")
 
-CODE [U-21] r 계열 서비스 비활성화
+    if active_services:
+        results["진단 결과"] = "취약"
+        results["현황"].append(f"활성화된 r 계열 서비스: {', '.join(active_services)}")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("r 계열 서비스가 모두 비활성화되어 있습니다.")
 
-cat << EOF >> $result
+    return results
 
-[양호]: r 계열 서비스가 비활성화 되어 있는 경우
+def main():
+    results = check_r_services_status()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[취약]: r 계열 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-
-files=(/etc/xinetd.d/rlogin /etc/xinetd.d/rsh /etc/xinetd.d/rexec)
-expected_settings=(
-"socket_type= stream"
-"wait= no"
-"user= nobody"
-"log_on_success+= USERID"
-"log_on_failure+= USERID"
-"server= /usr/sdin/in.fingerd"
-"disable= yes"
-)
-
-for file in "${files[@]}"; do
-  INFO "파일 확인 중: $file"
-  if [ ! -f "$file" ]; then
-	  INFO "$file 파일이 없습니다."
-  else
-    for setting in "${expected_settings[@]}"; do
-      if grep -q "$setting" "$file"; then
-        OK "'$setting'이 올바르게 설정되었습니다."
-      else
-        WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
-      fi
-    done
-  fi
-done
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
