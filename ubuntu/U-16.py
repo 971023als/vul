@@ -1,42 +1,41 @@
 #!/usr/bin/python3
-import subprocess
+import os
+import stat
 import json
 
-def check_dev_nonexistent_device_files():
+def check_dev_directory_for_non_device_files():
     results = {
-        "분류": "시스템 파일 설정",
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-16",
         "위험도": "상",
         "진단 항목": "/dev에 존재하지 않는 device 파일 점검",
-        "진단 결과": "",
+        "진단 결과": "양호",  # Assume "Good" until a non-device file is found
         "현황": [],
-        "대응방안": "/dev에 존재하지 않는 device 파일 제거 권장."
+        "대응방안": "/dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우"
     }
 
-    # /dev 디렉토리 내 모든 파일에 대한 메이저 및 마이너 번호 확인
-    cmd = "find /dev -type b -o -type c -exec ls -l {} \;"
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    stdout, stderr = process.communicate()
+    dev_directory = '/dev'
+    non_device_files = []
 
-    nonexistent_device_files_found = False
-    for line in stdout.split('\n'):
-        if line:
-            major_minor = ' '.join(line.split()[4:6])
-            if major_minor == "0 0":
-                results["현황"].append(f"메이저 및 마이너 번호가 없는 장치 파일 발견: {line.split()[-1]}")
-                nonexistent_device_files_found = True
+    for item in os.listdir(dev_directory):
+        item_path = os.path.join(dev_directory, item)
+        if os.path.isfile(item_path):
+            mode = os.stat(item_path).st_mode
+            if not stat.S_ISCHR(mode) and not stat.S_ISBLK(mode):
+                # The file is neither a character device nor a block device
+                non_device_files.append(item_path)
 
-    if nonexistent_device_files_found:
+    if non_device_files:
         results["진단 결과"] = "취약"
+        results["현황"] = non_device_files
     else:
         results["진단 결과"] = "양호"
-        results["현황"].append("/dev에 존재하지 않는 device 파일 없음.")
+        results["현황"].append("/dev 디렉터리에 존재하지 않는 device 파일이 없습니다.")
 
     return results
 
 def main():
-    results = check_dev_nonexistent_device_files()
-    # 결과를 JSON 형태로 출력
+    results = check_dev_directory_for_non_device_files()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":

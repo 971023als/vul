@@ -31,7 +31,7 @@ def check_finger_service_disabled():
         results["현황"].append("/etc/services 파일을 찾을 수 없습니다.")
 
     if results["진단 결과"] == "양호":
-        results["현황"].append("Finger 서비스가 비활성화되어 있거나 실행 중이지 않습니다.")
+       results["현황"].append("Finger 서비스가 비활성화되어 있거나 실행 중이지 않습니다.")
 
     return results
 

@@ -1,52 +1,47 @@
 #!/usr/bin/python3
-
-import os
 import json
 
-def check_ip_port_restriction():
+def check_access_control_files():
     results = {
-        "분류": "네트워크 서비스 관리",
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-18",
         "위험도": "상",
         "진단 항목": "접속 IP 및 포트 제한",
         "진단 결과": "",
         "현황": [],
-        "대응방안": "접속을 수신할 특정 호스트에 대한 IP 주소 및 포트 제한 설정 권장."
+        "대응방안": "특정 호스트에 대한 IP 주소 및 포트 제한 설정"
     }
 
-    hosts_allow_file = "/etc/hosts.allow"
-    hosts_deny_file = "/etc/hosts.deny"
-    allow_rules_exist = False
-    deny_rules_exist = False
+    hosts_deny_path = '/etc/hosts.deny'
+    hosts_allow_path = '/etc/hosts.allow'
 
-    # Check if /etc/hosts.allow contains non-commented lines
-    if os.path.exists(hosts_allow_file):
-        with open(hosts_allow_file, 'r') as file:
-            for line in file:
-                if line.strip() and not line.startswith("#"):
-                    allow_rules_exist = True
-                    results["현황"].append(f"{hosts_allow_file}에 규칙이 설정되어 있습니다.")
-                    break
-    
-    # Check if /etc/hosts.deny contains non-commented lines
-    if os.path.exists(hosts_deny_file):
-        with open(hosts_deny_file, 'r') as file:
-            for line in file:
-                if line.strip() and not line.startswith("#"):
-                    deny_rules_exist = True
-                    results["현황"].append(f"{hosts_deny_file}에 규칙이 설정되어 있습니다.")
-                    break
-    
-    if allow_rules_exist or deny_rules_exist:
-        results["진단 결과"] = "양호"
-    else:
+    hosts_deny_exists = check_file_exists_and_content(hosts_deny_path, 'ALL: ALL')
+    hosts_allow_exists = check_file_exists_and_content(hosts_allow_path, 'ALL: ALL')
+
+    if not hosts_deny_exists:
         results["진단 결과"] = "취약"
-        results["현황"].append("접속 IP 및 포트 제한 규칙이 설정되어 있지 않습니다.")
+        results["현황"].append(f"{hosts_deny_path} 파일에 'ALL: ALL' 설정이 없거나 파일이 없습니다.")
+    elif hosts_allow_exists:
+        results["진단 결과"] = "취약"
+        results["현황"].append(f"{hosts_allow_path} 파일에 'ALL: ALL' 설정이 있습니다.")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("적절한 IP 및 포트 제한 설정이 확인되었습니다.")
 
     return results
 
+def check_file_exists_and_content(file_path, search_string):
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                if search_string.lower() in line.lower() and not line.strip().startswith('#'):
+                    return True
+    except FileNotFoundError:
+        pass
+    return False
+
 def main():
-    results = check_ip_port_restriction()
+    results = check_access_control_files()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
