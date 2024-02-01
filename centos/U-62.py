@@ -1,46 +1,43 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import subprocess
+import re
 import json
 
-# /etc/passwd에서 FTP 계정의 셸 확인
-def check_ftp_account_shell():
+def check_ftp_account_shell_restriction():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-62",
+        "위험도": "상",
+        "진단 항목": "ftp 계정 shell 제한",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우\n[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우"
+    }
+
     try:
-        passwd_content = subprocess.check_output("grep '^ftp:' /etc/passwd", shell=True, text=True)
-        ftp_shell = passwd_content.strip().split(":")[-1]
-        if ftp_shell == "/bin/false":
-            return True
+        # /etc/passwd에서 FTP 계정의 셸을 확인합니다
+        ftp_shell = subprocess.check_output("grep '^ftp:' /etc/passwd | awk -F: '{print $7}'", shell=True, text=True).strip()
+
+        # FTP 포트가 수신 중인지 확인합니다
+        ss_output = subprocess.check_output(["ss", "-tnlp"], text=True)
+        if re.search(r':21', ss_output):
+            if ftp_shell == "/bin/false":
+                results["진단 결과"] = "양호"
+                results["현황"].append("FTP 계정의 셸이 /bin/false로 설정되었습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("FTP 계정의 셸이 /bin/false로 설정되지 않았습니다.")
         else:
-            return False
+            results["진단 결과"] = "양호"
+            results["현황"].append("FTP 포트(21)가 열려 있지 않습니다.")
     except subprocess.CalledProcessError:
-        # grep 명령 실패 (ftp 계정이 없는 경우 등)
-        return None
+        results["현황"].append("FTP 계정 정보를 검색하는 데 실패하였습니다.")
 
-ftp_shell_ok = check_ftp_account_shell()
+    return results
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-62",
-    "위험도": "상",
-    "진단 항목": "ftp 계정 shell 제한",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
+def main():
+    results = check_ftp_account_shell_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-if ftp_shell_ok is True:
-    results["진단 결과"] = "양호"
-    results["현황"] = "ftp 계정에 /bin/false 쉘이 부여되어 있습니다."
-    results["대응방안"] = "현재 설정을 유지하세요."
-elif ftp_shell_ok is False:
-    results["진단 결과"] = "취약"
-    results["현황"] = "ftp 계정에 /bin/false 쉘이 부여되지 않았습니다."
-    results["대응방안"] = "/etc/passwd 파일에서 ftp 계정의 쉘을 /bin/false로 설정하세요."
-else:
-    results["진단 결과"] = "정보 부족"
-    results["현황"] = "ftp 계정을 확인할 수 없습니다."
-    results["대응방안"] = "시스템에서 ftp 계정의 필요성을 검토하고, 존재하는 경우 적절한 쉘 제한을 적용하세요."
-
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+if __name__ == "__main__":
+    main()
