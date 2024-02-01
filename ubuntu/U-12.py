@@ -1,51 +1,42 @@
 #!/usr/bin/python3
-
 import os
 import stat
 import json
+import pwd
 
-def check_services_file_ownership_and_permissions():
-    services_file = "/etc/services"
-    result = {
-        "분류": "서비스 관리",
+def check_etc_services_permissions():
+    results = {
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-12",
         "위험도": "상",
         "진단 항목": "/etc/services 파일 소유자 및 권한 설정",
         "진단 결과": "",
         "현황": [],
-        "대응방안": "/etc/services 파일의 소유자를 root으로 설정하고, 권한을 644 이하로 설정하세요."
+        "대응방안": "/etc/services 파일의 소유자가 root(또는 bin, sys)이고, 권한이 644 이하인 경우"
     }
 
-    # Check if the /etc/services file exists
-    if not os.path.exists(services_file):
-        result["현황"].append(f"{services_file} 파일이 존재하지 않습니다.")
-        result["진단 결과"] = "정보 부족"
-        return result
+    services_file = '/etc/services'
+    if os.path.exists(services_file):
+        file_stat = os.stat(services_file)
+        mode = oct(file_stat.st_mode)[-3:]
+        owner_uid = file_stat.st_uid
+        owner_name = pwd.getpwuid(owner_uid).pw_name
 
-    # Check the ownership of the /etc/services file
-    file_stat = os.stat(services_file)
-    file_owner_uid = file_stat.st_uid
-    file_perms = stat.S_IMODE(file_stat.st_mode)
-    owner_name = os.getpwuid(file_owner_uid).pw_name
-
-    if owner_name != "root":
-        result["현황"].append(f"{services_file}의 소유자가 {owner_name}입니다.")
-        result["진단 결과"] = "취약"
+        if owner_name in ['root', 'bin', 'sys'] and int(mode, 8) <= 0o644:
+            results["진단 결과"] = "양호"
+            results["현황"].append(f"{services_file} 파일의 소유자가 {owner_name}이고, 권한이 {mode}입니다.")
+        else:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{services_file} 파일의 소유자나 권한이 기준에 부합하지 않습니다.")
     else:
-        result["현황"].append(f"{services_file}의 소유자가 적절합니다.")
+        results["진단 결과"] = "N/A"
+        results["현황"].append(f"{services_file} 파일이 없습니다.")
 
-    # Check the permissions of the /etc/services file
-    if file_perms > 0o644:
-        result["현황"].append(f"{services_file}의 권한이 {oct(file_perms)}로 설정되어 있습니다.")
-        result["진단 결과"] = "취약"
-    else:
-        result["현황"].append(f"{services_file}의 권한이 적절합니다.")
-
-    return result
+    return results
 
 def main():
-    result = check_services_file_ownership_and_permissions()
-    print(json.dumps(result, ensure_ascii=False, indent=4))
+    results = check_etc_services_permissions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

@@ -3,42 +3,38 @@ import os
 import stat
 import json
 
-def check_dev_device_files():
+def check_dev_directory_for_non_device_files():
     results = {
-        "분류": "시스템 설정",
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-16",
         "위험도": "상",
         "진단 항목": "/dev에 존재하지 않는 device 파일 점검",
-        "진단 결과": "",
+        "진단 결과": "양호",  # Assume "Good" until a non-device file is found
         "현황": [],
-        "대응방안": "[양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우\n[취약]: dev에 대한 파일 미점검, 또는, 존재하지 않은 device 파일을 방치한 경우"
+        "대응방안": "/dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우"
     }
 
-    dev_path = '/dev'
-    for root, dirs, files in os.walk(dev_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            try:
-                file_stat = os.stat(file_path)
-                if stat.S_ISBLK(file_stat.st_mode) or stat.S_ISCHR(file_stat.st_mode):
-                    major = os.major(file_stat.st_rdev)
-                    minor = os.minor(file_stat.st_rdev)
-                    if major == 0 and minor == 0:
-                        results["현황"].append(f"{file_path} 메이저 및 마이너 번호가 없는 장치를 찾았습니다")
-                        results["진단 결과"] = "취약"
-                else:
-                    continue
-            except Exception as e:
-                continue  # Handle exceptions, e.g., symbolic links leading to nowhere
+    dev_directory = '/dev'
+    non_device_files = []
 
-    if not results["현황"]:
-        results["진단 결과"] = "양호"
-        results["현황"].append("메이저 및 마이너 번호가 없는 장치가 없습니다")
+    for item in os.listdir(dev_directory):
+        item_path = os.path.join(dev_directory, item)
+        if os.path.isfile(item_path):
+            mode = os.stat(item_path).st_mode
+            if not stat.S_ISCHR(mode) and not stat.S_ISBLK(mode):
+                # The file is neither a character device nor a block device
+                non_device_files.append(item_path)
+
+    if non_device_files:
+        results["진단 결과"] = "취약"
+        results["현황"] = non_device_files
+    else:
+        results["현황"].append("/dev 디렉터리에 존재하지 않는 device 파일이 없습니다.")
 
     return results
 
 def main():
-    results = check_dev_device_files()
+    results = check_dev_directory_for_non_device_files()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":

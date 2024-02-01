@@ -34,6 +34,7 @@ def check_suid_sgid_permissions():
         results["진단 결과"] = "취약"
         results["현황"] = vulnerable_files
     else:
+        results["진단 결과"] = "양호"
         results["현황"].append("SUID나 SGID에 대한 설정이 부여된 주요 실행 파일이 없습니다.")
 
     return results
