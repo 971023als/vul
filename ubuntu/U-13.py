@@ -1,47 +1,41 @@
 #!/usr/bin/python3
 
-. function.sh
+import os
+import subprocess
+import json
 
-BAR
+def check_suid_sgid_files():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-13",
+        "위험도": "상",
+        "진단 항목": "SUID, SGID, Sticky bit 설정 파일 점검",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "주요 파일의 권한에서 SUID와 SGID 설정을 제거하세요."
+    }
 
-CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
+    # 주요 파일에서 SUID와 SGID 비트가 설정된 파일 찾기
+    command = "find / -type f \( -perm -4000 -o -perm -2000 \) -exec ls -l {} \;"
+    try:
+        output = subprocess.check_output(command, shell=True, text=True, stderr=subprocess.STDOUT)
+        if output:
+            results["현황"].append("SUID 또는 SGID 비트가 설정된 파일이 탐지됨:")
+            for line in output.strip().split('\n'):
+                results["현황"].append(line)
+            results["진단 결과"] = "취약"
+        else:
+            results["진단 결과"] = "양호"
+            results["현황"].append("SUID 또는 SGID 비트가 설정된 주요 파일 없음.")
+    except subprocess.CalledProcessError as e:
+        results["진단 결과"] = "실행 오류"
+        results["현황"].append(f"오류 발생: {e}")
 
-cat << EOF >> $result
+    return results
 
-[양호]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우
+def main():
+    result = check_suid_sgid_files()
+    print(json.dumps(result, ensure_ascii=False, indent=4))
 
-[취약]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우
-
-EOF
-
-BAR
-
-# /etc/passwd 파일을 읽고 홈 디렉토리 정보 추출
-while IFS=: read -r username passwd uid gid name home shell
-do
-  # 홈 디렉토리에서 기본 실행 파일의 사용 권한 정보를 가져옵니다
-  main_exec=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
-
-  # 주 실행 파일이 존재하는 경우
-  if [ -n "$main_exec" ]; then
-    # 권한 정보를 가져옵니다
-    permissions=$(ls -ld "$main_exec" | awk '{print $1}')
-    owner=$(ls -ld "$main_exec" | awk '{print $3}')
-    group=$(ls -ld "$main_exec" | awk '{print $4}')
-
-    # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
-    if [ -u "$main_exec" ]; then
-      WARN "$main_exec SUID 권한이 탐지됨"
-    elif [ -g "$main_exec" ]; then
-      WARN "$main_exec SGID 권한이 파일에서 탐지됨"
-    else
-      OK "$main_exec SUID와 SGID에 대한 설정이 부여"
-    fi
-  fi
-done < /etc/passwd
-
-cat $result
-
-echo ; echo
-
- 
+if __name__ == "__main__":
+    main()

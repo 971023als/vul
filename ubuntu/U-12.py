@@ -1,45 +1,51 @@
 #!/usr/bin/python3
 
-. function.sh
+import os
+import stat
+import json
 
- 
-TMP1=`SCRIPTNAME`.log
+def check_services_file_ownership_and_permissions():
+    services_file = "/etc/services"
+    result = {
+        "분류": "서비스 관리",
+        "코드": "U-12",
+        "위험도": "상",
+        "진단 항목": "/etc/services 파일 소유자 및 권한 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "/etc/services 파일의 소유자를 root으로 설정하고, 권한을 644 이하로 설정하세요."
+    }
 
->$TMP1  
+    # Check if the /etc/services file exists
+    if not os.path.exists(services_file):
+        result["현황"].append(f"{services_file} 파일이 존재하지 않습니다.")
+        result["진단 결과"] = "정보 부족"
+        return result
 
-BAR
+    # Check the ownership of the /etc/services file
+    file_stat = os.stat(services_file)
+    file_owner_uid = file_stat.st_uid
+    file_perms = stat.S_IMODE(file_stat.st_mode)
+    owner_name = os.getpwuid(file_owner_uid).pw_name
 
-CODE [U-12] /etc/services 파일 소유자 및 권한 설정 
+    if owner_name != "root":
+        result["현황"].append(f"{services_file}의 소유자가 {owner_name}입니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{services_file}의 소유자가 적절합니다.")
 
-cat << EOF >> $result  
+    # Check the permissions of the /etc/services file
+    if file_perms > 0o644:
+        result["현황"].append(f"{services_file}의 권한이 {oct(file_perms)}로 설정되어 있습니다.")
+        result["진단 결과"] = "취약"
+    else:
+        result["현황"].append(f"{services_file}의 권한이 적절합니다.")
 
-[양호]: /etc/services 파일의 소유자가 root이고, 권한이 644 이하
+    return result
 
-[취약]: /etc/services 파일의 소유자가 root가 아니거나, 권한이 644 이상
+def main():
+    result = check_services_file_ownership_and_permissions()
+    print(json.dumps(result, ensure_ascii=False, indent=4))
 
-EOF
-
-BAR
-
-
-file="/etc/services"
-
-# 소유권확인
-owner=$(stat -c '%U' "$file")
-if [ "$owner" != "root" ] && [ "$owner" != "bin" ] && [ "$owner" != "sys" ]; then
-  WARN "$file의 소유자가 root, bin, sys가 아니고 $owner 가 소유하고 있다."
-else
-  OK "$file의 소유자는 root, bin 또는 sys입니다."
-fi
-
-# Check permissions
-permissions=$(stat -c '%a' "$file")
-if [ "$permissions" -gt 644 ]; then
-  WARN "$file의 권한이 644보다 큽니다. $permissions 으로 설정."
-else
-  OK "$file의 권한이 644 이하입니다."
-fi
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
