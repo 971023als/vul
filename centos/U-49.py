@@ -1,104 +1,51 @@
+#!/usr/bin/python3
+import re
+import json
 
-. function.sh
+def check_unnecessary_accounts():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-49",
+        "위험도": "상",
+        "진단 항목": "불필요한 계정 제거",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: 불필요한 계정이 존재하지 않는 경우\n[취약]: 불필요한 계정이 존재하는 경우"
+    }
 
- 
+    default_accounts = set([
+        "root", "bin", "daemon", "adm", "lp", "sync", "shutdown", "halt", "ubuntu",
+        "messagebus", "syslog", "avahi", "kernoops", "whoopsie", "colord",
+        "systemd-network", "systemd-resolve", "systemd-timesync", "dbus", "rpc",
+        "rpcuser", "haldaemon", "apache", "postfix", "gdm", "sys", "games", "man",
+        "news", "uucp", "proxy", "www-data", "backup", "list", "irc", "gnats", "nobody",
+        "_apt", "tss", "uuidd", "tcpdump", "avahi-autoipd", "usbmux", "rtkit", "dnsmasq",
+        "cups-pk-helper", "speech-dispatcher", "saned", "nm-openvpn", "hplip", "geoclue",
+        "pulse", "gnome-initial-setup", "systemd-coredump", "fwupd-refresh", "adios", "mysql",
+        "curvid", "user"
+    ])
+    
+    suspected_accounts = []
 
-TMP1=`SCRIPTNAME`.log
+    with open('/etc/passwd', 'r') as file:
+        for line in file:
+            if 'bash' in line:
+                user = line.split(':')[0]
+                if user not in default_accounts:
+                    suspected_accounts.append(user)
 
-> $TMP1
- 
+    if suspected_accounts:
+        results["진단 결과"] = "취약"
+        results["현황"].append(f"용도가 의심되는 계정 발견: {', '.join(suspected_accounts)}")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("용도가 의심되는 계정이 없습니다")
 
-BAR
+    return results
 
-CODE [U-49] 불필요한 계정 제거
+def main():
+    results = check_unnecessary_accounts()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-cat << EOF >> $result
-
-[양호]: 불필요한 계정이 존재하지 않는 경우
-
-[취약]: 불필요한 계정이 존재하는 경우
-
-EOF
-
-BAR
-
-# 기본 계정 목록 지정
-default_accounts=(
-  "root"
-  "bin"
-  "daemon"
-  "adm"
-  "lp"
-  "sync"
-  "shutdown"
-  "halt"
-  "ubuntu"
-  "messagebus"
-  "syslog"
-  "avahi"
-  "kernoops"
-  "whoopsie"
-  "colord"
-  "systemd-network"
-  "systemd-resolve"
-  "systemd-timesync"
-  "dbus"
-  "rpc"
-  "rpcuser"
-  "haldaemon"
-  "apache"
-  "postfix"
-  "gdm"
-  "sys"
-  "games"
-  "man"
-  "news"
-  "uucp"
-  "proxy"
-  "www-data"
-  "backup"
-  "list"
-  "irc"
-  "gnarts"
-  "nobody"
-  "_apt"
-  "tss"
-  "uuidd"
-  "tcpdump"
-  "avahi-autoipad"
-  "usbmux"
-  "rtkit"
-  "dnsmasq"
-  "cups-pk-helper"
-  "speech-dispatcher"
-  "saned"
-  "nm-openvpn"
-  "hplip"
-  "geoclue"
-  "pulse"
-  "gnone-initial-setup"
-  "systmd-coredump"
-  "fwupd-refresh"
-  "adiosl"
-  "mysql"
-  "cuvrid"
-  "user"
-)
-
-# 셸이 bash로 설정된 사용자 목록을 /etc/passwd에서 가져옵니다
-user_list=$(cat /etc/passwd | grep bash | awk -F: '{print $1}')
-
-# 사용자 목록을 순환
-for user in $user_list; do
-  # 사용자가 기본 계정인지 확인합니다
-  if echo "$default_accounts" | grep -qw "$user"; then
-    OK "용도가 의심되는 계정이 없습니다"
-  else
-    INFO "용도가 의심되는 계정 발견: $user"
-  fi
-done
-
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
