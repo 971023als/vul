@@ -1,51 +1,47 @@
+#!/usr/bin/python3
+import os
+import stat
+import json
 
-. function.sh
+def check_etc_hosts_file_ownership_and_permissions():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-09",
+        "위험도": "상",
+        "진단 항목": "/etc/hosts 파일 소유자 및 권한 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: /etc/hosts 파일의 소유자가 root이고, 권한이 600 이하경우\n[취약]: /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600 이상인 경우"
+    }
 
- 
+    hosts_file = "/etc/hosts"
+    try:
+        file_stat = os.stat(hosts_file)
+        file_owner = stat.filemode(file_stat.st_mode)
+        file_permissions = oct(file_stat.st_mode)[-3:]
 
-TMP1=`SCRIPTNAME`.log
+        # Check if the file is owned by root
+        if os.getuid() == file_stat.st_uid:
+            results["현황"].append(f"{hosts_file}의 소유자는 루트입니다.")
+        else:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{hosts_file}의 소유자가 루트가 아니라 {file_owner}가 소유하고 있다.")
 
->$TMP1
+        # Check if the file permissions are 600 or less
+        if int(file_permissions) <= 600:
+            results["현황"].append(f"{hosts_file}의 권한은 최소 600 입니다.")
+        else:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{hosts_file}의 권한이 600 미만입니다. {file_permissions} 설정.")
+    except FileNotFoundError:
+        results["진단 결과"] = "취약"
+        results["현황"].append(f"{hosts_file} 파일이 존재하지 않습니다.")
 
- 
+    return results
 
- 
+def main():
+    results = check_etc_hosts_file_ownership_and_permissions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-BAR
-
-CODE [U-09] /etc/hosts 파일 소유자 및 권한 설정.
-
-cat << EOF >> $result
-
-[양호]: /etc/hosts 파일의 소유자가 root이고, 권한이 600 이하경우
-
-[취약]: /etc/hosts 파일의 소유자가 root가 아니거나, 권한이 600 이상인 경우
-
-EOF
-
-BAR
- 
-
-file="/etc/hosts"
-
-# 소유권 확인
-owner=$(stat -c '%U' "$file")
-if [ "$owner" != "root" ]; then
-  WARN "$file의 소유자가 루트가 아니라 $owner가 소유하고 있다."
-else
-  OK "$file의 소유자는 루트입니다."
-fi
-
-# 권한 확인
-permissions=$(stat -c '%a' "$file")
-if [ "$permissions" -lt 600 ]; then
-  WARN "$file의 권한이 600 미만입니다. $permissions 설정."
-else
-  OK "$file의 권한은 최소 600 입니다."
-fi
- 
-
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
