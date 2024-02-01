@@ -1,50 +1,56 @@
 #!/usr/bin/python3
-
-import subprocess
 import os
-import json
+import stat
 
-def check_cron_files_ownership_and_permissions():
+def check_cron_permissions():
     results = {
-        "분류": "시스템 관리",
+        "분류": "서비스 관리",
         "코드": "U-22",
         "위험도": "상",
-        "진단 항목": "cron 파일 소유자 및 권한 설정",
-        "진단 결과": "",
+        "진단 항목": "crond 파일 소유자 및 권한 설정",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우\n[취약]: cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우"
+        "대응방안": "crontab 명령어 일반사용자 금지 및 cron 관련 파일 640 이하 권한 설정"
     }
 
-    files = [
-        "/etc/crontab", "/etc/cron.hourly", "/etc/cron.daily", 
-        "/etc/cron.weekly", "/etc/cron.monthly", "/etc/cron.allow", 
-        "/etc/cron.deny", "/var/spool/cron*", "/var/spool/cron/crontabs/"
-    ]
+    crontab_paths = ["/usr/bin/crontab", "/usr/sbin/crontab", "/bin/crontab"]
+    crontab_path = next((path for path in crontab_paths if os.path.exists(path)), None)
+    if crontab_path:
+        crontab_permission = oct(os.stat(crontab_path).st_mode)[-3:]
+        if int(crontab_permission, 8) > 750:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"{crontab_path} 명령어의 권한이 750보다 큽니다.")
+    
+    cron_directories = ["/etc/cron.hourly", "/etc/cron.daily", "/etc/cron.weekly", "/etc/cron.monthly", "/var/spool/cron", "/var/spool/cron/crontabs"]
+    cron_files = ["/etc/crontab", "/etc/cron.allow", "/etc/cron.deny"]
 
-    for file_path in files:
-        for expanded_path in glob.glob(file_path):
-            if os.path.exists(expanded_path):
-                owner = subprocess.getoutput(f'stat -c %U "{expanded_path}"')
-                perms = subprocess.getoutput(f'stat -c %a "{expanded_path}"')
-                
-                if owner != "root":
-                    results["현황"].append(f"{expanded_path}은(는) root가 아닌 {owner}가 소유합니다.")
-                else:
-                    results["현황"].append(f"{expanded_path}은(는) root가 소유합니다.")
-                
-                if int(perms) > 640:
-                    results["현황"].append(f"{expanded_path}에 {perms} 권한이 640보다 큽니다.")
-                else:
-                    results["현황"].append(f"{expanded_path}에 {perms} 권한이 640보다 작습니다.")
-            else:
-                results["현황"].append(f"{expanded_path}이(가) 존재하지 않습니다.")
+    for directory in cron_directories:
+        if os.path.isdir(directory):
+            for root, dirs, files in os.walk(directory):
+                for file in files:
+                    cron_files.append(os.path.join(root, file))
+
+    for cron_file in cron_files:
+        if os.path.isfile(cron_file):
+            file_stat = os.stat(cron_file)
+            file_permission = oct(file_stat.st_mode)[-3:]
+            owner = file_stat.st_uid
+
+            if owner != 0 or int(file_permission, 8) > 640:
+                results["진단 결과"] = "취약"
+                if owner != 0:
+                    results["현황"].append(f"{cron_file} 파일의 소유자(owner)가 root가 아닙니다.")
+                if int(file_permission, 8) > 640:
+                    results["현황"].append(f"{cron_file} 파일의 권한이 640보다 큽니다.")
+
+    if results["진단 결과"] == "양호":
+        results["현황"].append("모든 cron 관련 파일 및 명령어가 적절한 권한 설정을 가지고 있습니다.")
 
     return results
 
 def main():
-    results = check_cron_files_ownership_and_permissions()
+    results = check_cron_permissions()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
-

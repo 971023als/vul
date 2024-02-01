@@ -1,31 +1,50 @@
 #!/usr/bin/python3
+import os
+import re
 
-import glob
-import subprocess
+def check_dos_vulnerable_services_disabled():
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-23",
+        "위험도": "상",
+        "진단 항목": "DoS 공격에 취약한 서비스 비활성화",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "사용하지 않는 DoS 공격에 취약한 서비스 비활성화"
+    }
 
-def check_service_status(service_name):
-    service_files = glob.glob(f'/etc/xinetd.d/{service_name}*')
-    if not service_files:
-        print(f"OK /etc/xinetd.d/{service_name} 파일이 존재하지 않습니다.")
-        return
-    
-    for service_file in service_files:
-        print(f"INFO {service_file} 파일이 존재합니다.")
-        with open(service_file, 'r') as file:
+    vulnerable_services = ["echo", "discard", "daytime", "chargen"]
+    xinetd_dir = "/etc/xinetd.d"
+    inetd_conf = "/etc/inetd.conf"
+
+    # Check for services under /etc/xinetd.d
+    if os.path.isdir(xinetd_dir):
+        for service in vulnerable_services:
+            service_path = os.path.join(xinetd_dir, service)
+            if os.path.isfile(service_path):
+                with open(service_path, 'r') as file:
+                    content = file.read()
+                    if re.search(r'^\s*disable\s*=\s*yes', content, re.MULTILINE | re.IGNORECASE) is None:
+                        results["진단 결과"] = "취약"
+                        results["현황"].append(f"{service} 서비스가 /etc/xinetd.d 디렉터리 내 서비스 파일에서 실행 중입니다.")
+
+    # Check for services in /etc/inetd.conf
+    if os.path.isfile(inetd_conf):
+        with open(inetd_conf, 'r') as file:
             content = file.read()
-            if 'disable         = yes' in content:
-                print(f"OK {service_file} 파일에 대한 서비스가 비활성화 되어 있습니다.")
-            else:
-                print(f"WARN {service_file} 파일에 대한 서비스가 활성화 되어 있습니다.")
+            for service in vulnerable_services:
+                if re.search(f'^\s*{service}\s', content, re.MULTILINE | re.IGNORECASE):
+                    results["진단 결과"] = "취약"
+                    results["현황"].append(f"{service} 서비스가 /etc/inetd.conf 파일에서 실행 중입니다.")
+
+    if results["진단 결과"] == "양호":
+        results["현황"].append("모든 DoS 공격에 취약한 서비스가 비활성화되어 있습니다.")
+
+    return results
 
 def main():
-    print("CODE [U-23] DoS 공격에 취약한 서비스 비활성화")
-    print("[ 양호 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스가 비활성화 된 경우")
-    print("[ 취약 ] : DoS 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우")
-
-    services = ['echo', 'discard', 'daytime', 'chargen']
-    for service in services:
-        check_service_status(service)
+    results = check_dos_vulnerable_services_disabled()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
