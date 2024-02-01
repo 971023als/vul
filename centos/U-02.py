@@ -1,65 +1,53 @@
+#!/usr/bin/python3
+import re
+import json
 
-. function.sh
+def check_password_complexity():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-02",
+        "위험도": "상",
+        "진단 항목": "패스워드 복잡성 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.\n[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우."
+    }
 
-TMP1=$(SCRIPTNAME).log
+    login_defs_file = "/etc/login.defs"
+    pam_file = "/etc/pam.d/system-auth"
+    expected_options = "password requisite pam_cracklib.so try_first_pass retry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
 
-> $TMP1
+    # Check /etc/login.defs for PASS_MIN_LEN
+    try:
+        with open(login_defs_file, 'r') as file:
+            content = file.read()
+            pass_min_len_matches = re.findall(f"{PASS_MIN_LEN_OPTION}[ \t]+([0-9]+)", content)
+            highest_value = max(map(int, pass_min_len_matches)) if pass_min_len_matches else 0
+            if highest_value >= 8:
+                results["현황"].append("8 글자 이상의 패스워드가 설정된 경우")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("8 글자 미만의 패스워드가 설정된 경우")
+    except FileNotFoundError:
+        results["현황"].append(f"{login_defs_file} 파일이 존재하지 않습니다.")
 
- 
-BAR
+    # Check /etc/pam.d/system-auth for expected options
+    try:
+        with open(pam_file, 'r') as file:
+            content = file.read()
+            if expected_options in content:
+                results["현황"].append(f"{pam_file}에 {expected_options}이(가) 있습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{pam_file}에 {expected_options}이(가) 없습니다.")
+    except FileNotFoundError:
+        results["현황"].append(f"{pam_file} 파일을 찾을 수 없습니다.")
 
-CODE [U-02] 패스워드 복잡성 설정
+    return results
 
-cat << EOF >> $result
+def main():
+    results = check_password_complexity()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.
-
-[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우.
-
-EOF
-
-BAR
-
-# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
-LOGIN_DEFS_FILE="/etc/login.defs"
-PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
-min=8
-
-# PASS_MIN_LEN 가장 높은 값
-highest_value=0
-while read line; do
-  if [[ $line =~ ^$PASS_MIN_LEN_OPTION[[:space:]]+([0-9]+) ]]; then
-    value=${BASH_REMATCH[1]}
-    if [ $value -gt $highest_value ]; then
-      highest_value=$value
-    fi
-  fi
-done < "$LOGIN_DEFS_FILE"
-
-# PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
-if [ "$highest_value" -ge "$min" ]; then
-   OK "8 글자 이상의 패스워드가 설정된 경우"
-else
-   WARN "8 글자 미만의 패스워드가 설정된 경우"
-fi
-
-
-
-PAM_FILE="/etc/pam.d/system-auth"
-EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
-
-
-if [ -f "$PAM_FILE" ]; then
-    if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
-        OK " $PAM_FILE 에 $EXPECTED_OPTIONS 있음  "
-    else
-        WARN " $PAM_FILE 에 $EXPECTED_OPTIONS 없음  "
-    fi
-else
-    INFO " $PAM_FILE 못 찾음"
-fi
-
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
