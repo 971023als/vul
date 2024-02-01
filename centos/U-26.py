@@ -2,36 +2,39 @@
 import subprocess
 import json
 
-def check_automountd_service_status():
+def check_automountd_disabled():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-26",
         "위험도": "상",
-        "진단 항목": "automountd 제거 '확인 필요'",
-        "진단 결과": "",
+        "진단 항목": "automountd 제거",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: automountd 서비스가 비활성화 되어있는 경우\n[취약]: automountd 서비스가 활성화 되어있는 경우"
+        "대응방안": "automountd 서비스 비활성화"
     }
 
     try:
-        # Execute the command to check for automount process
-        process = subprocess.run(['ps', '-ef'], capture_output=True, text=True, check=True)
-        output = process.stdout
+        # Check for the automountd or autofs service
+        automountd_running = subprocess.check_output(
+            "ps -ef | grep -iE 'automount|autofs' | grep -v 'grep'", 
+            shell=True, text=True
+        ).strip()
 
-        # Check if automount process is running
-        if 'automount' in output:
+        if automountd_running:
             results["진단 결과"] = "취약"
-            results["현황"].append("Automount 서비스가 실행 중입니다.")
+            results["현황"].append("automountd 서비스가 실행 중입니다.")
         else:
             results["진단 결과"] = "양호"
-            results["현황"].append("Automount 서비스가 실행되고 있지 않습니다.")
+            results["현황"].append("automountd 서비스가 비활성화되어 있습니다.")
+
     except subprocess.CalledProcessError as e:
-        results["현황"].append(f"Automount 서비스 상태 확인 중 오류 발생: {e}")
+        results["진단 결과"] = "오류"
+        results["현황"].append(f"automountd 서비스 확인 중 오류 발생: {e}")
 
     return results
 
 def main():
-    results = check_automountd_service_status()
+    results = check_automountd_disabled()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
