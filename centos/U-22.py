@@ -1,55 +1,47 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import os
-import json
-import glob
 import stat
-import pwd
+import json
 
-# 결과를 저장할 리스트 초기화
-results = []
-
-# cron 파일 목록 정의 (glob 패턴 사용)
-files = [
-    "/etc/crontab", "/etc/cron.hourly", "/etc/cron.daily",
-    "/etc/cron.weekly", "/etc/cron.monthly", "/etc/cron.allow",
-    "/etc/cron.deny", "/var/spool/cron/*", "/var/spool/cron/crontabs/*"
-]
-
-# 파일 소유자 및 권한 검사 함수
-def check_cron_file_security(files):
-    checked_files = []
-    for pattern in files:
-        for file_path in glob.glob(pattern):
-            if os.path.exists(file_path):
-                stat_info = os.stat(file_path)
-                owner = pwd.getpwuid(stat_info.st_uid).pw_name
-                perms = oct(stat_info.st_mode & 0o777)
-                if owner != "root" or int(perms, 8) > 0o640:
-                    status = "취약"
-                    message = f"{file_path} 소유자: {owner}, 권한: {perms} (640 이하가 아님)"
-                else:
-                    status = "양호"
-                    message = f"{file_path} 소유자: {owner}, 권한: {perms}"
-                checked_files.append({"파일": file_path, "상태": status, "메시지": message})
-            else:
-                checked_files.append({"파일": file_path, "상태": "정보", "메시지": f"{file_path}이 존재하지 않습니다"})
-    return checked_files
-
-# cron 파일 소유자 및 권한 검사 실행
-file_results = check_cron_file_security(files)
-
-# 결과 추가
-for result in file_results:
-    results.append({
-        "분류": "서비스 관리",
+def check_cron_files_ownership_and_permissions():
+    results = {
+        "분류": "시스템 설정",
         "코드": "U-22",
         "위험도": "상",
         "진단 항목": "cron 파일 소유자 및 권한 설정",
-        "진단 결과": result["상태"],
-        "현황": result["메시지"],
-        "대응방안": "cron 접근 제어 파일 소유자를 root로 설정하고, 권한을 640 이하로 설정"
-    })
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: cron 접근제어 파일 소유자가 root이고, 권한이 640 이하인 경우\n[취약]: cron 접근제어 파일 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우"
+    }
 
-# JSON 형태로 결과 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+    cron_files = [
+        "/etc/crontab", "/etc/cron.hourly", "/etc/cron.daily",
+        "/etc/cron.weekly", "/etc/cron.monthly", "/etc/cron.allow",
+        "/etc/cron.deny", "/var/spool/cron", "/var/spool/cron/crontabs"
+    ]
+
+    for cron_file in cron_files:
+        if os.path.exists(cron_file):
+            file_stat = os.stat(cron_file)
+            owner = stat.filemode(file_stat.st_mode)
+            permissions = oct(file_stat.st_mode)[-3:]
+
+            if os.getuid() != file_stat.st_uid or int(permissions) > 640:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{cron_file} 소유자 또는 권한 설정이 적절하지 않습니다. (소유자: {owner}, 권한: {permissions})")
+            else:
+                results["현황"].append(f"{cron_file}은(는) 적절히 설정되었습니다. (소유자: root, 권한: {permissions} 이하)")
+        else:
+            results["현황"].append(f"{cron_file} 파일이 존재하지 않습니다.")
+
+    if "진단 결과" not in results:
+        results["진단 결과"] = "양호"
+
+    return results
+
+def main():
+    results = check_cron_files_ownership_and_permissions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
+
+if __name__ == "__main__":
+    main()
