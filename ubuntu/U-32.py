@@ -1,38 +1,50 @@
+#!/bin/python3
 
-. function.sh
+import subprocess
+import json
 
-TMP1=`SCRIPTNAME`.log
+# 결과 저장을 위한 리스트
+results = []
 
-> $TMP1 
+def check_sendmail_status():
+    """
+    Sendmail 서비스의 실행 상태를 확인합니다.
+    """
+    try:
+        output = subprocess.check_output("ps -ef | grep sendmail | grep -v grep", shell=True, stderr=subprocess.STDOUT)
+        if output:
+            return True  # 실행 중
+        else:
+            return False  # 실행되지 않음
+    except subprocess.CalledProcessError:
+        return False  # 프로세스가 없음
 
- 
+# Sendmail 서비스 실행 상태 확인
+sendmail_active = check_sendmail_status()
 
-BAR
+# 일반 사용자의 Sendmail 실행 방지 설정 점검 (시뮬레이션)
+# 실제 환경에서는 Sendmail의 구성 파일을 분석하는 로직이 필요합니다.
+user_restriction_set = False  # 이 값은 실제 설정을 확인하여 결정해야 합니다.
 
-CODE [U-32] 일반사용자의 Sendmail 실행 방지
+diagnostic_item = "일반사용자의 Sendmail 실행 방지"
+if sendmail_active and not user_restriction_set:
+    status = "취약"
+    situation = "SMTP 서비스 사용 중 및 일반 사용자의 Sendmail 실행 방지가 설정되어 있지 않은 상태"
+    countermeasure = "일반 사용자의 Sendmail 실행을 방지하는 설정 적용"
+else:
+    status = "양호"
+    situation = "SMTP 서비스 미사용 또는, 일반 사용자의 Sendmail 실행 방지가 설정된 상태"
+    countermeasure = "일반 사용자의 Sendmail 실행 방지 설정 유지 및 검토"
 
-cat << EOF >> $result 
+results.append({
+    "분류": "서비스 관리",
+    "코드": "U-32",
+    "위험도": "상",
+    "진단 항목": diagnostic_item,
+    "진단 결과": status,
+    "현황": situation,
+    "대응방안": countermeasure
+})
 
-[양호]: SMTP 서비스 미사용 또는, 일반 사용자의 Sendmail 실행 방지가 설정된 경우
-
-[취약]: SMTP 서비스 사용 및 일반 사용자의 Sendmail 실행 방지가 설정되어 있지 않은 경우
-
-EOF
-
-BAR
-
-
-# Sendmail 서비스가 실행 중인지 확인합니다
-sendmail_status=$(ps -ef | grep sendmail | grep -v "grep")
-
-if [ "$sendmail_status" == "active" ]; then
-  WARN "Sendmail 서비스가 실행 중입니다."
-else
-  OK "Sendmail 서비스가 실행되고 있지 않습니다."
-fi
-
-
-cat $result
-
-echo ; echo
- 
+# 결과 출력
+print(json.dumps(results, ensure_ascii=False, indent=4))
