@@ -1,33 +1,48 @@
+#!/bin/python3
 
-. function.sh
+import subprocess
+import json
 
-BAR
+# 결과 저장을 위한 리스트
+results = []
 
-CODE [U-44] root 이외의 UID가 '0' 금지
+# /etc/passwd 파일 경로
+passwd_file = "/etc/passwd"
 
-cat << EOF >> $result
+def check_duplicate_root_uid(passwd_path):
+    """
+    /etc/passwd 파일에서 root 계정과 동일한 UID(0)를 갖는 계정이 있는지 확인합니다.
+    """
+    with open(passwd_path, 'r') as file:
+        root_uid_accounts = [line.split(':')[0] for line in file if line.split(':')[2] == "0"]
+    
+    if len(root_uid_accounts) > 1:
+        return True, root_uid_accounts
+    else:
+        return False, root_uid_accounts
 
-[양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
+# 루트 계정과 동일한 UID를 가진 계정 확인
+duplicate_root_uid, accounts = check_duplicate_root_uid(passwd_file)
 
-[취약]: root 계정과 동일한 UID를 갖는 계정이 존재하는 경우
+diagnostic_item = "root 이외의 UID가 '0' 금지"
+if duplicate_root_uid:
+    status = "취약"
+    situation = f"루트 계정과 동일한 UID를 가진 계정이 있습니다: {', '.join(accounts)}"
+    countermeasure = "루트 계정과 동일한 UID를 가진 추가 계정 제거"
+else:
+    status = "양호"
+    situation = "루트 계정과 동일한 UID를 가진 계정이 없습니다."
+    countermeasure = "현재 상태 유지"
 
-EOF
+results_summary = {
+    "분류": "서비스 관리",
+    "코드": "U-44",
+    "위험도": "상",
+    "진단 항목": diagnostic_item,
+    "진단 결과": status,
+    "현황": situation,
+    "대응방안": countermeasure
+}
 
-BAR
-
-FILE=/etc/passwd
-
-# 루트 계정과 동일한 UID를 가진 계정 확인(UID 값 0)
-awk -F: '$3=="0"{print $1":"$3}' $FILE > $TMP1
-UIDCHECK=$(wc -l < $TMP1)
-if [ $UIDCHECK -ge 2 ]; then
-   WARN "루트 계정과 동일한 UID를 가진 계정이 있습니다."
-   INFO "자세한 내용은 $TMP1 을 확인하십시오."
-else
-   OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-   rm $TMP1
-fi
- 
-cat $result
-
-echo ; echo
+# 결과 출력
+print(json.dumps(results_summary, ensure_ascii=False, indent=4))
