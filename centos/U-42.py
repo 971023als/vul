@@ -1,39 +1,49 @@
 #!/usr/bin/python3
-import datetime
+import subprocess
 import json
 
-def check_security_patches_applied():
+def get_version(command):
+    try:
+        version = subprocess.check_output(command, shell=True).decode('utf-8').strip()
+        return version
+    except subprocess.CalledProcessError:
+        return "버전 정보를 가져올 수 없음"
+
+def check_security_patches():
+    services = {
+        "Apache": "apache2 -v",
+        "MySQL": "mysql --version",
+        "PHP": "php -v",
+        "Nginx": "nginx -v",
+        "Node.js": "node -v",
+        "MariaDB": "mariadb --version",
+        "PostgreSQL": "postgres --version",
+        "Oracle": "sqlplus -v"
+    }
+    
     results = {
-        "분류": "시스템 관리",
+        "분류": "패치 관리",
         "코드": "U-42",
         "위험도": "상",
         "진단 항목": "최신 보안패치 및 벤더 권고사항 적용",
-        "진단 결과": "",
-        "현황": [],
-        "대응방안": "패치 적용 정책을 수립하여 주기적으로 패치를 관리하고 있는 경우"
+        "진단 결과": [],
+        "대응방안": "패치 적용 정책 수립 및 주기적 패치 관리"
     }
 
-    patch_log_file = "/var/log/patch.log"
-    current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-    expected_log_entry = f"Patches installed on {current_date}"
-
-    try:
-        with open(patch_log_file, 'r') as file:
-            if expected_log_entry in file.read():
-                results["진단 결과"] = "양호"
-                results["현황"].append(f"'{current_date}'에 설치된 패치 행이 '{patch_log_file}'에 있습니다.")
-            else:
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"'{current_date}'에 설치된 패치 행이 '{patch_log_file}'에 없습니다.")
-    except FileNotFoundError:
-        results["진단 결과"] = "취약"
-        results["현황"].append(f"'{patch_log_file}' 파일을 찾을 수 없습니다.")
+    for service, command in services.items():
+        version = get_version(command)
+        results["진단 결과"].append({
+            "서비스": service,
+            "현재 버전": version,
+            "패치 적용 여부": "N/A",  # 실제 패치 적용 여부 점검 로직 필요
+            "비고": "자동 점검 결과"
+        })
 
     return results
 
 def main():
-    results = check_security_patches_applied()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    patch_check_results = check_security_patches()
+    print(json.dumps(patch_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
