@@ -28,6 +28,7 @@ def check_shadow_password_usage():
         results["현황"].append("쉐도우 패스워드를 사용하고 있지 않습니다.")
         results["진단 결과"] = "취약"
     else:
+        results["현황"].append("쉐도우 패스워드를 사용하고 있습니다")
         results["진단 결과"] = "양호"
 
     return results
