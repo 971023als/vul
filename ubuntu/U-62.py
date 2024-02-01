@@ -1,47 +1,43 @@
+#!/usr/bin/python3
+import subprocess
+import re
+import json
 
-. function.sh
- 
-TMP1=`SCRIPTNAME`.log
+def check_ftp_account_shell_restriction():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-62",
+        "위험도": "상",
+        "진단 항목": "ftp 계정 shell 제한",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우\n[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우"
+    }
 
-> $TMP1 
- 
-BAR
+    try:
+        # /etc/passwd에서 FTP 계정의 셸을 확인합니다
+        ftp_shell = subprocess.check_output("grep '^ftp:' /etc/passwd | awk -F: '{print $7}'", shell=True, text=True).strip()
 
-CODE [U-62] ftp 계정 shell 제한
+        # FTP 포트가 수신 중인지 확인합니다
+        ss_output = subprocess.check_output(["ss", "-tnlp"], text=True)
+        if re.search(r':21', ss_output):
+            if ftp_shell == "/bin/false":
+                results["진단 결과"] = "양호"
+                results["현황"].append("FTP 계정의 셸이 /bin/false로 설정되었습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("FTP 계정의 셸이 /bin/false로 설정되지 않았습니다.")
+        else:
+            results["진단 결과"] = "양호"
+            results["현황"].append("FTP 포트(21)가 열려 있지 않습니다.")
+    except subprocess.CalledProcessError:
+        results["현황"].append("FTP 계정 정보를 검색하는 데 실패하였습니다.")
 
-cat << EOF >> $result
+    return results
 
-[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
+def main():
+    results = check_ftp_account_shell_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우
-
-EOF
-
-BAR
-
-# FTP 서비스의 상태를 확인합니다
-ftp_status=$(service ftp status 2>&1)
-
-# /etc/passwd에서 FTP 계정을 확인합니다
-ftp_entry=$(grep "^ftp:" /etc/passwd)
-
-# FTP 계정의 셸을 확인합니다
-ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
-
-# FTP 포트가 수신 중인지 확인합니다
-if ss -tnlp | grep -q ':21'; then
-  if [ "$ftp_shell" == "/bin/false" ]; then
-    OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
-  else
-    WARN "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
-  fi
-else
-  OK "FTP 포트(21)가 열려 있지 않습니다."
-fi
-
-
-cat $result
-
-echo ; echo 
-
- 
+if __name__ == "__main__":
+    main()
