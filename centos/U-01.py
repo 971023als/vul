@@ -24,7 +24,7 @@ def check_root_remote_access_restriction():
                 results["진단 결과"] = "양호"
                 results["현황"].append("원격 터미널 서비스를 통해 루트 직접 액세스가 허용되지 않음")
     except FileNotFoundError:
-        results["진단 결과"] = "취약"
+        results["진단 결과"] = "정보부족"
         results["현황"].append(f"{ssh_config_file} 파일이 존재하지 않습니다.")
 
     return results
