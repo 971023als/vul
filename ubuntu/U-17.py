@@ -1,103 +1,62 @@
 #!/usr/bin/python3
 
-. function.sh
+import os
+import subprocess
+import json
 
+def check_rhosts_hosts_equiv_usage():
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-17",
+        "위험도": "상",
+        "진단 항목": "$HOME/.rhosts, hosts.equiv 사용 금지",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "login, shell, exec 서비스 사용 시 안전한 설정 적용 권장."
+    }
 
-TMP1=`SCRIPTNAME`.log
+    equiv_file = "/etc/hosts.equiv"
+    rhosts_file = os.path.join(os.path.expanduser('~'), ".rhosts")
 
->$TMP1   
+    # Check /etc/hosts.equiv file
+    if os.path.exists(equiv_file):
+        equiv_perms = oct(os.stat(equiv_file).st_mode)[-3:]
+        if equiv_perms <= "600":
+            results["현황"].append(f"{equiv_file} 권한이 안전합니다.")
+        else:
+            results["현황"].append(f"{equiv_file} 권한이 600 이하가 아닙니다.")
 
-BAR
+        with open(equiv_file, 'r') as file:
+            if '+' in file.read():
+                results["현황"].append(f"{equiv_file} 파일에 '+' 설정이 있습니다.")
+    else:
+        results["현황"].append(f"{equiv_file} 파일이 존재하지 않습니다.")
 
-CODE [U-17] $HOME/.rhosts, hosts.equiv 사용 금지 
+    # Check $HOME/.rhosts file
+    if os.path.exists(rhosts_file):
+        rhosts_perms = oct(os.stat(rhosts_file).st_mode)[-3:]
+        if rhosts_perms <= "600":
+            results["현황"].append(f"{rhosts_file} 권한이 안전합니다.")
+        else:
+            results["현황"].append(f"{rhosts_file} 권한이 600 이하가 아닙니다.")
 
-cat << EOF >> $result
+        with open(rhosts_file, 'r') as file:
+            if '+' in file.read():
+                results["현황"].append(f"{rhosts_file} 파일에 '+' 설정이 있습니다.")
+    else:
+        results["현황"].append(f"{rhosts_file} 파일이 존재하지 않습니다.")
 
-[양호]: login, shell, exec 서비스를 사용하지 않거나 사용 시 아래와 같은 설정이 적용된 경우 
+    # Determine overall result
+    if "600 이하가 아닙니다." in results["현황"] or "'+' 설정이 있습니다." in results["현황"]:
+        results["진단 결과"] = "취약"
+    else:
+        results["진단 결과"] = "양호"
 
-1. /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자가 root 또는, 해당 계정인 경우 
+    return results
 
-2. /etc/hosts.equiv 및 $HOME/.rhosts 파일 권한이 600 이하인 경우 
+def main():
+    results = check_rhosts_hosts_equiv_usage()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-3. /etc/hosts.equiv 및 $HOME/.rhosts 파일 설정에 ‘+’ 설정이 없는 경우
-
-[취약]: login, shell, exec 서비스를 사용하고, 위와 같은 설정이 적용되지 않은 경우 
-
-EOF
-
-BAR
-
-equiv_file="/etc/hosts.equiv"
-rhosts_file="$HOME/.rhosts"
-
-if [ -f "$equiv_file" ]; then
-  equiv_owner=$(stat -c "%U" "$equiv_file")
-  if [ "$equiv_owner" = "root" ]; then
-    OK "$equiv_file 은 루트에 의해 소유됩니다."
-  else
-    INFO "$equiv_file 이 루트에 의해 소유되지 않음($equiv_owner 가 소유함)" 
-  fi
-else
-  INFO "$equiv_file 을 찾을 수 없습니다"
-fi
-
-if [ -f "$rhosts_file" ]; then
-  rhosts_owner=$(stat -c "%U" "$rhosts_file")
-  if [ "$rhosts_owner" = "$USER" ]; then
-    OK "$rhosts_file 은 $USER 가 소유하고 있습니다."
-  else
-    INFO "$rhosts_fil e은 $USER($rhosts_owner 소유)가 소유하지 않습니다."
-  fi
-else
-  INFO "$rhosts_file 을 찾을 수 없습니다"
-fi
-
-
-equiv_file="/etc/hosts.equiv"
-rhosts_file="$HOME/.rhosts"
-
-if [ -f "$equiv_file" ]; then
-  equiv_perms=$(stat -c "%a" "$equiv_file")
-  if [ "$equiv_perms" -le "600" ]; then
-    OK "$equiv_file 에 허용 가능한 권한($equiv_perms)이 있습니다."
-  else
-    WARN "$equiv_file 에 허용되지 않는 권한($equiv_perms)이 있습니다."
-  fi
-else
-  INFO "$equiv_file 을 찾을 수 없습니다"
-fi
-
-if [ -f "$rhosts_file" ]; then
-  rhosts_perms=$(stat -c "%a" "$rhosts_file")
-  if [ "$rhosts_perms" -le "600" ]; then
-    OK "$rhosts_file 에 허용 가능한 권한($rhosts_perms)이 있습니다."
-  else
-    WARN "$rhosts_file 에 허용되지 않는 권한($rhosts_perms)이 있습니다."
-  fi
-else
-  INFO "$rhosts_file 을 찾을 수 없습니다"
-fi
-
-equiv_file="/etc/hosts.equiv"
-rhosts_file="$HOME/.rhosts"
-
-check_file() {
-  file=$1
-  if [ -f "$file" ]; then
-    if grep -q "+" "$file"; then
-      WARN "$file '+' 설정이 있습니다"
-    else
-      OK "$file  '+' 설정이 없습니다"
-    fi
-  else
-    INFO "$file 을 찾을 수 없습니다"
-  fi
-}
-
-check_file "$equiv_file"
-check_file "$rhosts_file"
-
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

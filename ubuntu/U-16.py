@@ -1,36 +1,43 @@
 #!/usr/bin/python3
+import subprocess
+import json
 
-. function.sh
+def check_dev_nonexistent_device_files():
+    results = {
+        "분류": "시스템 파일 설정",
+        "코드": "U-16",
+        "위험도": "상",
+        "진단 항목": "/dev에 존재하지 않는 device 파일 점검",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "/dev에 존재하지 않는 device 파일 제거 권장."
+    }
 
-TMP1=`SCRIPTNAME`.log
+    # /dev 디렉토리 내 모든 파일에 대한 메이저 및 마이너 번호 확인
+    cmd = "find /dev -type b -o -type c -exec ls -l {} \;"
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    stdout, stderr = process.communicate()
 
->$TMP1  
+    nonexistent_device_files_found = False
+    for line in stdout.split('\n'):
+        if line:
+            major_minor = ' '.join(line.split()[4:6])
+            if major_minor == "0 0":
+                results["현황"].append(f"메이저 및 마이너 번호가 없는 장치 파일 발견: {line.split()[-1]}")
+                nonexistent_device_files_found = True
 
-BAR
+    if nonexistent_device_files_found:
+        results["진단 결과"] = "취약"
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("/dev에 존재하지 않는 device 파일 없음.")
 
-CODE [U-16] /dev에 존재하지 않는 device 파일 점검
+    return results
 
-cat << EOF >> $result  
+def main():
+    results = check_dev_nonexistent_device_files()
+    # 결과를 JSON 형태로 출력
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[양호]: dev에 대한 파일 점검 후 존재하지 않은 device 파일을 제거한 경우
-
-[취약]: dev에 대한 파일 미점검, 또는, 존재하지 않은 device 파일을 방치한 경우
-
-EOF
-
-BAR
-
-results=$(find /dev -type f -exec ls -l {} \;)
-
-while read line; do
-  major_minor=$(echo $line | awk '{print $5,$6}')
-  if [ "$major_minor" == "0 0" ]; then
-    WARN "$line 메이저 및 마이너 번호가 없는 장치를 찾았습니다"
-  else
-    OK "$line 메이저 및 마이너 번호가 있습니다"
-  fi
-done <<< "$results"
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

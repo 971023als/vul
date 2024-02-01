@@ -5,9 +5,6 @@
 TMP1=`SCRIPTNAME`.log
 
 >$TMP1  
-
- 
-
  
 
 BAR
