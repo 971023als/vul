@@ -1,47 +1,46 @@
 #!/usr/bin/python3
-import json
 import os
+import json
 
 def check_r_services_disabled():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-21",
         "위험도": "상",
         "진단 항목": "r 계열 서비스 비활성화",
-        "진단 결과": "",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: r 계열 서비스가 비활성화 되어 있는 경우\n[취약]: r 계열 서비스가 활성화 되어 있는 경우"
+        "대응방안": "불필요한 r 계열 서비스 비활성화"
     }
 
-    service_files = ['/etc/xinetd.d/rlogin', '/etc/xinetd.d/rsh', '/etc/xinetd.d/rexec']
-    expected_settings = [
-        "socket_type= stream",
-        "wait= no",
-        "user= nobody",
-        "log_on_success+= USERID",
-        "log_on_failure+= USERID",
-        "disable= yes"
-    ]
+    r_commands = ["rsh", "rlogin", "rexec", "shell", "login", "exec"]
+    xinetd_dir = "/etc/xinetd.d"
+    inetd_conf = "/etc/inetd.conf"
+    vulnerable_services = []
 
-    for service_file in service_files:
-        if os.path.exists(service_file):
-            with open(service_file, 'r') as f:
-                content = f.read()
-                all_settings_ok = True
-                for setting in expected_settings:
-                    if setting not in content:
-                        all_settings_ok = False
-                        results["현황"].append(f"{service_file} 파일에서 '{setting}'을 올바르게 설정하지 않았습니다.")
-                        break
-                if all_settings_ok:
-                    results["현황"].append(f"'{service_file}' 파일의 설정이 올바릅니다.")
-        else:
-            results["현황"].append(f"{service_file} 파일이 없습니다.")
+    # Check services under xinetd.d
+    if os.path.isdir(xinetd_dir):
+        for r_command in r_commands:
+            service_path = os.path.join(xinetd_dir, r_command)
+            if os.path.isfile(service_path):
+                with open(service_path, 'r') as file:
+                    if 'disable = no' in file.read():
+                        vulnerable_services.append(r_command)
 
-    if not results["현황"]:
-        results["진단 결과"] = "양호"
-    else:
+    # Check services under inetd.conf
+    if os.path.isfile(inetd_conf):
+        with open(inetd_conf, 'r') as file:
+            inetd_contents = file.read()
+            for r_command in r_commands:
+                if r_command in inetd_contents:
+                    vulnerable_services.append(r_command)
+
+    if vulnerable_services:
         results["진단 결과"] = "취약"
+        results["현황"].append(f"불필요한 r 계열 서비스가 실행 중입니다: {', '.join(vulnerable_services)}")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("모든 r 계열 서비스가 비활성화되어 있습니다.")
 
     return results
 
