@@ -1,52 +1,46 @@
 #!/usr/bin/python3
-
 import os
 import stat
 import json
+import pwd
 
-def check_rsyslog_conf_ownership_and_permissions():
-    rsyslog_conf_file = "/etc/rsyslog.conf"
-    result = {
-        "분류": "서비스 관리",
+def check_syslog_file_permissions():
+    results = {
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-11",
         "위험도": "상",
-        "진단 항목": "/etc/rsyslog.conf 파일 소유자 및 권한 설정",
-        "진단 결과": "",
+        "진단 항목": "/etc/syslog.conf 파일 소유자 및 권한 설정",
+        "진단 결과": "N/A",  # Default to N/A; will be updated if files are found
         "현황": [],
-        "대응방안": "/etc/rsyslog.conf 파일의 소유자를 root(또는 bin, sys)로 설정하고, 권한을 640 이하로 설정하세요."
+        "대응방안": "/etc/syslog.conf 파일의 소유자가 root(또는 bin, sys)이고, 권한이 640 이하인 경우"
     }
 
-    # Check if the /etc/rsyslog.conf file exists
-    if not os.path.exists(rsyslog_conf_file):
-        result["현황"].append(f"{rsyslog_conf_file} 파일이 존재하지 않습니다.")
-        result["진단 결과"] = "정보 부족"
-        return result
+    syslog_conf_files = ["/etc/rsyslog.conf", "/etc/syslog.conf", "/etc/syslog-ng.conf"]
+    file_exists_count = 0
 
-    # Check the ownership of the /etc/rsyslog.conf file
-    file_stat = os.stat(rsyslog_conf_file)
-    file_owner_uid = file_stat.st_uid
-    file_perms = stat.S_IMODE(file_stat.st_mode)
-    acceptable_owners = ["root", "bin", "sys"]
-    owner_name = os.getpwuid(file_owner_uid).pw_name
+    for file_path in syslog_conf_files:
+        if os.path.isfile(file_path):
+            file_exists_count += 1
+            file_stat = os.stat(file_path)
+            mode = oct(file_stat.st_mode)[-3:]
+            owner_uid = file_stat.st_uid
+            owner_name = pwd.getpwuid(owner_uid).pw_name
 
-    if owner_name not in acceptable_owners:
-        result["현황"].append(f"{rsyslog_conf_file}의 소유자가 {owner_name}입니다.")
-        result["진단 결과"] = "취약"
-    else:
-        result["현황"].append(f"{rsyslog_conf_file}의 소유자가 적절합니다.")
+            if owner_name in ['root', 'bin', 'sys'] and int(mode, 8) <= 0o640:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{file_path} 파일의 소유자가 {owner_name}이고, 권한이 {mode}입니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{file_path} 파일의 소유자나 권한이 기준에 부합하지 않습니다.")
 
-    # Check the permissions of the /etc/rsyslog.conf file
-    if file_perms > 0o640:
-        result["현황"].append(f"{rsyslog_conf_file}의 권한이 {oct(file_perms)}로 설정되어 있습니다.")
-        result["진단 결과"] = "취약"
-    else:
-        result["현황"].append(f"{rsyslog_conf_file}의 권한이 적절합니다.")
+    if file_exists_count > 0 and results["진단 결과"] != "취약":
+        results["진단 결과"] = "양호"
 
-    return result
+    return results
 
 def main():
-    result = check_rsyslog_conf_ownership_and_permissions()
-    print(json.dumps(result, ensure_ascii=False, indent=4))
+    results = check_syslog_file_permissions()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

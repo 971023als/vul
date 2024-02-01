@@ -27,6 +27,7 @@ def check_syslog_file_permissions():
             owner_name = pwd.getpwuid(owner_uid).pw_name
 
             if owner_name in ['root', 'bin', 'sys'] and int(mode, 8) <= 0o640:
+                results["진단 결과"] = "취약"
                 results["현황"].append(f"{file_path} 파일의 소유자가 {owner_name}이고, 권한이 {mode}입니다.")
             else:
                 results["진단 결과"] = "취약"
