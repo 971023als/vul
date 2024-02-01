@@ -1,43 +1,39 @@
-#!/usr/bin/python3
 
-import collections
-import os
+. function.sh
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-52": {
-        "title": "동일한 UID 금지",
-        "status": "",
-        "description": {
-            "good": "동일한 UID로 설정된 사용자 계정이 존재하지 않는 경우",
-            "bad": "동일한 UID로 설정된 사용자 계정이 존재하는 경우",
-        },
-        "details": []
-    }
-}
+BAR
 
-passwd_file = "/etc/passwd"
+CODE [U-52] 동일한 UID 금지
 
-def check_duplicate_uids():
-    if not os.path.exists(passwd_file):
-        results["status"] = "정보"
-        results["details"].append(f"{passwd_file} 파일이 없습니다.")
-        return
+cat << EOF >> $result
 
-    with open(passwd_file, 'r') as f:
-        uids = [line.split(':')[2] for line in f if line.strip()]
+양호: 동일한 UID로 설정된 사용자 계정이 존재하지 않는 경우
 
-    uid_counts = collections.Counter(uids)
-    duplicate_uids = {uid: count for uid, count in uid_counts.items() if count > 1}
+취약: 동일한 UID로 설정된 사용자 계정이 존재하는 경우
 
-    if duplicate_uids:
-        results["status"] = "취약"
-        for uid, count in duplicate_uids.items():
-            results["details"].append(f"UID {uid}가 {count}개의 계정에서 사용됨.")
-    else:
-        results["status"] = "양호"
+EOF
 
-check_duplicate_uids()
+BAR
 
-# 결과 출력
-print(json.dumps(results, indent=4, ensure_ascii=False))
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1
+
+PASSWD="/etc/passwd"
+
+uid_list=$(awk -F: '{print $3}' "$PASSWD")
+duplicate_uids=$(echo "$uid_list" | sort | uniq -d)
+
+if [ ! -f "$PASSWD" ]; then
+	INFO "$PASSWD 파일이 없습니다."
+else
+	if [ -n "$duplicate_uids" ]; then
+		WARN "UID가 동일한 사용자 계정이 있습니다: $duplicate_uids"
+	else
+		OK "같은 UID를 가진 사용자 계정이 없습니다."
+	fi
+fi
+
+cat $result
+
+echo ; echo

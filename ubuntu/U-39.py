@@ -1,39 +1,41 @@
 #!/usr/bin/python3
-. function.sh
+import re
+import json
 
-TMP1=`SCRIPTNAME`.log
+def check_apache_link_usage_restriction():
+    results = {
+        "분류": "웹 서비스",
+        "코드": "U-39",
+        "위험도": "상",
+        "진단 항목": "Apache 링크 사용 금지",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: 심볼릭 링크, aliases 사용을 제한한 경우\n[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우"
+    }
 
-> $TMP1 
- 
+    config_file = "/etc/apache2/apache2.conf"
+    try:
+        with open(config_file, 'r') as file:
+            contents = file.read()
+            symlink_result = re.search(r'^\s*Options\s.*FollowSymLinks', contents, re.MULTILINE)
+            alias_result = re.search(r'^\s*Options\s.*SymLinksIfOwnerMatch', contents, re.MULTILINE)
 
-BAR
+            if symlink_result and alias_result:
+                results["진단 결과"] = "취약"
+                results["현황"].append("Apache2에서 심볼릭 링크 및 별칭이 허용됨")
+            else:
+                results["진단 결과"] = "양호"
+                results["현황"].append("Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다.")
+    except FileNotFoundError:
+        results["현황"].append(f"{config_file} 파일을 찾을 수 없습니다.")
+    except Exception as e:
+        results["현황"].append(f"파일 읽기 중 예외 발생: {str(e)}")
 
-CODE [U-39] Apache 링크 사용 금지 
+    return results
 
-cat << EOF >> $result
+def main():
+    results = check_apache_link_usage_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[양호]: 심볼릭 링크, aliases 사용을 제한한 경우
-
-[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우
-
-EOF
-
-BAR
-
-# 확인할 Apache2 Document Root 디렉토리 설정
-config_file="/etc/apache2/apache2.conf"
-
-# grep을 사용하여 구성 파일에서 FollowSymLinks 및 SymLinksIfOwnerMatch 옵션이 실행되었는지 확인합니다
-symlink_result=$(grep -E "^[ \t]*Options[ \t]+FollowSymLinks" $config_file)
-alias_result=$(grep -E "^[ \t]*Options[ \t]+SymLinksIfOwnerMatch" $config_file)
-
-if [ -n "$symlink_result" ] && [ -n "$alias_result" ]; then
-    WARN "Apache2에서 심볼릭 링크 및 별칭이 허용됨"
-else
-    OK "Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다."
-fi
-
- 
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

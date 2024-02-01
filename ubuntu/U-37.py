@@ -1,43 +1,38 @@
 #!/usr/bin/python3
-. function.sh
+import os
+import json
 
- 
-TMP1=`SCRIPTNAME`.log
+def check_apache_directory_access_restriction():
+    results = {
+        "분류": "웹 서비스",
+        "코드": "U-37",
+        "위험도": "상",
+        "진단 항목": "Apache 상위 디렉터리 접근 금지",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: 상위 디렉터리에 이동제한을 설정한 경우\n[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우"
+    }
 
-> $TMP1 
- 
+    httpd_conf_file = "/etc/apache2/apache2.conf"
+    allow_override_option = "AllowOverride AuthConfig"
 
-BAR
+    if not os.path.isfile(httpd_conf_file):
+        results["현황"].append(f"{httpd_conf_file} 을 찾을 수 없습니다.")
+    else:
+        with open(httpd_conf_file, 'r') as file:
+            contents = file.read()
+            if allow_override_option in contents:
+                results["진단 결과"] = "양호"
+                results["현황"].append(f"{httpd_conf_file} 에서 {allow_override_option} 을 찾았습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{httpd_conf_file} 에서 {allow_override_option} 을 찾을 수 없습니다.")
 
-CODE [U-37] Apache 상위 디렉터리 접근 금지 
+    return results
 
-cat << EOF >> $result
+def main():
+    results = check_apache_directory_access_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[양호]: 상위 디렉터리에 이동제한을 설정한 경우
-
-[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우
-
-EOF
-
-BAR
-
-
-HTTPD_CONF_FILE="/etc/apache2/apache2.conf"
-ALLOW_OVERRIDE_OPTION="AllowOverride AuthConfig"
-
-if [ ! -f "$HTTPD_CONF_FILE" ]; then
-    INFO "$HTTPD_CONF_FILE 을 찾을 수 없습니다."
-else
-    if grep -q "$ALLOW_OVERRIDE_OPTION" "$HTTPD_CONF_FILE"; then
-        OK "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾았습니다."
-    else
-        WARN "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾을 수 없습니다."
-    fi
-fi
-
-
-cat $result
-
-echo ; echo
-
- 
+if __name__ == "__main__":
+    main()

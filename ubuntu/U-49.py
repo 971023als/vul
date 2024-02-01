@@ -1,49 +1,102 @@
-import pwd
-import json
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-49": {
-        "title": "불필요한 계정 제거",
-        "status": "",
-        "description": {
-            "good": "불필요한 계정이 존재하지 않는 경우",
-            "bad": "불필요한 계정이 존재하는 경우",
-        },
-        "suspected_accounts": []
-    }
-}
+. function.sh
+
+TMP1=`SCRIPTNAME`.log
+
+> $TMP1
+
+
+BAR
+
+CODE [U-49] 불필요한 계정 제거
+
+cat << EOF >> $result
+
+[양호]: 불필요한 계정이 존재하지 않는 경우
+
+[취약]: 불필요한 계정이 존재하는 경우
+
+EOF
+
+BAR
+
 
 # 기본 계정 목록 지정
-default_accounts = set([
-    "root", "bin", "daemon", "adm", "lp", "sync", "shutdown", "halt", "ubuntu",
-    "messagebus", "syslog", "avahi", "kernoops", "whoopsie", "colord", "systemd-network",
-    "systemd-resolve", "systemd-timesync", "dbus", "rpc", "rpcuser", "haldaemon",
-    "apache", "postfix", "gdm", "sys", "games", "man", "news", "uucp", "proxy", "www-data",
-    "backup", "list", "irc", "gnarts", "nobody", "_apt", "tss", "uuidd", "tcpdump",
-    "avahi-autoipad", "usbmux", "rtkit", "dnsmasq", "cups-pk-helper", "speech-dispatcher",
-    "saned", "nm-openvpn", "hplip", "geoclue", "pulse", "gnome-initial-setup",
-    "systemd-coredump", "fwupd-refresh", "adiosl", "mysql", "cubrid", "user"
-])
+default_accounts=(
+  "root"
+  "bin"
+  "daemon"
+  "adm"
+  "lp"
+  "sync"
+  "shutdown"
+  "halt"
+  "ubuntu"
+  "messagebus"
+  "syslog"
+  "avahi"
+  "kernoops"
+  "whoopsie"
+  "colord"
+  "systemd-network"
+  "systemd-resolve"
+  "systemd-timesync"
+  "dbus"
+  "rpc"
+  "rpcuser"
+  "haldaemon"
+  "apache"
+  "postfix"
+  "gdm"
+  "sys"
+  "games"
+  "man"
+  "news"
+  "uucp"
+  "proxy"
+  "www-data"
+  "backup"
+  "list"
+  "irc"
+  "gnarts"
+  "nobody"
+  "_apt"
+  "tss"
+  "uuidd"
+  "tcpdump"
+  "avahi-autoipad"
+  "usbmux"
+  "rtkit"
+  "dnsmasq"
+  "cups-pk-helper"
+  "speech-dispatcher"
+  "saned"
+  "nm-openvpn"
+  "hplip"
+  "geoclue"
+  "pulse"
+  "gnone-initial-setup"
+  "systmd-coredump"
+  "fwupd-refresh"
+  "adiosl"
+  "mysql"
+  "cuvrid"
+  "user"
+)
 
-# 시스템의 모든 사용자 계정을 검사
-for user_info in pwd.getpwall():
-    user_name = user_info.pw_name
-    # 사용자가 기본 계정 목록에 없는 경우, 의심 목록에 추가
-    if user_name not in default_accounts:
-        results["suspected_accounts"].append(user_name)
+# 셸이 bash로 설정된 사용자 목록을 /etc/passwd에서 가져옵니다
+user_list=$(cat /etc/passwd | grep bash | awk -F: '{print $1}')
 
-# 결과 상태 설정
-if results["suspected_accounts"]:
-    results["status"] = "취약"
-    results["description"]["bad"] += " 다음 용도가 의심되는 계정이 발견되었습니다: " + ", ".join(results["suspected_accounts"])
-else:
-    results["status"] = "양호"
-    results["description"]["good"] += " 시스템에 불필요한 계정이 존재하지 않습니다."
+# 사용자 목록을 순환
+for user in $user_list; do
+  # 사용자가 기본 계정인지 확인합니다
+  if echo "$default_accounts" | grep -qw "$user"; then
+    OK "용도가 의심되는 계정이 없습니다"
+  else
+    INFO "용도가 의심되는 계정 발견: $user"
+  fi
+done
 
-# 결과를 JSON 파일로 저장
-with open('result.json', 'w', encoding='utf-8') as f:
-    json.dump(results, f, ensure_ascii=False, indent=4)
+cat $result
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+echo ; echo
