@@ -16,6 +16,7 @@ def check_xinetd_conf_file_ownership_and_permissions():
 
     xinetd_conf_file = "/etc/xinetd.conf"
     if not os.path.exists(xinetd_conf_file):
+        results["진단 결과"] = "정보 부족"
         results["현황"].append(f"{xinetd_conf_file} 파일이 없습니다.")
     else:
         file_stat = os.stat(xinetd_conf_file)
@@ -23,12 +24,14 @@ def check_xinetd_conf_file_ownership_and_permissions():
         file_permissions = oct(file_stat.st_mode)[-3:]
 
         if os.getuid() == file_stat.st_uid:
+            results["진단 결과"] = "양호"
             results["현황"].append(f"{xinetd_conf_file}가 루트에 의해 소유됩니다.")
         else:
             results["진단 결과"] = "취약"
             results["현황"].append(f"{xinetd_conf_file}가 루트에 의해 소유되지 않음")
 
         if int(file_permissions) == 600:
+            results["진단 결과"] = "양호"
             results["현황"].append(f"{xinetd_conf_file}에 권한은 600 이하 입니다.")
         else:
             results["진단 결과"] = "취약"
