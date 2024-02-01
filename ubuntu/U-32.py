@@ -1,50 +1,50 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import subprocess
+import os
 import json
 
-# 결과 저장을 위한 리스트
-results = []
+def check_sendmail_execution_restriction():
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-32",
+        "위험도": "상",
+        "진단 항목": "일반사용자의 Sendmail 실행 방지",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "SMTP 서비스 미사용 또는 일반 사용자의 Sendmail 실행 방지 설정"
+    }
 
-def check_sendmail_status():
-    """
-    Sendmail 서비스의 실행 상태를 확인합니다.
-    """
     try:
-        output = subprocess.check_output("ps -ef | grep sendmail | grep -v grep", shell=True, stderr=subprocess.STDOUT)
-        if output:
-            return True  # 실행 중
+        # Find sendmail.cf files
+        sendmail_cf_files = subprocess.check_output("find / -name 'sendmail.cf' -type f 2>/dev/null", shell=True, text=True).strip().split('\n')
+
+        if not sendmail_cf_files[0]:  # If the list is empty or contains an empty string
+            results["진단 결과"] = "취약"
+            results["현황"].append("sendmail.cf 파일이 없습니다.")
         else:
-            return False  # 실행되지 않음
-    except subprocess.CalledProcessError:
-        return False  # 프로세스가 없음
+            restriction_set = False
+            for file_path in sendmail_cf_files:
+                with open(file_path, 'r') as file:
+                    for line in file:
+                        if 'restrictqrun' in line and not line.strip().startswith('#'):
+                            restriction_set = True
+                            break
+                if restriction_set:
+                    break
 
-# Sendmail 서비스 실행 상태 확인
-sendmail_active = check_sendmail_status()
+            if not restriction_set:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{file_path} 파일에 restrictqrun 옵션이 설정되어 있지 않습니다.")
 
-# 일반 사용자의 Sendmail 실행 방지 설정 점검 (시뮬레이션)
-# 실제 환경에서는 Sendmail의 구성 파일을 분석하는 로직이 필요합니다.
-user_restriction_set = False  # 이 값은 실제 설정을 확인하여 결정해야 합니다.
+    except subprocess.CalledProcessError as e:
+        results["진단 결과"] = "오류"
+        results["현황"].append(f"sendmail.cf 파일 검색 중 오류 발생: {e}")
 
-diagnostic_item = "일반사용자의 Sendmail 실행 방지"
-if sendmail_active and not user_restriction_set:
-    status = "취약"
-    situation = "SMTP 서비스 사용 중 및 일반 사용자의 Sendmail 실행 방지가 설정되어 있지 않은 상태"
-    countermeasure = "일반 사용자의 Sendmail 실행을 방지하는 설정 적용"
-else:
-    status = "양호"
-    situation = "SMTP 서비스 미사용 또는, 일반 사용자의 Sendmail 실행 방지가 설정된 상태"
-    countermeasure = "일반 사용자의 Sendmail 실행 방지 설정 유지 및 검토"
+    return results
 
-results.append({
-    "분류": "서비스 관리",
-    "코드": "U-32",
-    "위험도": "상",
-    "진단 항목": diagnostic_item,
-    "진단 결과": status,
-    "현황": situation,
-    "대응방안": countermeasure
-})
+def main():
+    results = check_sendmail_execution_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+if __name__ == "__main__":
+    main()
