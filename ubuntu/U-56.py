@@ -1,40 +1,47 @@
-. function.sh
+#!/usr/bin/python3
+import re
+import json
 
-TMP1=`SCRIPTNAME`.log
+def check_umask_setting():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-56",
+        "위험도": "상",
+        "진단 항목": "UMASK 설정 관리",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: UMASK 값이 022 이하로 설정된 경우\n[취약]: UMASK 값이 022 이하로 설정되지 않은 경우"
+    }
 
-> $TMP1 
- 
+    config_file = "/etc/profile"
+    try:
+        with open(config_file, 'r') as file:
+            contents = file.read()
+            if re.search(r'umask 022', contents):
+                results["현황"].append("umask가 /etc/profile에서 022로 설정됨")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("umask가 /etc/profile에서 022로 설정되지 않음")
 
-BAR
+            if re.search(r'export umask', contents):
+                results["현황"].append("/etc/profile에서 export umask로 설정됨")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("/etc/profile에서 export umask로 설정되지 않음")
 
-CODE [U-56] UMASK 설정 관리 
+    except FileNotFoundError:
+        results["현황"].append(f"{config_file} 파일을 찾을 수 없습니다.")
+    except Exception as e:
+        results["현황"].append(f"파일 읽기 중 예외 발생: {str(e)}")
 
-cat << EOF >> $result
+    if "취약" not in results["진단 결과"]:
+        results["진단 결과"] = "양호"
 
-[양호]: UMASK 값이 022 이하로 설정된 경우
+    return results
 
-[취약]: UMASK 값이 022 이하로 설정되지 않은 경우 
+def main():
+    results = check_umask_setting()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-EOF
-
-BAR
-
-# /etc/profile에서 UMASK가 022로 설정되어 있는지 확인합니다
-if grep -q "umask 022" /etc/profile; then
-  OK "umask가 /etc/profile에서 022로 설정됨"
-else
-  WARN "umask가 /etc/profile에서 022로 설정되지 않음"
-fi
-
-# /etc/profile에서  export umask 로 설정되어 있는지 확인합니다
-if grep -q "export umask" /etc/profile; then
-  OK "/etc/profile에서 export umask로 설정됨"
-else
-  WARN "/etc/profile에서 export umask로 설정되지 않음"
-fi
-
-
-
-cat $result
-
-echo ; echo 
+if __name__ == "__main__":
+    main()
