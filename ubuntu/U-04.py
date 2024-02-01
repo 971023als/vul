@@ -16,10 +16,11 @@ results = {
 
 # /etc/shadow 파일 존재 여부 확인
 shadow_file = "/etc/shadow"
+passwd_file = "/etc/passwd"
+
 if os.path.exists(shadow_file):
     results["현황"].append(f"{shadow_file} 파일이 존재합니다.")
     # /etc/passwd 파일에서 패스워드 필드 확인
-    passwd_file = "/etc/passwd"
     with open(passwd_file, 'r') as f:
         for line in f:
             parts = line.split(":")
