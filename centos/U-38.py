@@ -1,43 +1,51 @@
+#!/usr/bin/python3
+import subprocess
+import os
+import json
 
-. function.sh
+def check_unwanted_apache_files():
+    results = {
+        "분류": "웹 서버 설정",
+        "코드": "U-38",
+        "위험도": "상",
+        "진단 항목": "Apache 불필요한 파일 제거",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우\n[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우"
+    }
 
- 
-TMP1=`SCRIPTNAME`.log
+    httpd_root = "/etc/httpd/conf"
+    unwanted_items = ["manual", "samples", "docs"]
 
-> $TMP1 
- 
+    try:
+        # Check if Apache is running
+        process = subprocess.run(['pgrep', '-f', 'httpd'], capture_output=True, text=True)
+        if process.returncode == 0:
+            results["현황"].append("아파치가 실행 중입니다.")
+        else:
+            results["현황"].append("아파치가 실행되지 않습니다.")
+            return results
 
-BAR
+        # Check for unwanted items
+        for item in unwanted_items:
+            item_path = os.path.join(httpd_root, item)
+            if os.path.exists(item_path):
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{item_path}이(가) 존재합니다.")
+            else:
+                results["현황"].append(f"{item_path}이(가) 존재하지 않습니다.")
+        
+        if results["진단 결과"] != "취약":
+            results["진단 결과"] = "양호"
 
-CODE [U-38] Apache 불필요한 파일 제거 
+    except Exception as e:
+        results["현황"].append(f"오류 발생: {str(e)}")
 
-cat << EOF >> $result
+    return results
 
-[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
+def main():
+    results = check_unwanted_apache_files()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우
-
-EOF
-
-BAR
-
-
-HTTPD_ROOT="/etc/httpd/conf/httpd.conf"
-UNWANTED_ITEMS="manual samples docs"
-
-if [ `ps -ef | grep httpd | grep -v "grep" | wc -l` -eq 0 ]; then
-    INFO "아파치가 실행되지 않습니다."
-else
-    for item in $UNWANTED_ITEMS
-    do
-        if [ ! -d "$HTTPD_ROOT/$item" ] && [ ! -f "$HTTPD_ROOT/$item" ]; then
-            OK "$item 을 $HTTPD_ROOT 에서 찾을 수 없습니다"
-        else
-            WARN "$item 을 $HTTPD_ROOT 에서 찾을 수 있습니다"
-        fi
-    done
-fi
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()
