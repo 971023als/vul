@@ -1,43 +1,50 @@
 #!/usr/bin/python3
-import subprocess
+import os
+import re
 import json
 
-def check_service_status(service_name):
-    try:
-        subprocess.run(['systemctl', 'is-enabled', service_name], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-def check_services_disabled():
+def check_tftp_talk_services_disabled():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-29",
         "위험도": "상",
         "진단 항목": "tftp, talk 서비스 비활성화",
-        "진단 결과": "",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: tftp, talk, ntalk 서비스가 비활성화 되어 있는 경우\n[취약]: tftp, talk, ntalk 서비스가 활성화 되어 있는 경우"
+        "대응방안": "tftp, talk, ntalk 서비스 비활성화"
     }
 
     services = ["tftp", "talk", "ntalk"]
-    active_services = []
+    xinetd_dir = "/etc/xinetd.d"
+    inetd_conf = "/etc/inetd.conf"
 
-    for service in services:
-        if check_service_status(service):
-            active_services.append(service)
+    # Check services under /etc/xinetd.d
+    if os.path.isdir(xinetd_dir):
+        for service in services:
+            service_path = os.path.join(xinetd_dir, service)
+            if os.path.isfile(service_path):
+                with open(service_path, 'r') as file:
+                    content = file.read()
+                    if 'disable = yes' not in content:
+                        results["진단 결과"] = "취약"
+                        results["현황"].append(f"{service} 서비스가 /etc/xinetd.d 디렉터리 내 서비스 파일에서 실행 중입니다.")
 
-    if active_services:
-        results["진단 결과"] = "취약"
-        results["현황"].append(f"활성화된 서비스: {', '.join(active_services)}")
-    else:
-        results["진단 결과"] = "양호"
+    # Check services in /etc/inetd.conf
+    if os.path.isfile(inetd_conf):
+        with open(inetd_conf, 'r') as file:
+            content = file.read()
+            for service in services:
+                if re.search(f"^{service}\s", content, re.MULTILINE):
+                    results["진단 결과"] = "취약"
+                    results["현황"].append(f"{service} 서비스가 /etc/inetd.conf 파일에서 실행 중입니다.")
+
+    if results["진단 결과"] == "양호":
         results["현황"].append("tftp, talk, ntalk 서비스가 모두 비활성화되어 있습니다.")
 
     return results
 
 def main():
-    results = check_services_disabled()
+    results = check_tftp_talk_services_disabled()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
