@@ -1,49 +1,63 @@
-#!/bin/python3
 
-import grp
-import os
-import stat
-import json
+. function.sh
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-45",
-    "위험도": "상",
-    "진단 항목": "root 계정 su 제한",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
 
-# 휠 그룹 존재 여부 확인
-try:
-    grp.getgrnam('wheel')
-    wheel_group_exists = True
-except KeyError:
-    wheel_group_exists = False
+TMP1=`SCRIPTNAME`.log
 
-# /bin/su 파일의 그룹 소유 및 권한 검사
-su_path = "/bin/su"
-if os.path.exists(su_path):
-    su_stat = os.stat(su_path)
-    su_group = grp.getgrgid(su_stat.st_gid).gr_name
-    su_permissions = stat.S_IMODE(su_stat.st_mode)
-    # SUID 및 SGID 비트 설정 확인 (4750 in octal)
-    is_correct_permission = su_permissions == 0o4750
-else:
-    su_group = None
-    is_correct_permission = False
+> $TMP1
 
-# 진단 결과 결정
-if wheel_group_exists and su_group == "wheel" and is_correct_permission:
-    results["진단 결과"] = "양호"
-    results["현황"] = "su 명령어 사용이 wheel 그룹에 제한되어 있습니다."
-    results["대응방안"] = "현재 설정 유지"
-else:
-    results["진단 결과"] = "취약"
-    results["현황"] = "su 명령어 사용 제한 설정이 적절히 구성되지 않았습니다."
-    results["대응방안"] = "su 명령어 사용을 wheel 그룹에만 제한하도록 설정"
+BAR
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+CODE [U-45] root 계정 su 제한
+
+cat << EOF >> $result
+
+[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
+
+[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
+
+EOF
+
+BAR
+
+# 휠 그룹이 존재하는지 점검하십시오
+if ! grep -q "^wheel:" /etc/group; then
+  WARN "휠 그룹이 존재하지 않습니다."
+else
+  OK "휠 그룹이 존재합니다."
+fi
+
+# su 명령이 휠 그룹에 의해 소유되는지 점검하십시오
+if ! [ $(stat -c %G /bin/su) == "wheel" ]; then
+  WARN "su 명령은 휠 그룹이 소유하지 않습니다."
+else
+  OK "su 명령은 휠 그룹이 소유합니다."
+fi
+
+# su 명령에 권한 4750이 있는지 확인하십시오
+if ! [ $(stat -c %a /bin/su) == "4750" ]; then
+  WARN "su 명령에 올바른 권한이 없습니다."
+else
+  OK "su 명령에 올바른 권한이 있습니다."
+fi
+
+# 휠 그룹에 su 명령을 사용할 수 있는 계정이 있는지 확인하십시오
+found=false
+for user in $(grep "^wheel:" /etc/group | cut -d ":" -f4 | tr "," "\n"); do
+  if id -nG "$user" | grep -qw "wheel"; then
+    found=true
+    break
+  fi
+done
+
+if ! $found; then
+  WARN "휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다."
+else
+  OK "휠 그룹의 어떤 계정도 su 명령을 사용할 수 있습니다."
+fi
+
+ 
+
+cat $result
+
+echo ; echo

@@ -1,63 +1,132 @@
-#!/bin/python3
 
-import subprocess
-import os
-import re
-import json
+. function.sh 
 
-# 결과 저장을 위한 리스트
-results = []
+BAR
 
-# 로그 파일 경로
-log_files = {
-    "utmp": "/var/log/utmp",
-    "wtmp": "/var/log/wtmp",
-    "btmp": "/var/log/btmp",
-    "sulog": "/var/log/sulog",
-    "xferlog": "/var/log/xferlog"
-}
+CODE [U-43] 로그의 정기적 검토 및 보고
 
-# 로그 파일 존재 여부 확인
-for log, path in log_files.items():
-    if not os.path.exists(path):
-        results.append(f"WARNING: {path} 파일이 없습니다.")
-    else:
-        results.append(f"OK: {path} 파일이 있습니다.")
+cat << EOF >> $result
 
-# 로그 파일 분석 (시뮬레이션)
-# 실제 환경에서는 로그 파일을 파싱하여 보안 관련 사항을 분석할 필요가 있습니다.
-# 예제 코드에서는 로그 파일 분석 과정을 단순화하고 시뮬레이션합니다.
+[양호]: 로그 기록의 검토, 분석, 리포트 작성 및 보고 등이 정기적으로 이루어지는 경우
 
-# 파일 업로드 및 다운로드 로그 분석 (xferlog)
-if os.path.exists(log_files["xferlog"]):
-    try:
-        with open(log_files["xferlog"], 'r') as file:
-            for line in file:
-                # 여기에서는 실제 로그 분석 로직을 구현할 수 있습니다.
-                # 예: IP 주소, 사용자 이름, 날짜 등을 추출하고 분석합니다.
-                pass
-        results.append("OK: xferlog 파일 분석이 완료되었습니다.")
-    except Exception as e:
-        results.append(f"ERROR: xferlog 파일 분석 중 오류가 발생했습니다. {e}")
+[취약]: 로그 기록의 검토, 분석, 리포트 작성 및 보고 등이 정기적으로 이루어지지 않는 경우는 경우
 
-# 진단 결과 작성
-diagnostic_item = "로그의 정기적 검토 및 보고"
-status = "정보 부족"
-situation = "로그 파일의 자동 분석을 시뮬레이션했습니다."
-countermeasure = "로그 분석 스크립트 개발 및 정기적 로그 검토 수행"
+EOF
 
-# 결과 추가
-results_summary = {
-    "분류": "서비스 관리",
-    "코드": "U-43",
-    "위험도": "상",
-    "진단 항목": diagnostic_item,
-    "진단 결과": status,
-    "현황": situation,
-    "대응방안": countermeasure
-}
+BAR
 
-# 최종 결과 출력
-print(json.dumps(results_summary, ensure_ascii=False, indent=4))
-for result in results:
-    print(result)
+# 로그 파일의 경로 정의
+LOG_DIR="/var/log"
+UTMP="$LOG_DIR/utmp"
+WTMP="$LOG_DIR/wtmp"
+BTMP="$LOG_DIR/btmp"
+
+# 로그 파일이 있는지 확인합니다
+if [ ! -f "$UTMP" ]; then
+  WARN "$UTMP 가 없습니다"
+else
+  OK "$UTMP 가 있습니다"
+fi
+
+if [ ! -f "$WTMP" ]; then
+  WARN "$WTMP 가 없습니다"
+else
+  OK "$WTMP 가 있습니다"
+fi
+
+if [ ! -f "$BTMP" ]; then
+  WARN "$BTMP 가 없습니다"
+else
+  OK "$BTMP 가 있습니다"
+fi
+
+# '마지막' 명령을 사용하여 로그 정보를 표시
+last -f "$WTMP"
+
+# 해킹 시도 증거 'btmp' 파일 내용 확인
+cat "$BTMP" | awk '{print $1, $2, $3, $4, $5}'
+
+# 추가 분석을 위해 결과를 파일로 출력
+echo "Last login information:" > log_review.txt
+last -f "$WTMP" >> log_review.txt
+echo "Failed login attempts:" >> log_review.txt
+echo "Brute force login attempts:" >> log_review.txt
+cat "$BTMP" | awk '{print $1, $2, $3, $4, $5}' >> log_review.txt
+
+
+SULOG_FILE="/var/log/sulog"
+ALLOWED_ACCOUNTS=(
+  "root"
+  "bin"
+  "daemon"
+  "adm"
+  "lp"
+  "sync"
+  "shutdown"
+  "halt"
+  "ubuntu"
+  "user"
+  "messagebus"
+  "syslog"
+  "avahi"
+  "kernoops"
+  "whoopsie"
+  "colord"
+  "systemd-network"
+  "systemd-resolve"
+  "systemd-timesync"
+  "mysql"
+  "dbus"
+  "rpc"
+  "rpcuser"
+  "haldaemon"
+  "apache"
+  "postfix"
+  "gdm"
+  "adiosl"
+  "cubrid"
+)
+
+while read line; do
+  username=$(echo $line | awk '{print $1}')
+  granted=$(echo $line | awk '{print $3}')
+  if [ "$granted" != "to" ]; then
+    continue
+  fi
+
+  granted_to=$(echo $line | awk '{print $4}')
+  if [[ $ALLOWED_ACCOUNTS =~ (^|[[:space:]])"$granted_to"($|[[:space:]]) ]]; then
+    OK "권한을 $granted_to 로 $username 만큼 증가할 수 있습니다."
+  else
+    WARN "권한을 $granted_to 로 $username 은(는) 허용되지 않습니다."
+  fi
+done < $SULOG_FILE
+
+XFERLOG="/var/log/xferlog"
+
+# xferlog 파일이 있는지 확인합니다
+if [ -f $XFERLOG ]; then
+  # awk를 사용하여 xferlog 파일의 각 라인에 대한 IP 주소, 로그인 이름 및 액세스 날짜를 인쇄합니다
+  awk '{print $9 " " $10 " " $1}' $XFERLOG | while read line
+  do
+    # 각 라인에서 IP 주소, 로그인 이름 및 액세스 날짜 추출
+    IP=$(echo $line | awk '{print $1}')
+    USER=$(echo $line | awk '{print $2}')
+    DATE=$(echo $line | awk '{print $3}')
+  
+    # 로그인 이름이 허용된 계정 목록에 없는지 확인합니다
+    if ! grep -q $USER /etc/ftpusers; then
+      # 무단 FTP 액세스에 대한 경고 메시지 인쇄
+      WARN "$DATE 의 사용자 $USER 에 대한 IP $IP 에서 인증되지 않은 FTP 액세스가 탐지됨"
+    else
+      OK "$DATE 의 사용자 $USER 에 대한 IP $IP 에서 인증되지 않은 FTP 액세스가 탐지 안 됨"
+    fi
+  done
+else
+  # xferlog 파일이 없는 경우 오류 메시지 인쇄
+  WARN "xferlog 파일 $XFERLOG 를 찾을 수 없습니다"
+fi
+
+cat $result
+
+echo ; echo
