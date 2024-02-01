@@ -1,49 +1,39 @@
-#!/bin/python3
-
-import grp
+#!/usr/bin/python3
 import os
-import stat
+import subprocess
 import json
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-45",
-    "위험도": "상",
-    "진단 항목": "root 계정 su 제한",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
+def check_su_restriction():
+    results = {
+        "분류": "계정관리",
+        "코드": "U-45",
+        "위험도": "하",
+        "진단 항목": "root 계정 su 제한",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "su 명령어 사용 특정 그룹 제한"
+    }
 
-# 휠 그룹 존재 여부 확인
-try:
-    grp.getgrnam('wheel')
-    wheel_group_exists = True
-except KeyError:
-    wheel_group_exists = False
+    pam_su_path = "/etc/pam.d/su"
+    if os.path.isfile(pam_su_path):
+        with open(pam_su_path, 'r') as file:
+            pam_contents = file.read()
+            if 'pam_rootok.so' in pam_contents:
+                if 'pam_wheel.so' not in pam_contents or 'auth required pam_wheel.so use_uid' not in pam_contents:
+                    results["진단 결과"] = "취약"
+                    results["현황"].append("/etc/pam.d/su 파일에 pam_wheel.so 모듈 설정이 적절히 구성되지 않았습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("/etc/pam.d/su 파일에서 pam_rootok.so 모듈이 누락되었습니다.")
+    else:
+        results["진단 결과"] = "취약"
+        results["현황"].append("/etc/pam.d/su 파일이 존재하지 않습니다.")
 
-# /bin/su 파일의 그룹 소유 및 권한 검사
-su_path = "/bin/su"
-if os.path.exists(su_path):
-    su_stat = os.stat(su_path)
-    su_group = grp.getgrgid(su_stat.st_gid).gr_name
-    su_permissions = stat.S_IMODE(su_stat.st_mode)
-    # SUID 및 SGID 비트 설정 확인 (4750 in octal)
-    is_correct_permission = su_permissions == 0o4750
-else:
-    su_group = None
-    is_correct_permission = False
+    return results
 
-# 진단 결과 결정
-if wheel_group_exists and su_group == "wheel" and is_correct_permission:
-    results["진단 결과"] = "양호"
-    results["현황"] = "su 명령어 사용이 wheel 그룹에 제한되어 있습니다."
-    results["대응방안"] = "현재 설정 유지"
-else:
-    results["진단 결과"] = "취약"
-    results["현황"] = "su 명령어 사용 제한 설정이 적절히 구성되지 않았습니다."
-    results["대응방안"] = "su 명령어 사용을 wheel 그룹에만 제한하도록 설정"
+def main():
+    su_restriction_check_results = check_su_restriction()
+    print(json.dumps(su_restriction_check_results, ensure_ascii=False, indent=4))
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+if __name__ == "__main__":
+    main()

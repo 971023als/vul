@@ -1,61 +1,39 @@
 #!/usr/bin/python3
 import os
-import json
-import grp
 import subprocess
+import json
 
 def check_su_restriction():
     results = {
-        "분류": "계정 보안",
+        "분류": "계정관리",
         "코드": "U-45",
-        "위험도": "상",
+        "위험도": "하",
         "진단 항목": "root 계정 su 제한",
-        "진단 결과": "",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한"
+        "대응방안": "su 명령어 사용 특정 그룹 제한"
     }
 
-    # 휠 그룹 존재 여부 확인
-    try:
-        grp.getgrnam("wheel")
-        wheel_exists = True
-        results["현황"].append("휠 그룹이 존재합니다.")
-    except KeyError:
-        wheel_exists = False
-        results["현황"].append("휠 그룹이 존재하지 않습니다.")
-
-    # su 명령의 그룹 소유권과 권한 확인
-    su_stat = os.stat("/bin/su")
-    su_group = grp.getgrgid(su_stat.st_gid).gr_name
-    su_permissions = oct(su_stat.st_mode)[-4:]
-
-    if su_group != "wheel":
-        results["현황"].append("su 명령은 휠 그룹이 소유하지 않습니다.")
-    else:
-        results["현황"].append("su 명령은 휠 그룹이 소유합니다.")
-
-    if su_permissions != "4750":
-        results["현황"].append("su 명령에 올바른 권한이 없습니다.")
-    else:
-        results["현황"].append("su 명령에 올바른 권한이 있습니다.")
-
-    # 휠 그룹에 속한 사용자가 su 명령을 사용할 수 있는지 확인
-    if wheel_exists:
-        wheel_members = grp.getgrnam("wheel").gr_mem
-        if wheel_members:
-            results["현황"].append("휠 그룹의 계정이 su 명령을 사용할 수 있습니다.")
-            results["진단 결과"] = "양호"
-        else:
-            results["현황"].append("휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다.")
-            results["진단 결과"] = "취약"
+    pam_su_path = "/etc/pam.d/su"
+    if os.path.isfile(pam_su_path):
+        with open(pam_su_path, 'r') as file:
+            pam_contents = file.read()
+            if 'pam_rootok.so' in pam_contents:
+                if 'pam_wheel.so' not in pam_contents or 'auth required pam_wheel.so use_uid' not in pam_contents:
+                    results["진단 결과"] = "취약"
+                    results["현황"].append("/etc/pam.d/su 파일에 pam_wheel.so 모듈 설정이 적절히 구성되지 않았습니다.")
+            else:
+                results["진단 결과"] = "취약"
+                results["현황"].append("/etc/pam.d/su 파일에서 pam_rootok.so 모듈이 누락되었습니다.")
     else:
         results["진단 결과"] = "취약"
+        results["현황"].append("/etc/pam.d/su 파일이 존재하지 않습니다.")
 
     return results
 
 def main():
-    results = check_su_restriction()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    su_restriction_check_results = check_su_restriction()
+    print(json.dumps(su_restriction_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
