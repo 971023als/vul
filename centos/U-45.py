@@ -1,63 +1,61 @@
+#!/usr/bin/python3
+import os
+import json
+import grp
+import subprocess
 
-. function.sh
+def check_su_restriction():
+    results = {
+        "분류": "계정 보안",
+        "코드": "U-45",
+        "위험도": "상",
+        "진단 항목": "root 계정 su 제한",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한"
+    }
 
+    # 휠 그룹 존재 여부 확인
+    try:
+        grp.getgrnam("wheel")
+        wheel_exists = True
+        results["현황"].append("휠 그룹이 존재합니다.")
+    except KeyError:
+        wheel_exists = False
+        results["현황"].append("휠 그룹이 존재하지 않습니다.")
 
-TMP1=`SCRIPTNAME`.log
+    # su 명령의 그룹 소유권과 권한 확인
+    su_stat = os.stat("/bin/su")
+    su_group = grp.getgrgid(su_stat.st_gid).gr_name
+    su_permissions = oct(su_stat.st_mode)[-4:]
 
-> $TMP1
+    if su_group != "wheel":
+        results["현황"].append("su 명령은 휠 그룹이 소유하지 않습니다.")
+    else:
+        results["현황"].append("su 명령은 휠 그룹이 소유합니다.")
 
-BAR
+    if su_permissions != "4750":
+        results["현황"].append("su 명령에 올바른 권한이 없습니다.")
+    else:
+        results["현황"].append("su 명령에 올바른 권한이 있습니다.")
 
-CODE [U-45] root 계정 su 제한
+    # 휠 그룹에 속한 사용자가 su 명령을 사용할 수 있는지 확인
+    if wheel_exists:
+        wheel_members = grp.getgrnam("wheel").gr_mem
+        if wheel_members:
+            results["현황"].append("휠 그룹의 계정이 su 명령을 사용할 수 있습니다.")
+            results["진단 결과"] = "양호"
+        else:
+            results["현황"].append("휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다.")
+            results["진단 결과"] = "취약"
+    else:
+        results["진단 결과"] = "취약"
 
-cat << EOF >> $result
+    return results
 
-[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
+def main():
+    results = check_su_restriction()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
-
-EOF
-
-BAR
-
-# 휠 그룹이 존재하는지 점검하십시오
-if ! grep -q "^wheel:" /etc/group; then
-  WARN "휠 그룹이 존재하지 않습니다."
-else
-  OK "휠 그룹이 존재합니다."
-fi
-
-# su 명령이 휠 그룹에 의해 소유되는지 점검하십시오
-if ! [ $(stat -c %G /bin/su) == "wheel" ]; then
-  WARN "su 명령은 휠 그룹이 소유하지 않습니다."
-else
-  OK "su 명령은 휠 그룹이 소유합니다."
-fi
-
-# su 명령에 권한 4750이 있는지 확인하십시오
-if ! [ $(stat -c %a /bin/su) == "4750" ]; then
-  WARN "su 명령에 올바른 권한이 없습니다."
-else
-  OK "su 명령에 올바른 권한이 있습니다."
-fi
-
-# 휠 그룹에 su 명령을 사용할 수 있는 계정이 있는지 확인하십시오
-found=false
-for user in $(grep "^wheel:" /etc/group | cut -d ":" -f4 | tr "," "\n"); do
-  if id -nG "$user" | grep -qw "wheel"; then
-    found=true
-    break
-  fi
-done
-
-if ! $found; then
-  WARN "휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다."
-else
-  OK "휠 그룹의 어떤 계정도 su 명령을 사용할 수 있습니다."
-fi
-
- 
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

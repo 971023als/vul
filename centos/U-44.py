@@ -1,33 +1,38 @@
+#!/usr/bin/python3
+import subprocess
+import json
 
-. function.sh
+def check_root_uid_accounts():
+    results = {
+        "분류": "계정 관리",
+        "코드": "U-44",
+        "위험도": "상",
+        "진단 항목": "root 이외의 UID가 '0' 금지",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "root 계정 외에 UID가 '0'인 계정을 사용하지 않아야 합니다."
+    }
 
-BAR
+    # /etc/passwd 파일에서 UID가 0인 계정을 찾습니다.
+    with open('/etc/passwd', 'r') as f:
+        for line in f:
+            parts = line.strip().split(':')
+            if parts[2] == '0':
+                results["현황"].append(f"{parts[0]} 계정의 UID는 {parts[2]}입니다.")
 
-CODE [U-44] root 이외의 UID가 '0' 금지
+    # 진단 결과 업데이트
+    if len(results["현황"]) > 1:
+        results["진단 결과"] = "취약"
+        results["현황"].append("root 계정과 동일한 UID를 갖는 추가 계정이 있습니다.")
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("root 계정 외에 UID가 '0'인 계정이 없습니다.")
 
-cat << EOF >> $result
+    return results
 
-[양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
+def main():
+    results = check_root_uid_accounts()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
-[취약]: root 계정과 동일한 UID를 갖는 계정이 존재하는 경우
-
-EOF
-
-BAR
-
-FILE=/etc/passwd
-
-# 루트 계정과 동일한 UID를 가진 계정 확인(UID 값 0)
-awk -F: '$3=="0"{print $1":"$3}' $FILE > $TMP1
-UIDCHECK=$(wc -l < $TMP1)
-if [ $UIDCHECK -ge 2 ]; then
-   WARN "루트 계정과 동일한 UID를 가진 계정이 있습니다."
-   INFO "자세한 내용은 $TMP1 을 확인하십시오."
-else
-   OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-   rm $TMP1
-fi
-
-cat $result
-
-echo ; echo
+if __name__ == "__main__":
+    main()

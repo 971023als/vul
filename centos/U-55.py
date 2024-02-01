@@ -1,53 +1,48 @@
-#!/bin/python3
 
-import os
-import stat
-import json
+. function.sh
 
-# /etc/hosts.lpd 파일 경로
-hosts_lpd_file = "/etc/hosts.lpd"
+ 
+TMP1=`SCRIPTNAME`.log
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-55",
-    "위험도": "상",
-    "진단 항목": "hosts.lpd 파일 소유자 및 권한 설정",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
+> $TMP1
+ 
 
-if os.path.exists(hosts_lpd_file):
-    # 파일 소유자 확인
-    file_stat = os.stat(hosts_lpd_file)
-    owner_uid = file_stat.st_uid
-    owner_gid = file_stat.st_gid
-    file_mode = stat.S_IMODE(file_stat.st_mode)
+BAR
 
-    # root 소유 여부 확인
-    if owner_uid == 0 and owner_gid == 0:
-        owner_status = "OK"
-        owner_info = "hosts.lpd의 소유자는 root입니다."
-    else:
-        owner_status = "WARNING"
-        owner_info = "hosts.lpd의 소유자는 root가 아닙니다."
+CODE [U-55] hosts.lpd 파일 소유자 및 권한 설정
 
-    # 파일 권한 확인
-    if file_mode == 0o600:
-        permission_status = "OK"
-        permission_info = "hosts.lpd에 대한 권한이 600입니다."
-    else:
-        permission_status = "WARNING"
-        permission_info = f"hosts.lpd에 대한 권한이 {file_mode:o}로 설정되어 있습니다. 600으로 설정해야 합니다."
+cat << EOF >> $result
 
-    results["진단 결과"] = "취약" if "WARNING" in [owner_status, permission_status] else "양호"
-    results["현황"] = f"{owner_info} {permission_info}"
-    results["대응방안"] = "hosts.lpd 파일의 소유자를 root로 설정하고 권한을 600으로 설정하세요."
-else:
-    results["진단 결과"] = "정보 부족"
-    results["현황"] = "hosts.lpd 파일이 존재하지 않습니다."
-    results["대응방안"] = "필요한 경우 hosts.lpd 파일을 생성하고 적절한 소유자 및 권한을 설정하세요."
+[양호]: 파일의 소유자가 root이고 권한이 600인 경우
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+[취약]: 파일의 소유자가 root가 아니고 권한이 600이 아닌 경우
+
+EOF
+
+BAR
+
+# 파일이 있는지 확인하십시오
+if [ ! -f /etc/hosts.lpd ]; then
+  INFO "hosts.lpd 파일이 없습니다. 확인해주세요."
+else
+  hosts=$(stat -c '%U' /etc/hosts.lpd)
+  if [[ $hosts = "root" ]]; then
+    OK "hosts.lpd의 소유자는 루트입니다. 이것은 허용됩니다."
+  else
+    WARN "hosts.lpd의 소유자는 루트가 아닙니다. 이것은 허용되지 않습니다."
+  fi
+  
+  # 파일에 대한 사용 권한 확인
+
+  host=$(stat -c %a /etc/hosts.lpd)
+  if [[ $host -gt 600 ]]; then
+    WARN "hosts.lpd에 대한 권한이 600보다 큽니다."
+  else
+    OK "hosts.lpd에 대한 권한이 600이하 입니다."
+  fi
+fi
+
+
+cat $result
+
+echo ; echo

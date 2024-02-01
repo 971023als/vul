@@ -1,60 +1,39 @@
-#!/bin/python3
 
-import subprocess
-import os
-import json
+. function.sh 
 
-# 결과 저장을 위한 리스트
-results = []
+BAR
 
-# /etc/passwd 파일에서 홈 디렉터리 정보 추출
-try:
-    passwd_content = subprocess.check_output("awk -F ':' '{print $1 \" \" $6}' /etc/passwd", shell=True, text=True)
-except subprocess.CalledProcessError as e:
-    results.append({
-        "message": "Error reading /etc/passwd",
-        "error": str(e)
-    })
+CODE [U-57] 홈 디렉터리 소유자 및 권한
 
-for line in passwd_content.strip().split('\n'):
-    user, home_dir = line.split()
-    if os.path.exists(home_dir):
-        # 홈 디렉터리의 권한과 소유자 정보를 가져옵니다
-        stat_result = os.stat(home_dir)
-        permissions = stat_result.st_mode
-        owner_uid = stat_result.st_uid
-        
-        # 해당 사용자의 UID를 가져옵니다
-        user_uid = subprocess.check_output(f"id -u {user}", shell=True, text=True).strip()
+cat << EOF >> $result
 
-        # 소유자 및 권한 검사
-        if str(owner_uid) != user_uid or bool(permissions & 0o022):
-            results.append({
-                "user": user,
-                "home_directory": home_dir,
-                "status": "WARNING",
-                "details": f"Home directory {home_dir} of user {user} has incorrect ownership or write permissions for other users."
-            })
-        else:
-            results.append({
-                "user": user,
-                "home_directory": home_dir,
-                "status": "OK",
-                "details": f"Home directory {home_dir} of user {user} is properly owned by the user with no write permission for other users."
-            })
+[양호]: 홈 디렉터리 소유자가 해당 계정이고, 일반 사용자 쓰기 권한이 제거된 경우
 
-# 결과 요약
-summary = {
-    "분류": "서비스 관리",
-    "코드": "U-57",
-    "위험도": "상",
-    "진단 항목": "홈 디렉터리 소유자 및 권한",
-    "진단 결과": "취약" if any(result["status"] == "WARNING" for result in results) else "양호",
-    "현황": f"{len([result for result in results if result['status'] == 'WARNING'])}개의 홈 디렉터리가 부적절한 소유권 또는 권한을 가지고 있습니다.",
-    "대응방안": "홈 디렉터리의 소유권을 올바른 사용자에게 할당하고, 다른 사용자의 쓰기 권한을 제거하세요."
-}
+[취약]: 홈 디렉터리 소유자가 해당 계정이 아니고, 일반 사용자 쓰기 권한이 부여된 경우 
 
-# 결과 출력
-print(json.dumps(summary, ensure_ascii=False, indent=4))
-for result in results:
-    print(json.dumps(result, ensure_ascii=False, indent=4))
+EOF
+
+BAR
+
+# /etc/passwd 파일을 읽고 홈 디렉토리 추출
+output=$(cat /etc/passwd | awk -F ':' '{print $6}')
+
+#  출력을 배열로 분할
+arr=($output)
+
+# 출력을 배열로 분할
+for line in "${arr[@]}"
+do
+  permissions=$(ls -ld $line | awk '{print $1}')
+  owner=$(ls -ld $line | awk '{print $3}')
+  group=$(ls -ld $line | awk '{print $4}')
+  if [[ $permissions == *"w"* ]] && [[ $owner != *$group* ]]; then
+    WARN "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
+  else
+    OK "write 권한은 $line($owner 및 group $group 소유)에서 다른 사용자에게 부여됩니다."  
+  fi
+done
+
+cat $result
+
+echo ; echo 
