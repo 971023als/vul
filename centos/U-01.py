@@ -1,37 +1,50 @@
 #!/usr/bin/python3
+import os
+import subprocess
 import re
-import json
 
-def check_root_remote_access_restriction():
+def check_remote_root_access_restriction():
     results = {
-        "분류": "시스템 설정",
+        "분류": "계정관리",
         "코드": "U-01",
         "위험도": "상",
-        "진단 항목": "root 계정 원격 접속 제한",
+        "진단 항목": "root 계정 원격접속 제한",
         "진단 결과": "",
         "현황": [],
-        "대응방안": "[양호]: 원격 서비스를 사용하지 않거나 사용 시 직접 접속을 차단한 경우\n[취약]: root 직접 접속을 허용하고 원격 서비스를 사용하는 경우"
+        "대응방안": "원격 터미널 서비스 사용 시 root 직접 접속을 차단"
     }
 
-    ssh_config_file = "/etc/ssh/sshd_config"
-    try:
-        with open(ssh_config_file, 'r') as file:
-            content = file.read()
-            if re.search(r'^PermitRootLogin yes', content, re.MULTILINE):
-                results["진단 결과"] = "취약"
-                results["현황"].append("원격 터미널 서비스를 통해 루트 직접 액세스가 허용됨")
-            else:
-                results["진단 결과"] = "양호"
-                results["현황"].append("원격 터미널 서비스를 통해 루트 직접 액세스가 허용되지 않음")
-    except FileNotFoundError:
-        results["진단 결과"] = "정보부족"
-        results["현황"].append(f"{ssh_config_file} 파일이 존재하지 않습니다.")
+    # Telnet 서비스 검사
+    telnet_status = subprocess.getoutput("grep -vE '^#|^\s#' /etc/services | awk 'tolower($1)==\"telnet\" {print $2}' | awk -F / 'tolower($2)==\"tcp\" {print $1}' | wc -l")
+    if int(telnet_status) > 0:
+        results["현황"].append("Telnet 서비스 포트가 활성화되어 있습니다.")
+        results["진단 결과"] = "취약"
+
+    # SSH 서비스 검사
+    sshd_configs = subprocess.getoutput("find / -name 'sshd_config' -type f 2>/dev/null").splitlines()
+    permit_root_login = False
+    for sshd_config in sshd_configs:
+        with open(sshd_config, 'r') as file:
+            for line in file:
+                if re.match(r'^PermitRootLogin\s+no', line, re.I):
+                    permit_root_login = True
+                    break
+
+    if not permit_root_login and sshd_configs:
+        results["현황"].append("SSH 서비스에서 root 계정의 원격 접속이 허용되고 있습니다.")
+        results["진단 결과"] = "취약"
+    elif sshd_configs:
+        results["현황"].append("SSH 서비스에서 root 계정의 원격 접속이 제한되어 있습니다.")
+        results["진단 결과"] = "양호"
+    else:
+        results["현황"].append("SSH 서비스 설정 파일(sshd_config)을 찾을 수 없습니다.")
+        results["진단 결과"] = "취약"
 
     return results
 
 def main():
-    results = check_root_remote_access_restriction()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    results = check_remote_root_access_restriction()
+    print(results)
 
 if __name__ == "__main__":
     main()

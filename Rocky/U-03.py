@@ -1,63 +1,61 @@
 #!/usr/bin/python3
-import re
 import os
+import json
+import re
 
 def check_account_lockout_threshold():
     results = {
-        "분류": "계정관리",
+        "분류": "계정 관리",
         "코드": "U-03",
         "위험도": "상",
         "진단 항목": "계정 잠금 임계값 설정",
-        "진단 결과": "양호",
+        "진단 결과": "",
         "현황": [],
-        "대응방안": "계정 잠금 임계값을 10회 이하의 값으로 설정"
+        "대응방안": "계정 잠금 임계값을 10회 이하로 설정"
     }
 
-    deny_files = ["/etc/pam.d/system-auth", "/etc/pam.d/password-auth"]
+    deny_files_checked = False
+    account_lockout_threshold_set = False
+    files_to_check = [
+        "/etc/pam.d/system-auth",
+        "/etc/pam.d/password-auth"
+    ]
     deny_modules = ["pam_tally2.so", "pam_faillock.so"]
-    file_exists_count = 0
-    deny_file_exists_count = 0
-    no_settings_in_deny_file = 0
 
-    for deny_file in deny_files:
-        if os.path.exists(deny_file):
-            file_exists_count += 1
-            with open(deny_file, 'r') as file:
-                content = file.read()
-                for deny_module in deny_modules:
-                    deny_regex = rf"{deny_module}.*?deny=\d+"
-                    matches = re.findall(deny_regex, content, re.IGNORECASE | re.MULTILINE)
-                    if matches:
-                        deny_file_exists_count += 1
-                        for match in matches:
-                            deny_value = re.search(r"deny=(\d+)", match).group(1)
-                            if int(deny_value) > 10:
-                                results["진단 결과"] = "취약"
-                                results["현황"].append(f"{deny_file}에서 설정된 계정 잠금 임계값이 10회 이상으로 설정되어 있습니다.")
-                                break
-                    else:
-                        no_settings_in_deny_file += 1
+    for file_path in files_to_check:
+        if os.path.exists(file_path):
+            deny_files_checked = True
+            with open(file_path, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line.startswith("#") and "deny" in line:
+                        for deny_module in deny_modules:
+                            if deny_module in line:
+                                # Extract the deny value
+                                deny_value_matches = re.findall(r'deny=[0-9]+', line)
+                                if deny_value_matches:
+                                    deny_value = int(deny_value_matches[0].split('=')[1])
+                                    if deny_value <= 10:
+                                        account_lockout_threshold_set = True
+                                    else:
+                                        results["현황"].append(f"{file_path}에 설정된 계정 잠금 임계값이 10회 초과입니다.")
+                                        break  # Stop checking further as we found a non-compliant setting
 
-    if file_exists_count == 0:
-        results["진단 결과"] = "취약"
+    if not deny_files_checked:
         results["현황"].append("계정 잠금 임계값을 설정하는 파일이 없습니다.")
-    elif deny_file_exists_count == no_settings_in_deny_file:
         results["진단 결과"] = "취약"
+    elif not account_lockout_threshold_set:
         results["현황"].append("계정 잠금 임계값을 설정한 파일이 없습니다.")
+        results["진단 결과"] = "취약"
+    else:
+        results["현황"].append("계정 잠금 임계값을 설정 완료")
+        results["진단 결과"] = "양호"
 
     return results
 
 def main():
     results = check_account_lockout_threshold()
-    print("분류:", results["분류"])
-    print("코드:", results["코드"])
-    print("위험도:", results["위험도"])
-    print("진단 항목:", results["진단 항목"])
-    print("진단 결과:", results["진단 결과"])
-    for 상황 in results["현황"]:
-        print("- ", 상황)
-    if results["대응방안"]:
-        print("대응방안:", results["대응방안"])
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
