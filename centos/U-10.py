@@ -1,64 +1,46 @@
-#!/bin/python3
 
-import os
-import stat
-import json
+. function.sh
 
-def check_xinetd_conf_file_ownership_and_permission():
-    results = []
-    xinetd_conf_file = "/etc/xinetd.conf"
-    expected_permission = 0o600  # Octal notation
+ 
+TMP1=`SCRIPTNAME`.log
 
-    if not os.path.isfile(xinetd_conf_file):
-        results.append({
-            "코드": "U-10",
-            "진단 결과": "정보",
-            "현황": f"{xinetd_conf_file} 파일이 없습니다.",
-            "대응방안": "필요한 경우 {xinetd_conf_file} 파일 생성 및 적절한 권한 설정 권장",
-            "결과": "정보"
-        })
-    else:
-        file_stat = os.stat(xinetd_conf_file)
-        owner_uid = file_stat.st_uid
-        file_permission = stat.S_IMODE(file_stat.st_mode)
-        owner_name = os.getpwuid(owner_uid).pw_name
+>$TMP1
 
-        if owner_name != "root":
-            results.append({
-                "코드": "U-10",
-                "진단 결과": "취약",
-                "현황": f"{xinetd_conf_file} 파일의 소유자가 root가 아님",
-                "대응방안": f"{xinetd_conf_file} 파일의 소유자를 root로 변경 권장",
-                "결과": "경고"
-            })
+BAR
 
-        if file_permission != expected_permission:
-            results.append({
-                "코드": "U-10",
-                "진단 결과": "취약",
-                "현황": f"{xinetd_conf_file} 파일의 권한이 {oct(file_permission)}로 설정됨, 600 권장",
-                "대응방안": f"{xinetd_conf_file} 파일의 권한을 600으로 설정 권장",
-                "결과": "경고"
-            })
-        else:
-            results.append({
-                "코드": "U-10",
-                "진단 결과": "양호",
-                "현황": f"{xinetd_conf_file} 파일의 소유자가 root이며 권한이 600임",
-                "대응방안": "현재 설정 유지",
-                "결과": "정상"
-            })
+CODE [U-10] /etc/xinetd.conf 파일 소유자 및 권한 설정 
 
-    return results
+cat << EOF >> $result
 
-def save_results_to_json(results, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
+[양호]: /etc/inetd.conf 파일의 소유자가 root이고, 권한이 600인 경우
 
-def main():
-    results = check_xinetd_conf_file_ownership_and_permission()
-    save_results_to_json(results, "xinetd_conf_file_ownership_permission_check_result.json")
-    print("'/etc/xinetd.conf' 파일 소유자 및 권한 설정 점검 결과를 xinetd_conf_file_ownership_permission_check_result.json 파일에 저장하였습니다.")
+[취약]: /etc/inetd.conf 파일의 소유자가 root가 아니거나, 권한이 600이 아닌 경우
 
-if __name__ == "__main__":
-    main()
+EOF
+
+BAR
+
+# 파일이 있는지 확인하십시오
+if [ ! -f /etc/xinetd.conf ]; then
+  OK "/etc/xinetd.conf 파일이 없습니다"
+else
+  # 파일 소유권 확인
+  file_owner=$(stat -c %U /etc/xinetd.conf)
+  if [ "$file_owner" != "root" ]; then
+    WARN " /etc/xinetd.conf가 루트에 의해 소유되지 않음"
+  else
+    # 파일의 사용 권한 확인
+    file_perms=$(stat -c %a /etc/xinetd.conf)
+    if [ "$file_perms" -lt 600 ]; then
+      WARN " /etc/xinetd.conf에 권한이 600 초과입니다"
+    else
+      # 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
+      OK "/etc/xinetd.conf에 권한은 600 이하 입니다."
+    fi
+  fi
+fi
+
+cat $result
+
+echo ; echo
+ 
