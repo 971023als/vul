@@ -22,6 +22,7 @@ def check_etc_hosts_file_ownership_and_permissions():
 
         # Check if the file is owned by root
         if os.getuid() == file_stat.st_uid:
+            results["진단 결과"] = "양호"
             results["현황"].append(f"{hosts_file}의 소유자는 루트입니다.")
         else:
             results["진단 결과"] = "취약"
@@ -29,12 +30,13 @@ def check_etc_hosts_file_ownership_and_permissions():
 
         # Check if the file permissions are 600 or less
         if int(file_permissions) <= 600:
+            results["진단 결과"] = "양호"
             results["현황"].append(f"{hosts_file}의 권한은 최소 600 입니다.")
         else:
             results["진단 결과"] = "취약"
             results["현황"].append(f"{hosts_file}의 권한이 600 미만입니다. {file_permissions} 설정.")
     except FileNotFoundError:
-        results["진단 결과"] = "취약"
+        results["진단 결과"] = "정보부족"
         results["현황"].append(f"{hosts_file} 파일이 존재하지 않습니다.")
 
     return results
