@@ -1,54 +1,60 @@
-#!/bin/python3
-
+#!/usr/bin/python3
 import subprocess
 import os
 import json
 
-# 결과 저장을 위한 딕셔너리
-results = {
-    "분류": "서비스 관리",
-    "코드": "U-64",
-    "위험도": "상",
-    "진단 항목": "ftpusers 파일 설정",
-    "진단 결과": "",
-    "현황": "",
-    "대응방안": ""
-}
+def check_ftp_service_and_root_access():
+    results = {
+        "분류": "시스템 설정",
+        "코드": "U-64",
+        "위험도": "상",
+        "진단 항목": "ftpusers 파일 설정",
+        "진단 결과": "",
+        "현황": [],
+        "대응방안": "[양호]: FTP 서비스가 비활성화 되어 있거나, 활성 시 root 계정 접속을 차단한 경우\n[취약]: FTP 서비스가 활성화 되어 있고, root 계정 접속을 허용한 경우"
+    }
 
-# FTP 서비스의 활성화 상태 확인
-def check_ftp_service():
+    # FTP 서비스의 상태를 확인합니다.
     try:
-        output = subprocess.check_output(['ps', '-ef'], text=True)
-        if 'ftp' in output:
-            return True
-    except Exception as e:
-        return False
-    return False
+        ftp_process = subprocess.check_output(["pgrep", "-f", "ftp"], text=True).strip()
+        if ftp_process:
+            results["현황"].append("프로세스가 실행되고 있습니다.")
+            results["진단 결과"] = "취약"
+        else:
+            results["현황"].append("프로세스가 실행되고 있지 않습니다.")
+    except subprocess.CalledProcessError:
+        results["현황"].append("프로세스가 실행되고 있지 않습니다.")
 
-# ftpusers 파일 내 root 계정 접속 차단 여부 확인
-def check_root_access():
-    ftpusers_file = "/etc/ftpusers"
-    if os.path.exists(ftpusers_file):
-        with open(ftpusers_file, 'r') as file:
-            for line in file:
-                if 'root' in line.strip():
-                    return True
-    return False
+    # /etc/ftp* 및 /etc/vsftp* 파일의 존재를 확인합니다.
+    ftp_files_exist = os.path.exists("/etc/ftp") or os.path.exists("/etc/vsftp")
+    if ftp_files_exist:
+        results["현황"].append("/etc/ftp* 또는 /etc/vsftp* 파일이 존재합니다.")
+        results["진단 결과"] = "취약"
+    else:
+        results["현황"].append("/etc/ftp* 또는 /etc/vsftp* 파일이 존재하지 않습니다.")
 
-ftp_service_active = check_ftp_service()
-root_access_blocked = check_root_access()
+    # ftp 계정의 셸 설정을 확인합니다.
+    try:
+        with open("/etc/passwd", "r") as passwd_file:
+            for line in passwd_file:
+                if line.startswith("ftp:"):
+                    if "/bin/false" in line:
+                        results["현황"].append("ftp 계정의 셸이 /bin/false로 설정되었습니다.")
+                    else:
+                        results["현황"].append("ftp 계정의 셸이 /bin/false로 설정되지 않았습니다.")
+                        results["진단 결과"] = "취약"
+                    break
+    except FileNotFoundError:
+        results["현황"].append("/etc/passwd 파일을 찾을 수 없습니다.")
 
-if not ftp_service_active:
-    results["진단 결과"] = "양호"
-    results["현황"] = "FTP 서비스가 비활성화 되어 있습니다."
-elif ftp_service_active and root_access_blocked:
-    results["진단 결과"] = "양호"
-    results["현황"] = "FTP 서비스가 활성화 되어 있으나, root 계정 접속이 차단되어 있습니다."
-else:
-    results["진단 결과"] = "취약"
-    results["현황"] = "FTP 서비스가 활성화 되어 있고, root 계정 접속이 허용되어 있습니다."
-    results["대응방안"] = "FTP 서비스를 비활성화 하거나, /etc/ftpusers 파일을 수정하여 root 계정 접속을 차단하세요."
+    if "취약" not in results["진단 결과"]:
+        results["진단 결과"] = "양호"
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+    return results
 
+def main():
+    results = check_ftp_service_and_root_access()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
+
+if __name__ == "__main__":
+    main()
