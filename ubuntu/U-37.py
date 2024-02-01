@@ -1,40 +1,43 @@
-import re
-import json
 
-# 결과를 저장할 딕셔너리
-results = {
-    "U-37": {
-        "title": "Apache 상위 디렉터리 접근 금지",
-        "status": "",
-        "description": {
-            "good": "상위 디렉터리에 이동제한을 설정한 경우",
-            "bad": "상위 디렉터리에 이동제한을 설정하지 않은 경우",
-        },
-        "message": ""
-    }
-}
+. function.sh
 
-def check_apache_directory_access_restriction(config_file="/etc/apache2/apache2.conf"):
-    try:
-        with open(config_file, 'r') as file:
-            content = file.read()
-            # "AllowOverride AuthConfig" 설정을 검색합니다.
-            if re.search(r'AllowOverride\s+AuthConfig', content):
-                results["status"] = "양호"
-                results["message"] = f"{config_file}에서 'AllowOverride AuthConfig'를 찾았습니다."
-            else:
-                results["status"] = "취약"
-                results["message"] = f"{config_file}에서 'AllowOverride AuthConfig'를 찾을 수 없습니다."
-    except FileNotFoundError:
-        results["status"] = "오류"
-        results["message"] = f"{config_file} 파일을 찾을 수 없습니다."
+ 
+TMP1=`SCRIPTNAME`.log
 
-# 검사 수행
-check_apache_directory_access_restriction()
+> $TMP1 
+ 
 
-# 결과를 JSON 파일로 저장
-with open('result.json', 'w', encoding='utf-8') as f:
-    json.dump(results, f, ensure_ascii=False, indent=4)
+BAR
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+CODE [U-37] Apache 상위 디렉터리 접근 금지 
+
+cat << EOF >> $result
+
+[양호]: 상위 디렉터리에 이동제한을 설정한 경우
+
+[취약]: 상위 디렉터리에 이동제한을 설정하지 않은 경우
+
+EOF
+
+BAR
+
+
+HTTPD_CONF_FILE="/etc/apache2/apache2.conf"
+ALLOW_OVERRIDE_OPTION="AllowOverride AuthConfig"
+
+if [ ! -f "$HTTPD_CONF_FILE" ]; then
+    INFO "$HTTPD_CONF_FILE 을 찾을 수 없습니다."
+else
+    if grep -q "$ALLOW_OVERRIDE_OPTION" "$HTTPD_CONF_FILE"; then
+        OK "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾았습니다."
+    else
+        WARN "$HTTPD_CONF_FILE 에서 $ALLOW_OVERRIDE_OPTION 을 찾을 수 없습니다."
+    fi
+fi
+
+
+cat $result
+
+echo ; echo
+
+ 
