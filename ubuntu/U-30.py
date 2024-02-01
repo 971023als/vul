@@ -1,56 +1,50 @@
-#!/bin/python3
+#!/usr/bin/python3
 import subprocess
+import re
 import json
 
-# 결과 저장을 위한 리스트
-results = []
-
-def check_sendmail_status():
-    """
-    Sendmail 서비스의 실행 상태를 확인합니다.
-    """
-    try:
-        output = subprocess.check_output("ps -ef | grep sendmail | grep -v grep", shell=True, stderr=subprocess.STDOUT)
-        if output:
-            return True  # 실행 중
-        else:
-            return False  # 실행되지 않음
-    except subprocess.CalledProcessError:
-        return False  # 프로세스가 없음
-
 def check_sendmail_version():
-    """
-    Sendmail 버전을 확인합니다. (시뮬레이션)
-    """
-    # 여기에 실제 Sendmail 버전 확인 로직 구현
-    return "시뮬레이션된 버전 정보"  # 예시 반환값
+    results = {
+        "분류": "서비스 관리",
+        "코드": "U-30",
+        "위험도": "상",
+        "진단 항목": "Sendmail 버전 점검",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": [],
+        "대응방안": "Sendmail 버전을 최신버전으로 유지"
+    }
 
-# Sendmail 서비스 상태 확인
-sendmail_active = check_sendmail_status()
+    # Define the latest version of Sendmail for comparison
+    latest_version = "8.17.1"
 
-# Sendmail 버전 확인 (시뮬레이션)
-sendmail_version = check_sendmail_version()
+    try:
+        # Check for Sendmail version using rpm and dnf
+        rpm_version_output = subprocess.check_output("rpm -qa | grep 'sendmail'", shell=True, text=True).strip()
+        dnf_version_output = subprocess.check_output("dnf list installed sendmail", shell=True, text=True).strip()
 
-diagnostic_item = "Sendmail 버전 점검"
-if sendmail_active:
-    status = "취약"
-    situation = "Sendmail 데몬이 활성화되어 있는 상태"
-    countermeasure = "Sendmail 데몬 비활성화 및 최신 버전으로 업데이트"
-else:
-    status = "양호"
-    situation = "Sendmail 데몬이 비활성화되어 있는 상태"
-    countermeasure = "Sendmail 데몬 유지 및 최신 버전으로 업데이트 확인"
+        # Extracting versions from outputs
+        rpm_version = re.search(r'sendmail-(\d+\.\d+\.\d+)', rpm_version_output)
+        dnf_version = re.search(r'sendmail\s+(\d+\.\d+\.\d+)', dnf_version_output)
 
-results.append({
-    "분류": "서비스 관리",
-    "코드": "U-30",
-    "위험도": "상",
-    "진단 항목": diagnostic_item,
-    "진단 결과": status,
-    "현황": situation,
-    "대응방안": countermeasure
-})
+        sendmail_version = rpm_version.group(1) if rpm_version else dnf_version.group(1) if dnf_version else ""
 
-# 결과 출력
-print(json.dumps(results, ensure_ascii=False, indent=4))
+        # Compare found version with the latest version
+        if sendmail_version.startswith(latest_version):
+            results["진단 결과"] = "양호"
+            results["현황"].append(f"Sendmail 버전이 최신 버전({latest_version})입니다.")
+        else:
+            results["진단 결과"] = "취약"
+            results["현황"].append(f"Sendmail 버전이 최신 버전({latest_version})이 아닙니다. 현재 버전: {sendmail_version}")
 
+    except subprocess.CalledProcessError as e:
+        results["진단 결과"] = "오류"
+        results["현황"].append(f"Sendmail 버전 확인 중 오류 발생: {e}")
+
+    return results
+
+def main():
+    results = check_sendmail_version()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
+
+if __name__ == "__main__":
+    main()
