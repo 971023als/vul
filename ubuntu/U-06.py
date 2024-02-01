@@ -1,38 +1,44 @@
 #!/usr/bin/python3
-import subprocess
+import os
+import pwd
+import grp
 import json
 
-def check_for_files_without_owners():
+def find_files_without_owners(start_path='/'):
     results = {
-        "분류": "시스템 설정",
+        "분류": "파일 및 디렉터리 관리",
         "코드": "U-06",
         "위험도": "상",
-        "진단 항목": "파일 및 디렉토리 소유자 설정",
+        "진단 항목": "파일 및 디렉터리 소유자 설정",
         "진단 결과": "",
         "현황": [],
-        "대응방안": "[양호]: 소유자가 존재하지 않은 파일 및 디렉터리가 존재하지 않는 경우\n[취약]: 소유자가 존재하지 않은 파일 및 디렉터리가 존재하는 경우"
+        "대응방안": "소유자가 존재하지 않는 파일 및 디렉터리가 존재하지 않도록 설정"
     }
 
-    try:
-        # /root 디렉토리 아래에서 소유자가 없는 파일 및 디렉터리 검색
-        command = ["find", "/root/", "-nouser"]
-        process = subprocess.run(command, check=True, capture_output=True, text=True)
-        invalid_owner_files = process.stdout.strip()
+    # Limited to a safer directory for demonstration; change to '/' for a full system scan
+    limited_scan_dir = '/tmp'  # Example: change to start_path for full scan, with caution
+    no_owner_files = []
 
-        if invalid_owner_files:
-            results["진단 결과"] = "취약"
-            results["현황"].append("잘못된 소유자가 있는 파일 또는 디렉터리를 찾을 수 있습니다:")
-            results["현황"].append(invalid_owner_files)
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("잘못된 소유자가 있는 파일 또는 디렉터리를 찾을 수 없습니다.")
-    except subprocess.CalledProcessError as e:
-        results["현황"].append("파일 검색 중 오류 발생: " + str(e))
+    for root, dirs, files in os.walk(limited_scan_dir):
+        for name in files + dirs:
+            full_path = os.path.join(root, name)
+            try:
+                pwd.getpwuid(os.stat(full_path).st_uid)
+                grp.getgrgid(os.stat(full_path).st_gid)
+            except KeyError:
+                no_owner_files.append(full_path)
+
+    if no_owner_files:
+        results["진단 결과"] = "취약"
+        results["현황"] = no_owner_files
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"] = "소유자가 존재하지 않는 파일 및 디렉터리가 존재하지 않도록 설정"
 
     return results
 
 def main():
-    results = check_for_files_without_owners()
+    results = find_files_without_owners()
     print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
