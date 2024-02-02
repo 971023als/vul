@@ -3,7 +3,6 @@ import os
 import pwd
 import stat
 import json
-import glob
 
 def is_permission_secure(path, owner_expected):
     """파일의 권한과 소유자를 확인하고 '+' 문자의 존재 여부도 검사합니다."""
@@ -25,10 +24,19 @@ def is_permission_secure(path, owner_expected):
 
     # '+' 문자의 존재 확인
     with open(path, 'r') as file:
-        if '+' in file.read():
+        content = file.read()
+        if '+' in content:
             return False, f'{path}: 파일 내에 "+" 문자가 있음'
 
     return True, ''
+
+def get_user_homes():
+    """시스템 사용자의 홈 디렉터리 목록을 가져옵니다."""
+    homes = []
+    for user_info in pwd.getpwall():
+        if user_info.pw_shell not in ["/bin/false", "/sbin/nologin"] and user_info.pw_dir:
+            homes.append((user_info.pw_name, user_info.pw_dir))
+    return homes
 
 def check_hosts_and_rhosts_files():
     results = {
@@ -50,18 +58,20 @@ def check_hosts_and_rhosts_files():
             results["진단 결과"] = "취약"
 
     # 사용자별 .rhosts 파일 검증
-    for user_info in pwd.getpwall():
-        home_dir = user_info.pw_dir
+    for username, home_dir in get_user_homes():
         rhosts_path = os.path.join(home_dir, '.rhosts')
         if os.path.exists(rhosts_path):
-            secure, message = is_permission_secure(rhosts_path, user_info.pw_name)
+            secure, message = is_permission_secure(rhosts_path, username)
             if not secure:
                 results['현황'].append(message)
                 results["진단 결과"] = "취약"
 
     if not results['현황']:
-        results["현황"].append("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 문제 없음")
         results["진단 결과"] = "양호"
+        results["현황"].append("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 문제 없음")
+    else:
+        results["진단 결과"] = "취약"
+
     return results
 
 def main():
