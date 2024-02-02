@@ -37,7 +37,7 @@ def main():
         "코드": "U-10",
         "위험도": "상",
         "진단 항목": "/etc/(x)inetd.conf 파일 소유자 및 권한 설정",
-        "진단 결과": "양호",
+        "진단 결과": None,  # 초기 값은 None으로 설정하고 검사 후 업데이트
         "현황": [],
         "대응방안": "/etc/(x)inetd.conf 파일과 /etc/xinetd.d 디렉터리 내 파일의 소유자가 root이고, 권한이 600인 경우"
     }
@@ -56,6 +56,7 @@ def main():
             results["현황"].append(f"{directory_path} 디렉터리 내 파일의 소유자가 root가 아니거나 권한이 600이 아닙니다.")
             check_passed = False
 
+    # 검사 결과에 따라 진단 결과 업데이트
     if check_passed:
         results["진단 결과"] = "양호"
     else:
