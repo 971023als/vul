@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 
 def check_admin_group_accounts():
     results = {
@@ -42,7 +43,7 @@ def check_admin_group_accounts():
 
 def main():
     admin_group_accounts_check_results = check_admin_group_accounts()
-    print(admin_group_accounts_check_results)
+    print(json.dumps(admin_group_accounts_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
