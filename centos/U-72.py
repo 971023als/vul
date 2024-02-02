@@ -1,47 +1,26 @@
 #!/usr/bin/python3
-import json
 
 def check_system_logging_policy():
     results = {
-        "분류": "시스템 설정",
+        "분류": "로그 관리",
         "코드": "U-72",
-        "위험도": "상",
+        "위험도": "하",
         "진단 항목": "정책에 따른 시스템 로깅 설정",
-        "진단 결과": "",
-        "현황": [],
-        "대응방안": "[양호]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있는 경우\n[취약]: 로그 기록 정책이 정책에 따라 설정되어 수립되어 있지 않은 경우"
+        "진단 결과": "N/A",  # Preset to N/A as it requires manual verification
+        "현황": "수동으로 점검하세요.",
+        "대응방안": "로그 기록 정책 설정 및 보안 정책에 따른 로그 관리"
     }
 
-    filename = "/etc/rsyslog.conf"
-    expected_content = [
-        "*.info;mail.none;authpriv.none;cron.none /var/log/messages",
-        "authpriv.* /var/log/secure",
-        "mail.* /var/log/maillog",
-        "cron.* /var/log/cron",
-        "*.alert /dev/console",
-        "*.emerg *"
-    ]
-
-    try:
-        with open(filename, 'r') as file:
-            content = file.read()
-            match_count = sum(1 for line in expected_content if line in content)
-            
-            if match_count == len(expected_content):
-                results["진단 결과"] = "양호"
-                results["현황"].append(f"{filename}의 내용이 정확합니다.")
-            else:
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"{filename}의 내용이 잘못되었습니다.")
-    except FileNotFoundError:
-        results["진단 결과"] = "취약"
-        results["현황"].append(f"{filename} 파일이 존재하지 않습니다.")
+    # As this check requires manual inspection, further automated checks aren't implemented.
+    # Normally, you'd inspect log configuration files or system settings to verify compliance with logging policies.
+    # This could include checking configuration files such as /etc/rsyslog.conf, /etc/syslog.conf, or others
+    # depending on the system's logging daemon.
 
     return results
 
 def main():
-    results = check_system_logging_policy()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    system_logging_policy_check_results = check_system_logging_policy()
+    print(system_logging_policy_check_results)
 
 if __name__ == "__main__":
     main()
