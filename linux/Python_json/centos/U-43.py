@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 
 def check_log_review_and_reporting():
     results = {

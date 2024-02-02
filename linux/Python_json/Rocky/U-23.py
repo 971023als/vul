@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import re
+import json
 
 def check_dos_vulnerable_services_disabled():
     results = {

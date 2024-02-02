@@ -44,7 +44,7 @@ def check_hosts_and_rhosts_files():
         "코드": "U-17",
         "위험도": "상",
         "진단 항목": "$HOME/.rhosts, hosts.equiv 사용 금지",
-        "진단 결과": "양호",
+        "진단 결과": "양호",  # 초기 값은 양호로 설정
         "현황": [],
         "대응방안": "login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자, 권한, 설정 검증"
     }
@@ -66,10 +66,9 @@ def check_hosts_and_rhosts_files():
                 results['현황'].append(message)
                 results["진단 결과"] = "취약"
 
+    # 현황 배열이 비어있으면 모든 검사가 통과한 것으로 간주
     if not results['현황']:
         results["현황"].append("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 문제 없음")
-    else:
-        results["진단 결과"] = "취약"
 
     return results
 

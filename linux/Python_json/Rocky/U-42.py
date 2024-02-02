@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 
 def check_security_patches_and_recommendations():
     results = {
