@@ -9,10 +9,13 @@ def check_ftp_service():
         "코드": "U-61",
         "위험도": "하",
         "진단 항목": "ftp 서비스 확인",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": "",  # 초기 값 설정하지 않음
         "현황": [],
         "대응방안": "FTP 서비스가 비활성화 되어 있는 경우"
     }
+
+    ftp_ports = []
+    ftp_found = False  # FTP 서비스 발견 여부 표시
 
     # Check for FTP service in /etc/services
     try:
@@ -21,7 +24,7 @@ def check_ftp_service():
             ftp_ports = re.findall(r'^ftp\s+(\d+)/tcp', services_content, re.MULTILINE)
             if ftp_ports:
                 results["현황"].append(f"FTP 포트가 /etc/services에 설정됨: {', '.join(ftp_ports)}")
-                results["진단 결과"] = "취약"
+                ftp_found = True
     except FileNotFoundError:
         results["현황"].append("/etc/services 파일을 찾을 수 없습니다.")
 
@@ -29,26 +32,33 @@ def check_ftp_service():
     netstat_output = subprocess.run(['netstat', '-tuln'], stdout=subprocess.PIPE, text=True).stdout
     if any(port in netstat_output for port in ftp_ports):
         results["현황"].append("FTP 서비스가 실행 중입니다.")
-        results["진단 결과"] = "취약"
+        ftp_found = True
 
     # Check for vsftpd and proftpd configuration files
     for ftp_conf in ['vsftpd.conf', 'proftpd.conf']:
         find_conf = subprocess.run(['find', '/', '-name', ftp_conf], stdout=subprocess.PIPE, text=True).stdout.splitlines()
         if find_conf:
             results["현황"].append(f"{ftp_conf} 파일이 시스템에 존재합니다.")
-            results["진단 결과"] = "취약"
+            ftp_found = True
 
     # Process check for common FTP services
     ps_output = subprocess.run(['ps', '-ef'], stdout=subprocess.PIPE, text=True).stdout
     if re.search(r'ftpd|vsftpd|proftpd', ps_output, re.IGNORECASE):
         results["현황"].append("FTP 관련 프로세스가 실행 중입니다.")
+        ftp_found = True
+
+    # 진단 결과 업데이트
+    if ftp_found:
         results["진단 결과"] = "취약"
+    else:
+        results["진단 결과"] = "양호"
+        results["현황"].append("FTP 서비스 관련 항목이 시스템에 존재하지 않습니다.")
 
     return results
 
 def main():
     ftp_check_results = check_ftp_service()
-    print(ftp_check_results)
+    print(json.dumps(ftp_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
