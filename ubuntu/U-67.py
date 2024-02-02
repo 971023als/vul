@@ -1,44 +1,51 @@
 #!/usr/bin/python3
-import json
+import subprocess
 import re
 
-def check_snmp_community_complexity():
+def check_snmp_community_string_complexity():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-67",
-        "위험도": "상",
+        "위험도": "중",
         "진단 항목": "SNMP 서비스 Community String의 복잡성 설정",
-        "진단 결과": "",
-        "현황": [],
-        "대응방안": "[양호]: SNMP Community 이름이 public, private 이 아닌 경우\n[취약]: SNMP Community 이름이 public, private 인 경우"
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": "SNMP Community String이 적절히 설정되어 있습니다.",
+        "대응방안": "SNMP Community 이름이 public, private이 아닌 경우"
     }
 
-    snmpd_config_file = "/etc/snmp/snmpd.conf"
-    try:
-        with open(snmpd_config_file, 'r') as file:
-            communities = re.findall(r'^\s*community\s+(\S+)', file.read(), re.MULTILINE)
-            if not communities:
-                results["현황"].append("SNMP Community 이름을 찾을 수 없습니다.")
-            else:
-                for community in communities:
-                    if community in ["public", "private"]:
-                        results["진단 결과"] = "취약"
-                        results["현황"].append(f"Community name {community}는 허용되지 않습니다.")
-                    else:
-                        results["현황"].append(f"Community name {community}는 허용되고 있습니다.")
-    except FileNotFoundError:
-        results["현황"].append(f"{snmpd_config_file} 파일이 없습니다. 확인해주세요.")
-    except Exception as e:
-        results["현황"].append(f"파일 읽기 중 예외 발생: {str(e)}")
+    # Check if SNMP service is running
+    ps_output = subprocess.run(['ps', '-ef'], stdout=subprocess.PIPE, text=True).stdout
+    if 'snmp' not in ps_output.lower():
+        return results  # SNMP service is not running, no need to check further
 
-    if "취약" not in results["진단 결과"]:
-        results["진단 결과"] = "양호"
+    # Search for snmpd.conf files
+    find_command = ['find', '/', '-name', 'snmpd.conf', '-type', 'f']
+    find_result = subprocess.run(find_command, stdout=subprocess.PIPE, text=True, stderr=subprocess.DEVNULL)
+    snmpdconf_files = find_result.stdout.strip().split('\n')
+
+    if not snmpdconf_files or snmpdconf_files == ['']:
+        results["진단 결과"] = "취약"
+        results["현황"] = "SNMP 서비스를 사용하고, Community String을 설정하는 파일이 없습니다."
+        return results
+
+    # Check for weak community strings in snmpd.conf files
+    for file_path in snmpdconf_files:
+        try:
+            with open(file_path, 'r') as file:
+                file_content = file.read()
+                if re.search(r'public|private', file_content, re.IGNORECASE):
+                    results["진단 결과"] = "취약"
+                    results["현황"] = f"SNMP Community String이 public 또는 private으로 설정되어 있습니다. 파일: {file_path}"
+                    return results
+        except Exception as e:
+            # Handle exceptions, such as permission issues, by skipping the file or logging an error
+            continue
 
     return results
 
 def main():
-    results = check_snmp_community_complexity()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    snmp_community_string_complexity_check_results = check_snmp_community_string_complexity()
+    print(snmp_community_string_complexity_check_results)
 
 if __name__ == "__main__":
     main()
