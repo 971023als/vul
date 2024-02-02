@@ -1,45 +1,52 @@
 #!/usr/bin/python3
 import os
 import pwd
-import json
 
-def check_home_directory_permissions():
+def check_home_directory_ownership_and_permissions():
     results = {
-        "분류": "시스템 설정",
+        "분류": "파일 및 디렉토리 관리",
         "코드": "U-57",
-        "위험도": "상",
-        "진단 항목": "홈 디렉터리 소유자 및 권한",
-        "진단 결과": "",
+        "위험도": "중",
+        "진단 항목": "홈디렉토리 소유자 및 권한 설정",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: 홈 디렉터리 소유자가 해당 계정이고, 일반 사용자 쓰기 권한이 제거된 경우\n[취약]: 홈 디렉터리 소유자가 해당 계정이 아니고, 일반 사용자 쓰기 권한이 부여된 경우"
+        "대응방안": "홈 디렉터리 소유자를 해당 계정으로 설정 및 타 사용자 쓰기 권한 제거"
     }
 
-    for user_info in pwd.getpwall():
-        home_dir = user_info.pw_dir
-        username = user_info.pw_name
-        if os.path.isdir(home_dir):
+    # Retrieve all user entries from /etc/passwd
+    users = pwd.getpwall()
+    vulnerable = False
+
+    for user in users:
+        home_dir = user.pw_dir
+        username = user.pw_name
+        # Check if the home directory exists and skip system users
+        if os.path.isdir(home_dir) and user.pw_uid >= 1000:
             try:
                 stat_info = os.stat(home_dir)
-                home_dir_owner = pwd.getpwuid(stat_info.st_uid).pw_name
-                permissions = stat.S_IMODE(stat_info.st_mode)
-                # 일반 사용자 쓰기 권한 검사
-                if home_dir_owner == username and permissions & 0o022 == 0:
-                    results["현황"].append(f"OK: {home_dir}({username}) 소유자가 적절하며, 일반 사용자 쓰기 권한이 제거됨")
+                # Check if the directory owner matches the user
+                if stat_info.st_uid != user.pw_uid:
+                    results["현황"].append(f"{home_dir} 홈 디렉터리의 소유자가 {username}이(가) 아닙니다.")
+                    vulnerable = True
                 else:
-                    results["진단 결과"] = "취약"
-                    results["현황"].append(f"WARN: {home_dir}({username})에서 소유자 불일치 또는 일반 사용자 쓰기 권한 부여")
-            except KeyError:
-                # UID에 대한 사용자 정보를 찾을 수 없음
+                    # Check for write permission for others
+                    if stat_info.st_mode & 0o002:
+                        results["현황"].append(f"{home_dir} 홈 디렉터리에 다른 사용자(other)의 쓰기 권한이 부여되어 있습니다.")
+                        vulnerable = True
+            except FileNotFoundError:
+                # In case the directory is not accessible or does not exist
                 pass
 
-    if "취약" not in results["진단 결과"]:
+    if vulnerable:
+        results["진단 결과"] = "취약"
+    else:
         results["진단 결과"] = "양호"
 
     return results
 
 def main():
-    results = check_home_directory_permissions()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    home_dir_check_results = check_home_directory_ownership_and_permissions()
+    print(home_dir_check_results)
 
 if __name__ == "__main__":
     main()
