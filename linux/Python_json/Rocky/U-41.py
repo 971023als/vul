@@ -9,7 +9,7 @@ def check_web_service_area_separation():
         "코드": "U-41",
         "위험도": "상",
         "진단 항목": "웹서비스 영역의 분리",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "DocumentRoot 별도 디렉터리 지정"
     }
@@ -33,7 +33,7 @@ def check_web_service_area_separation():
                                     vulnerable = True
                                     break
         except subprocess.CalledProcessError:
-            continue  # Skip to the next file if the find command encounters an error
+            continue  # find 명령어 실행 중 오류가 발생하면 다음 파일로 넘어감
 
     if not document_root_set:
         results["진단 결과"] = "취약"
@@ -42,6 +42,7 @@ def check_web_service_area_separation():
         results["진단 결과"] = "취약"
         results["현황"].append("Apache DocumentRoot를 기본 디렉터리로 설정했습니다.")
     else:
+        results["진단 결과"] = "양호"
         results["현황"].append("Apache DocumentRoot가 별도의 디렉터리로 적절히 설정되어 있습니다.")
 
     return results
