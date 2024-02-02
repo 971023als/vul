@@ -67,7 +67,6 @@ def check_hosts_and_rhosts_files():
                 results["진단 결과"] = "취약"
 
     if not results['현황']:
-        results["진단 결과"] = "양호"
         results["현황"].append("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 문제 없음")
     else:
         results["진단 결과"] = "취약"
