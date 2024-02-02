@@ -9,24 +9,24 @@ def check_dns_security_patch():
         "코드": "U-33",
         "위험도": "상",
         "진단 항목": "DNS 보안 버전 패치",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "DNS 서비스 주기적 패치 관리"
     }
 
-    # Specify the minimum acceptable version for BIND
+    # 지정된 BIND의 최소 허용 버전
     minimum_version = "9.18.7"
 
     try:
-        # Checking BIND version using rpm and dnf
+        # rpm과 dnf를 사용하여 BIND 버전 확인
         rpm_output = subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True, stderr=subprocess.DEVNULL).strip()
         dnf_output = subprocess.check_output("dnf list installed bind*", shell=True, text=True, stderr=subprocess.DEVNULL).strip()
 
-        # Extract version numbers
+        # 버전 번호 추출
         rpm_versions = re.findall(r'bind-9\.(\d+\.\d+)', rpm_output)
         dnf_versions = re.findall(r'bind-9\.(\d+\.\d+)', dnf_output)
 
-        # Combine versions from both commands
+        # 두 명령어의 버전을 결합
         versions = rpm_versions + dnf_versions
 
         if not versions:
@@ -43,6 +43,7 @@ def check_dns_security_patch():
                 results["진단 결과"] = "취약"
                 results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다.")
             else:
+                results["진단 결과"] = "양호"
                 results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다.")
 
     except subprocess.CalledProcessError as e:
