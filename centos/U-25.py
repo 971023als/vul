@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess
 import json
+import os
 
 def check_nfs_access_control():
     results = {
@@ -8,13 +9,13 @@ def check_nfs_access_control():
         "코드": "U-25",
         "위험도": "상",
         "진단 항목": "NFS 접근 통제",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "불필요한 NFS 서비스를 사용하지 않거나, 사용 시 everyone 공유 제한"
     }
 
     try:
-        # Check if NFS services are running
+        # NFS 서비스 실행 상태 확인
         nfs_services_running = subprocess.check_output(
             "ps -ef | grep -iE 'nfs|rpc.statd|statd|rpc.lockd|lockd' | grep -ivE 'grep|kblockd|rstatd|'", 
             shell=True, text=True
@@ -30,15 +31,14 @@ def check_nfs_access_control():
                 insecure_exports = any("insecure" in line for line in exports_content)
                 squash_not_set = all("root_squash" not in line and "all_squash" not in line for line in exports_content)
 
-                if all_exports:
+                if all_exports or insecure_exports or squash_not_set:
                     results["진단 결과"] = "취약"
-                    results["현황"].append("/etc/exports 파일에 '*' 설정이 있습니다.")
-                elif insecure_exports:
-                    results["진단 결과"] = "취약"
-                    results["현황"].append("/etc/exports 파일에 'insecure' 옵션이 설정되어 있습니다.")
-                elif squash_not_set:
-                    results["진단 결과"] = "취약"
-                    results["현황"].append("/etc/exports 파일에 'root_squash' 또는 'all_squash' 옵션이 설정되어 있지 않습니다.")
+                    if all_exports:
+                        results["현황"].append("/etc/exports 파일에 '*' 설정이 있습니다.")
+                    if insecure_exports:
+                        results["현황"].append("/etc/exports 파일에 'insecure' 옵션이 설정되어 있습니다.")
+                    if squash_not_set:
+                        results["현황"].append("/etc/exports 파일에 'root_squash' 또는 'all_squash' 옵션이 설정되어 있지 않습니다.")
             else:
                 results["진단 결과"] = "취약"
                 results["현황"].append("NFS 서비스가 실행 중이지만, /etc/exports 파일이 존재하지 않습니다.")
@@ -49,6 +49,11 @@ def check_nfs_access_control():
     except subprocess.CalledProcessError as e:
         results["진단 결과"] = "오류"
         results["현황"].append(f"NFS 서비스 확인 중 오류 발생: {e}")
+
+    # 진단 결과가 명시적으로 설정되지 않은 경우 기본값을 "양호"로 설정
+    if results["진단 결과"] is None:
+        results["진단 결과"] = "양호"
+        results["현황"].append("NFS 접근 통제 설정에 문제가 없습니다.")
 
     return results
 
