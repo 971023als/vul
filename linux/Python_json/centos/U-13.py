@@ -9,7 +9,7 @@ def check_suid_sgid_permissions():
         "코드": "U-13",
         "위험도": "상",
         "진단 항목": "SUID, SGID 설정 파일 점검",
-        "진단 결과": "양호",  # 초기 상태를 "양호"로 설정
+        "진단 결과": "",  # 초기 진단 결과 설정하지 않음
         "현황": [],
         "대응방안": "주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우"
     }
@@ -34,14 +34,14 @@ def check_suid_sgid_permissions():
         results["진단 결과"] = "취약"
         results["현황"] = vulnerable_files
     else:
-        # "현황" 필드에 "양호" 상태에 대한 설명 추가
+        results["진단 결과"] = "양호"
         results["현황"].append("SUID나 SGID에 대한 설정이 부여된 주요 실행 파일이 없습니다.")
 
     return results
 
 def main():
-    results = check_suid_sgid_permissions()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    suid_sgid_permissions_check_results = check_suid_sgid_permissions()
+    print(json.dumps(suid_sgid_permissions_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
