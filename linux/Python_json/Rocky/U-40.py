@@ -9,7 +9,7 @@ def check_file_upload_download_restrictions():
         "코드": "U-40",
         "위험도": "상",
         "진단 항목": "웹서비스 파일 업로드 및 다운로드 제한",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "파일 업로드 및 다운로드 제한 설정"
     }
@@ -31,7 +31,7 @@ def check_file_upload_download_restrictions():
                             results["현황"].append(f"{file_path} 파일에 파일 업로드 및 다운로드 제한 설정이 없습니다.")
                             break
         except subprocess.CalledProcessError:
-            continue  # Skip to the next file if the find command encounters an error
+            continue  # find 명령어 실행 중 오류가 발생하면 다음 파일로 넘어감
 
     if not found_vulnerability:
         results["진단 결과"] = "양호"
