@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess
 import re
+import json
 
 def check_snmp_community_string_complexity():
     results = {
