@@ -9,7 +9,7 @@ def check_web_directory_access_restriction():
         "코드": "U-37",
         "위험도": "상",
         "진단 항목": "웹서비스 상위 디렉토리 접근 금지",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "상위 디렉터리에 이동제한 설정"
     }
@@ -31,7 +31,7 @@ def check_web_directory_access_restriction():
                             results["현황"].append(f"{file_path} 파일에 상위 디렉터리 접근 제한 설정이 없습니다.")
                             break
         except subprocess.CalledProcessError:
-            continue  # Skip to the next file if the find command encounters an error
+            continue  # find 명령어 실행 중 오류가 발생하면 다음 파일로 넘어감
 
     if not found_vulnerability:
         results["진단 결과"] = "양호"
