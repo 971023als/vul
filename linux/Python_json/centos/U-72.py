@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 
 def check_system_logging_policy():
     results = {

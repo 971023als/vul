@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess
 import re
+import json
 
 def check_apache_info_hiding():
     results = {

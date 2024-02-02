@@ -2,6 +2,7 @@
 import os
 import subprocess
 import re
+import json
 
 def check_remote_root_access_restriction():
     results = {
