@@ -8,7 +8,7 @@ def check_cron_permissions():
         "코드": "U-22",
         "위험도": "상",
         "진단 항목": "crond 파일 소유자 및 권한 설정",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "crontab 명령어 일반사용자 금지 및 cron 관련 파일 640 이하 권한 설정"
     }
@@ -43,7 +43,8 @@ def check_cron_permissions():
                 if int(file_permission, 8) > 640:
                     results["현황"].append(f"{cron_file} 파일의 권한이 640보다 큽니다.")
 
-    if results["진단 결과"] == "양호":
+    if "진단 결과" not in results or results["진단 결과"] == None:
+        results["진단 결과"] = "양호"
         results["현황"].append("모든 cron 관련 파일 및 명령어가 적절한 권한 설정을 가지고 있습니다.")
 
     return results

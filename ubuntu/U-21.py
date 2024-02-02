@@ -8,7 +8,7 @@ def check_r_services_disabled():
         "코드": "U-21",
         "위험도": "상",
         "진단 항목": "r 계열 서비스 비활성화",
-        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
         "현황": [],
         "대응방안": "불필요한 r 계열 서비스 비활성화"
     }
@@ -18,7 +18,7 @@ def check_r_services_disabled():
     inetd_conf = "/etc/inetd.conf"
     vulnerable_services = []
 
-    # Check services under xinetd.d
+    # xinetd.d 아래 서비스 검사
     if os.path.isdir(xinetd_dir):
         for r_command in r_commands:
             service_path = os.path.join(xinetd_dir, r_command)
@@ -27,7 +27,7 @@ def check_r_services_disabled():
                     if 'disable = no' in file.read():
                         vulnerable_services.append(r_command)
 
-    # Check services under inetd.conf
+    # inetd.conf 아래 서비스 검사
     if os.path.isfile(inetd_conf):
         with open(inetd_conf, 'r') as file:
             inetd_contents = file.read()
