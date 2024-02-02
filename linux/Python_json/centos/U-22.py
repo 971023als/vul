@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import stat
+import json
 
 def check_cron_permissions():
     results = {
