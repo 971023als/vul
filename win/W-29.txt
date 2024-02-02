@@ -53,57 +53,77 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-28------------------------------------------
+echo ------------------------------------------W-29------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
 REM 취약
 IF NOT ERRORLEVEL 1 (
 	REM 취약
 	FOR /F "tokens=1 delims=#" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
-	cd %%a	
-	ATTRIB /s | findstr ".lnk"  >> C:\Window_%COMPUTERNAME%_raw\W-28.txt  
+		cd %%a
+		type web.config | find /I "maxAllowedContentLength" >> C:\Window_%COMPUTERNAME%_raw\W-29.txt
 	)
 	cd "%install_path%"
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-28.txt
+	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-29.txt
 	REM 똑같으면 양호, 다르면 취약 
 	IF NOT ERRORLEVEL 1 (
-		REM 양호
-		echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo W-29,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용하지 않는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 웹 프로스의 서버 자원 관리를 위해 업로드 및 다운로드 용량을 제한하는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용되어있지 않음>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 컨텐츠 용량[maxAllowedContentLength] 설정이 되어있지 않음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용되어있지 않으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 컨텐츠 용량[maxAllowedContentLength] 설정이 되어있지 않으므로 취약함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		REM 취약
-		type C:\Window_%COMPUTERNAME%_raw\W-28.txt | findstr ".lnk" >nul
+		REM 양호
+		type %WinDir%\System32\Inetsrv\Config\applicationHost.Config | find /I "bufferingLimit">> C:\Window_%COMPUTERNAME%_raw\W-29-raw1.txt
+		ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-29-raw1.txt
+		REM 똑같으면 양호, 다르면 취약
 		IF NOT ERRORLEVEL 1 (
-			REM 양호
-			echo W-28,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			REM 취약
+			echo W-29,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 			echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용하지 않는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo 웹 프로스의 서버 자원 관리를 위해 업로드 및 다운로드 용량을 제한하는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 			echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 해당 홈 디렉터리에 링크 파일이 존재함  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo 파일 다운로드 용량[bufferingLimit] 설정이 되어있지 않음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 			echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용되어 있으므로 취약함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo 파일 다운로드 용량[bufferingLimit] 설정이 되어있지 않으므로 취약함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		) ELSE (
-			REM 취약
-			echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용하지 않는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용되어있지 않음>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 심볼릭 링크, aliases, 바로가기 등의 사용을 허용되어있지 않으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			type %WinDir%\System32\Inetsrv\Config\applicationHost.Config | find /I "maxRequestEntityAllowed">> C:\Window_%COMPUTERNAME%_raw\W-29-raw2.txt
+			ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-29-raw2.txt
+			REM 똑같으면 양호, 다르면 취약
+			IF NOT ERRORLEVEL 1 (
+				REM 취약
+				echo W-29,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 웹 프로스의 서버 자원 관리를 위해 업로드 및 다운로드 용량을 제한하는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 파일 업로드 용량[maxRequestEntityAllowed] 설정이 되어있지 않음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 파일 업로드 용량[maxRequestEntityAllowed] 설정이 되어있지 않으므로 취약함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			) ELSE (
+				REM 양호
+				echo W-29,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 웹 프로스의 서버 자원 관리를 위해 업로드 및 다운로드 용량을 제한하는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 파일 업로드 용량[maxRequestEntityAllowed] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 파일 다운로드 용량[bufferingLimit] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 컨텐츠 용량[maxAllowedContentLength] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				type C:\Window_%COMPUTERNAME%_raw\W-29-raw2.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				type C:\Window_%COMPUTERNAME%_raw\W-29-raw1.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				type C:\Window_%COMPUTERNAME%_raw\W-29.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo 웹 프로스의 서버 자원 관리를 위해 업로드 및 다운로드 용량을 제한 설정이 되어있으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+				echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			)
 		)
 	)
 ) ELSE (
 	REM 양호
-	echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo W-29,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo IIS 서비스가 필요하지 않아 이용하지 않는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
