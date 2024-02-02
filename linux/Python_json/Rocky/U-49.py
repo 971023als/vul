@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 
 def check_unnecessary_accounts():
     results = {
@@ -47,7 +48,7 @@ def check_unnecessary_accounts():
 
 def main():
     unnecessary_accounts_check_results = check_unnecessary_accounts()
-    print(unnecessary_accounts_check_results)
+    print(json.dumps(unnecessary_accounts_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
