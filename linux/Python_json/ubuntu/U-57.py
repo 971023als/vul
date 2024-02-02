@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import pwd
+import json
 
 def check_home_directory_ownership_and_permissions():
     results = {
@@ -46,7 +47,7 @@ def check_home_directory_ownership_and_permissions():
 
 def main():
     home_dir_check_results = check_home_directory_ownership_and_permissions()
-    print(home_dir_check_results)
+    print(json.dumps(home_dir_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

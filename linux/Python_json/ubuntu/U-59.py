@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 
 def search_hidden_files_and_directories(start_path):
     results = {

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 from collections import Counter
 
 def check_duplicate_uids():
@@ -31,7 +32,7 @@ def check_duplicate_uids():
 
 def main():
     duplicate_uids_check_results = check_duplicate_uids()
-    print(duplicate_uids_check_results)
+    print(json.dumps(duplicate_uids_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

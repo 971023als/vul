@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import pwd
 import os
+import json
 
 def check_home_directories_existence():
     results = {

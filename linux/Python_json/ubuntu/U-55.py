@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 import stat
 
 def check_hosts_lpd_file():
@@ -39,7 +40,8 @@ def check_hosts_lpd_file():
 
 def main():
     hosts_lpd_file_check_results = check_hosts_lpd_file()
-    print(hosts_lpd_file_check_results)
+    print(json.dumps(hosts_lpd_file_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
+

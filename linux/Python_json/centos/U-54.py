@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 import glob
 
 def check_session_timeout():
@@ -55,7 +56,7 @@ def check_session_timeout():
 
 def main():
     session_timeout_check_results = check_session_timeout()
-    print(session_timeout_check_results)
+    print(json.dumps(session_timeout_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

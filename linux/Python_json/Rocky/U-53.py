@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 
 def check_user_shell():
     results = {
@@ -38,7 +39,7 @@ def check_user_shell():
 
 def main():
     user_shell_check_results = check_user_shell()
-    print(user_shell_check_results)
+    print(json.dumps(user_shell_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

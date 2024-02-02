@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json
 import glob
 
 def get_umask_values_from_file(file_path):
@@ -54,7 +55,8 @@ def check_umask_settings():
 
 def main():
     umask_settings_check_results = check_umask_settings()
-    print(umask_settings_check_results)
+    print(json.dumps(umask_settings_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
+
