@@ -1,34 +1,28 @@
 #!/usr/bin/python3
 import subprocess
-import json
 
-def check_snmp_service_status():
+def check_snmp_service_usage():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-66",
-        "위험도": "상",
+        "위험도": "중",
         "진단 항목": "SNMP 서비스 구동 점검",
-        "진단 결과": "",
-        "현황": [],
-        "대응방안": "[양호]: SNMP 서비스를 사용하지 않는 경우\n[취약]: SNMP 서비스를 사용하는 경우"
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
+        "현황": "SNMP 서비스를 사용하지 않고 있습니다.",
+        "대응방안": "SNMP 서비스 사용을 필요로 하지 않는 경우, 서비스를 비활성화"
     }
 
-    try:
-        snmp_status = subprocess.run(["systemctl", "is-active", "snmpd"], capture_output=True, text=True)
-        if snmp_status.returncode == 0:
-            results["진단 결과"] = "취약"
-            results["현황"].append("SNMP 서비스가 활성되어 있습니다.")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("SNMP 서비스가 활성화되지 않았습니다.")
-    except Exception as e:
-        results["현황"].append(f"SNMP 서비스 상태 확인 중 오류 발생: {e}")
+    # Execute a system command to check for SNMP service
+    process = subprocess.run(['ps', '-ef'], stdout=subprocess.PIPE, text=True)
+    if 'snmp' in process.stdout.lower():
+        results["진단 결과"] = "취약"
+        results["현황"] = "SNMP 서비스를 사용하고 있습니다."
 
     return results
 
 def main():
-    results = check_snmp_service_status()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    snmp_service_check_results = check_snmp_service_usage()
+    print(snmp_service_check_results)
 
 if __name__ == "__main__":
     main()

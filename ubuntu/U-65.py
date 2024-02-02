@@ -1,48 +1,57 @@
 #!/usr/bin/python3
 import os
 import stat
-import subprocess
-import json
+import pwd
 
-def check_at_command_and_file_permissions():
+def check_at_service_permissions():
     results = {
-        "분류": "시스템 설정",
+        "분류": "서비스 관리",
         "코드": "U-65",
-        "위험도": "상",
-        "진단 항목": "at 파일 소유자 및 권한 설정",
-        "진단 결과": "",
+        "위험도": "중",
+        "진단 항목": "at 서비스 권한 설정",
+        "진단 결과": "양호",  # Assume "Good" until proven otherwise
         "현황": [],
-        "대응방안": "[양호]: at 접근제어 파일의 소유자가 root이고, 권한이 640 이하인 경우\n[취약]: at 접근제어 파일의 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우"
+        "대응방안": "일반 사용자의 at 명령어 사용 금지 및 관련 파일 권한 640 이하 설정"
     }
 
-    # at 명령의 사용 가능 여부를 확인합니다.
-    at_command_available = subprocess.run(["command", "-v", "at"], capture_output=True).returncode == 0
-    if at_command_available:
-        results["현황"].append("at 명령을 사용할 수 있습니다.")
-    else:
-        results["현황"].append("at 명령을 사용할 수 없습니다.")
+    # Check for at command path in PATH variable
+    at_command_paths = []
+    for path in os.environ["PATH"].split(os.pathsep):
+        at_path = os.path.join(path, "at")
+        if os.path.isfile(at_path):
+            at_command_paths.append(at_path)
 
-    # at 관련 파일의 사용 권한을 확인합니다.
-    at_dir = "/etc/at.allow"
-    if os.path.isfile(at_dir):
-        file_stat = os.stat(at_dir)
-        permission = stat.S_IMODE(file_stat.st_mode)
-        if permission > 0o640:
-            results["진단 결과"] = "취약"
-            results["현황"].append(f"관련 파일({at_dir})의 권한이 640 이상입니다: 현재 권한 {oct(permission)}")
-        else:
-            results["현황"].append(f"관련 파일({at_dir})의 권한이 640 미만입니다.")
-    else:
-        results["현황"].append(f"관련 파일({at_dir})이 존재하지 않습니다.")
+    # Check permissions for at command if exists
+    for at_path in at_command_paths:
+        try:
+            st = os.stat(at_path)
+            permissions = stat.S_IMODE(st.st_mode)
+            if permissions & stat.S_IXOTH or permissions & stat.S_IWOTH or permissions & stat.S_IROTH:
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"{at_path} 실행 파일이 다른 사용자(other)에 의해 실행이 가능합니다.")
+        except FileNotFoundError:
+            pass  # If the file doesn't exist, skip it
 
-    if "취약" not in results["진단 결과"]:
-        results["진단 결과"] = "양호"
+    # Check /etc/at.allow and /etc/at.deny files
+    at_access_control_files = ["/etc/at.allow", "/etc/at.deny"]
+    for file in at_access_control_files:
+        if os.path.isfile(file):
+            st = os.stat(file)
+            permissions = stat.S_IMODE(st.st_mode)
+            file_owner = pwd.getpwuid(st.st_uid).pw_name
+            if file_owner != "root" or permissions > 0o640:
+                results["진단 결과"] = "취약"
+                permission_str = oct(permissions)[-3:]
+                results["현황"].append(f"{file} 파일의 소유자가 {file_owner}이고, 권한이 {permission_str}입니다.")
+
+    if not results["현황"]:
+        results["현황"].append("모든 at 관련 파일이 적절한 권한 설정을 가지고 있습니다.")
 
     return results
 
 def main():
-    results = check_at_command_and_file_permissions()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    at_service_permission_check_results = check_at_service_permissions()
+    print(at_service_permission_check_results)
 
 if __name__ == "__main__":
     main()
