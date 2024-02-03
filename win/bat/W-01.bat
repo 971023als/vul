@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -55,42 +54,42 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-01------------------------------------------
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Findstr "NewAdministratorName" | findstr /R "\<Administrator" >nul 
-REM Ãë¾à
+REM ê²€ì‚¬ ì‹œìž‘
 IF NOT ERRORLEVEL 1 ( 
-	REM Ãë¾à
+	REM ë°œê²¬
 	echo W-01,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo Administrator Default °èÁ¤ ÀÌ¸§À» º¯°æÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "°èÁ¤: Administrator °èÁ¤ ÀÌ¸§ ¹Ù²Ù±â" Á¤Ã¥ ¼³Á¤ÀÌ administrator·Î ¼³Á¤ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ìœ„ë°˜ ì‚¬í•­ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ë³€ê²½ë˜ì§€ ì•ŠìŒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo "ì¡°ì¹˜: Administrator ê³„ì • ì´ë¦„ì„ ë³€ê²½í•˜ì„¸ìš”" ê´€ë¦¬ ë„êµ¬ì—ì„œ administratorì˜ ì´ë¦„ì´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Findstr "NewAdministratorName">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo Administrator Default °èÁ¤ ÀÌ¸§ÀÌ º¯°æµÇ¾îÀÖÁö ¾Ê±â ¶§¹®¿¡ Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ìœ„ë°˜ ë‚´ìš© >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ë³€ê²½ë˜ì–´ì•¼ í•˜ëŠ”ë° ë³€ê²½ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
-	REM ¾çÈ£
+	REM ì •ìƒ
 	NET USER | FIND "Administrator" >nul 
-	REM Ãë¾à
+	REM ë°œê²¬
 	IF NOT ERRORLEVEL 1 ( 
-		REM Ãë¾à
+		REM ë°œê²¬
 		echo W-01,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Administrator Default °èÁ¤ ÀÌ¸§À» º¯°æÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç °èÁ¤ Áß Administrator °èÁ¤ÀÌ¸§À» »ç¿ëÇÏ°íÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ìœ„ë°˜ ì‚¬í•­ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ë³€ê²½ë˜ì§€ ì•ŠìŒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo í•´ë‹¹ ì‹œìŠ¤í…œì—ì„œ Administrator ê³„ì •ì˜ ì´ë¦„ì´ ë³€ê²½ë˜ì–´ì•¼ í•¨ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		NET USER | FIND "Administrator" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Administrator Default °èÁ¤ ÀÌ¸§ÀÌ º¯°æµÇ¾îÀÖÁö ¾Ê±â ¶§¹®¿¡ Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ìœ„ë°˜ ë‚´ìš© >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ë³€ê²½ë˜ì–´ì•¼ í•˜ëŠ”ë° ë³€ê²½ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE ( 
-		REM ¾çÈ£
+		REM ì •ìƒ
 		echo W-01,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Administrator Default °èÁ¤ ÀÌ¸§À» º¯°æÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Administrator Default °èÁ¤ ÀÌ¸§ÀÌ Á¤Ã¥ ¹× °èÁ¤¿¡¼­ ¹ß°ßµÇÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Administrator Default °èÁ¤ ÀÌ¸§ÀÌ Á¤Ã¥ ¹× °èÁ¤¿¡¼­ º¯°æµÇ¾îÀÖ±â ¶§¹®¿¡ ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ìƒ ì‚¬í•­ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ì •ìƒì ìœ¼ë¡œ ë³€ê²½ë¨ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ê´€ë¦¬ ë„êµ¬ë¥¼ í†µí•´ ì •ìƒì ìœ¼ë¡œ ë³€ê²½ë˜ì—ˆìŠµë‹ˆë‹¤ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ìƒ ë‚´ìš© >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Administrator ê¸°ë³¸ ê³„ì • ì´ë¦„ì´ ì •ìƒì ìœ¼ë¡œ ê´€ë¦¬ ë„êµ¬ë¥¼ í†µí•´ ë³€ê²½ë˜ì—ˆìŠµë‹ˆë‹¤ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) 
@@ -99,3 +98,4 @@ echo -------------------------------------------end-----------------------------
 echo --------------------------------------W-01------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Findstr "NewAdministratorName">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+
