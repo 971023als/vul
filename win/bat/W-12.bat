@@ -2,7 +2,7 @@ rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½Õ´Ï´ï¿½...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -57,41 +57,41 @@ echo ------------------------------------------end------------------------------
 echo ------------------------------------------W-12------------------------------------------
 FOR /F "tokens=3" %%B in ('type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt ^| Find /I "MinimumPasswordAge"') DO set MinimumPasswordAge=%%B
 IF "%MinimumPasswordAge%" GTR "0" (
-	REM ¾çÈ£ 
+	REM ï¿½ï¿½È£ 
 	type C:\Window_%COMPUTERNAME%_raw\user_pw.txt | findstr /I "2012 2013 2014 2015" > nul
 	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£ 
+		REM ï¿½ï¿½È£ 
 		echo W-12,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£[MinimumPasswordAge]ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÁö¸¸ ½ÇÁ¦·Î ¼öÁ¤Çß´ø ³¯Â¥ È®ÀÎ °á°ú Ãë¾àÇÔ>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£[MinimumPasswordAge]ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ ï¿½ï¿½Â¥ È®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "MinimumPasswordAge">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£[MinimumPasswordAge]ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÁö¸¸ ½ÇÁ¦·Î ¼öÁ¤Çß´ø ³¯Â¥ È®ÀÎ °á°ú Ãë¾àÇÔ>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£[MinimumPasswordAge]ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ ï¿½ï¿½Â¥ È®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE ( 
-		REM Ãë¾à
+		REM ï¿½ï¿½ï¿½
 		echo W-12,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£[MinimumPasswordAge]ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£[MinimumPasswordAge]ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "MinimumPasswordAge">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÀ¸¹Ç·Î ¾çÈ£ÇÔ  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½È£ï¿½ï¿½  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE ( 
-	REM Ãë¾à
+	REM ï¿½ï¿½ï¿½
 	echo W-12,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£[MinimumPasswordAge]ÀÌ 0À¸·Î ¼³Á¤µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£[MinimumPasswordAge]ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "MinimumPasswordAge">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÃÖ¼Ò ¾ÏÈ£ »ç¿ë ±â°£ÀÌ 0º¸´Ù Å« °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½Ö¼ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ ï¿½â°£ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
