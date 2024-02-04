@@ -5,7 +5,7 @@
 . json.sh
 
 # HTML 파일 생성
-cat > "$HTML_PATH" <<EOF
+cat > "$HTML_PATH" <<'EOF'
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,7 +32,13 @@ cat > "$HTML_PATH" <<EOF
                 <th>현황</th>
                 <th>대응방안</th>
             </tr>
-            <?php foreach ($data as $row): ?>
+            <?php
+            // JSON 파일 로드 및 데이터를 PHP 배열로 변환
+            $jsonData = file_get_contents('results.json');
+            $data = json_decode($jsonData, true);
+
+            foreach ($data as $row):
+            ?>
             <tr>
                 <td><?= htmlspecialchars($row['분류']) ?></td>
                 <td><?= htmlspecialchars($row['코드']) ?></td>
@@ -43,12 +49,10 @@ cat > "$HTML_PATH" <<EOF
                 <td><?= htmlspecialchars($row['대응방안']) ?></td>
             </tr>
             <?php endforeach; ?>
-            <?php endforeach; ?>
         </table>
     </div>
 </body>
 </html>
-
 EOF
 
 . encode.sh
