@@ -6,7 +6,7 @@ if ! command -v apache2 > /dev/null; then
     sudo apt update
     sudo apt install apache2 -y
 else
-    echo "아파치 존재하지 않음."
+    echo "아파치 존재함."
 fi
 
 # 현재 사용자의 crontab 설정
@@ -15,7 +15,7 @@ if crontab -l | grep -Fq "$CRON_JOB"; then
     echo "Cron job 존재하지 않음."
 else
     (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # Daily script execution") | crontab -
-    echo "Cron job 존재하지 않음."
+    echo "Cron job 존재함."
 fi
 
 # 결과 및 오류 로그 저장 경로
@@ -80,7 +80,7 @@ echo "HTML results page created at $HTML_PATH"
 encoding_code="utf-8"
 
 # httpd.conf 파일 수정
-sudo sed -i "s/AddDefaultCharset .*/AddDefaultCharset $encoding_code/" /etc/httpd/conf/httpd.conf
+sudo sed -i "s/AddDefaultCharset .*/AddDefaultCharset $encoding_code/" /etc/apache2/apache2.conf
 
 # 웹 페이지가 있는 디렉토리 경로 설정
 web_directory="/var/www/html"
