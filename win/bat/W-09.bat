@@ -1,23 +1,22 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "%getadmin.vbs"
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------ì„¤ì • ì‹œìž‘---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS ì„¤ì •-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -37,49 +36,43 @@ set "line=!line!%%a"
 )
 echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
 for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
 )
 for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
 )
 for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
 )
 for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
 )
 for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-09------------------------------------------
+echo ------------------------------------------ì„¤ì • ì¢…ë£Œ-------------------------------------------
+echo ------------------------------------------W-09 ë¹„ë°€ë²ˆí˜¸ ë³µìž¡ì„± ê²€ì‚¬ ì‹œìž‘------------------------------------------
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity" | findstr "1" > nul
 IF NOT ERRORLEVEL 1 (
-	REM ¾çÈ£ 
-	echo W-09,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥ÀÌ "»ç¿ë"À¸·Î µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥[PasswordComplexity]ÀÌ "»ç¿ë"[1]À¸·Î µÇ¾î ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥ÀÌ "»ç¿ë"À¸·Î µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM ì •ì±… ì¶©ì¡±
+    echo W-09,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì •ì±… ì¶©ì¡± ê²°ê³¼ ì €ìž¥ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "ë¹„ë°€ë²ˆí˜¸ ë³µìž¡ì„± ìš”êµ¬ ì‚¬í•­ì´ 'í™œì„±í™”'ë¡œ ì„¤ì •ë˜ì–´ ìžˆìŠµë‹ˆë‹¤." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì„¤ì • ê°’ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ë¶„ì„ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
-	REM Ãë¾à
-	echo W-09,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥ÀÌ "»ç¿ë"À¸·Î µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥[PasswordComplexity]ÀÌ "»ç¿ë ¾È ÇÔ"[0]À¸·Î µÇ¾î ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "¾ÏÈ£´Â º¹Àâ¼ºÀ» ¸¸Á·ÇØ¾ß ÇÔ" Á¤Ã¥ÀÌ "»ç¿ë ¾È ÇÔ"À¸·Î µÇ¾î ÀÖÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM ì •ì±… ë¯¸ì¶©ì¡±
+    echo W-09,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì •ì±… ë¯¸ì¶©ì¡± ê²°ê³¼ ì €ìž¥ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "ë¹„ë°€ë²ˆí˜¸ ë³µìž¡ì„± ìš”êµ¬ ì‚¬í•­ì´ 'ë¹„í™œì„±í™”'ë¡œ ì„¤ì •ë˜ì–´ ìžˆìŠµë‹ˆë‹¤." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì„¤ì • ê°’ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ë¶„ì„ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------ë¹„ë°€ë²ˆí˜¸ ë³µìž¡ì„± ê²€ì‚¬ ì¢…ë£Œ-------------------------------------------
 
-echo --------------------------------------W-09------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo --------------------------------------W-09 ì›ë³¸ ë°ì´í„° ì €ìž¥ -------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "PasswordComplexity">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt

@@ -1,23 +1,22 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "%getadmin.vbs"
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------ì„¤ì • ì‹œìž‘---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS ì„¤ì •-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -37,72 +36,56 @@ set "line=!line!%%a"
 )
 echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
 for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
 )
 for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
 )
 for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
 )
 for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
 )
 for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-08------------------------------------------
+echo ------------------------------------------ì„¤ì • ì¢…ë£Œ-------------------------------------------
+echo ------------------------------------------W-08 ë¶„ì„ ì‹œìž‘------------------------------------------
 for /f "tokens=3" %%a in ('type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt ^| Find /I "LockoutDuration"') do set LockoutDuration=%%a
 for /f "tokens=3" %%b in ('type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt ^| Find /I "ResetLockoutCount"') do set ResetLockoutCount=%%b
 if "%ResetLockoutCount%" GTR "59" (
-	if "%LockoutDuration%" GTR "59" (
-		REM ¾çÈ£
-		echo W-08,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 60ºÐ ÀÌ»óÀÇ °ªÀ¸·Î ¼³Á¤À» ±Ç°íÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£"[LockoutDuration] ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£"[ResetLockoutCount] ÀÌ 60ºÐ ÀÌ»óÀ¸·Î ¼³Á¤µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		REM Ãë¾à
-		echo W-08,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 60ºÐ ÀÌ»óÀÇ °ªÀ¸·Î ¼³Á¤À» ±Ç°íÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£"[LockoutDuration] ÀÌ 60ºÐ ÀÌÇÏ·Î ¼³Á¤µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£"[ResetLockoutCount] ÀÌ 60ºÐ ÀÌ»óÀ¸·Î ¼³Á¤µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
+    if "%LockoutDuration%" GTR "59" (
+        REM ì •ì±… ì¶©ì¡±
+        echo W-08,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ì •ì±… ì¶©ì¡± >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo "ìž ê¸ˆ ì§€ì† ì‹œê°„"ê³¼ "ìž ê¸ˆ ì¹´ìš´íŠ¸ ë¦¬ì…‹ ì‹œê°„"ì´ ì„¤ì • ìš”êµ¬ì‚¬í•­ì„ ì¶©ì¡±í•©ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ì„¤ì • ê°’ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ë¶„ì„ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    ) ELSE (
+        REM ì •ì±… ë¯¸ì¶©ì¡±
+        echo W-08,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ì •ì±… ë¯¸ì¶©ì¡± >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ì„¤ì • ê°’ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo ë¶„ì„ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    )
 ) ELSE (
-	REM Ãë¾à
-	echo W-08,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo 60ºÐ ÀÌ»óÀÇ °ªÀ¸·Î ¼³Á¤À» ±Ç°íÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "°èÁ¤ Àá±Ý ±â°£"[LockoutDuration] ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£"[ResetLockoutCount] ÀÌ 60ºÐ ÀÌÇÏ·Î ¼³Á¤µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo "°èÁ¤ Àá±Ý ±â°£" ¹× "°èÁ¤ Àá±Ý ±â°£ ¿ø·¡´ë·Î ¼³Á¤ ±â°£" ÀÌ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡Ø ÇöÈ²¿¡¼­ °ªÀÌ ³ª¿ÀÁö ¾ÊÀº °æ¿ì ¼³Á¤ÀÌ µÇ¾îÀÖÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM ì •ì±… ë¯¸ì¶©ì¡±
+    echo W-08,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì •ì±… ë¯¸ì¶©ì¡± >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ì„¤ì • ê°’ í™•ì¸ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ë¶„ì„ ì™„ë£Œ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------ë¶„ì„ ì¢…ë£Œ-------------------------------------------
 
-echo --------------------------------------W-08------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo --------------------------------------W-08 ì›ë³¸ ë°ì´í„°-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "ResetLockoutCount">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LockoutDuration">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
