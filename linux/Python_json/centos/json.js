@@ -1,37 +1,22 @@
-function insertData() {
-    // JSON 파일 로드
-    fetch('/var/www/html/results.json')
-        .then(response => response.json())
-        .then(data => {
-            var results = data; // JSON 데이터를 가져옵니다.
-            var table = document.querySelector("table");
+// JSON 데이터
+// JSON 데이터를 웹 페이지에 로드하기
+fetch('results.json')
+.then(response => response.json())
+.then(data => fillTable(data))
+.catch(error => console.error('Error loading JSON data:', error));
 
-            for (var key in results) {
-                var row = table.insertRow();
-                var rowData = results[key];
-
-                var orderCell = row.insertCell(0);
-                var categoryCell = row.insertCell(1);
-                var severityCell = row.insertCell(2);
-                var diagnosisItemCell = row.insertCell(3);
-                var diagnosisResultCell = row.insertCell(4);
-                var statusCell = row.insertCell(5);
-                var actionCell = row.insertCell(6);
-                var dateCell = row.insertCell(7);
-
-                orderCell.innerHTML = key;
-                categoryCell.innerHTML = rowData["분류"];
-                severityCell.innerHTML = rowData["위험도"];
-                diagnosisItemCell.innerHTML = rowData["진단 항목"];
-                diagnosisResultCell.innerHTML = rowData["진단 결과"];
-                statusCell.innerHTML = rowData["현황"].join("<br>");
-                actionCell.innerHTML = rowData["대응방안"];
-                dateCell.innerHTML = rowData["생성시간"];
-            }
-        })
-        .catch(error => console.error('JSON 파일을 로드하는 중 오류 발생:', error));
+function fillTable(data) {
+    const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+    // 데이터 객체의 각 키(진단 번호)에 대해 반복
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const entry = data[key];
+            // 각 진단 결과에 대한 테이블 행 생성
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${key}</td>
+                            <td>${entry.output}</td>
+                            <td>${entry.execution_time}</td>`;
+            tableBody.appendChild(tr);
+        }
+    }
 }
-
-window.onload = function() {
-    insertData();
-};

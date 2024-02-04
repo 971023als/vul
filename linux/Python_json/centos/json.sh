@@ -2,11 +2,11 @@
 
 # 결과 및 오류 로그 저장 경로
 RESULTS_PATH="/var/www/html/results.json"
-ERRORS_PATH="/var/www/html/errors_${NOW}.log"
+ERRORS_PATH="/var/www/html/errors.log"
 HTML_PATH="/var/www/html/index.html"
 
 # 결과 및 오류 초기화
-results=()
+echo "{" > "$RESULTS_PATH"
 errors=()
 
 # U-01.py부터 U-72.py까지 실행
@@ -17,27 +17,16 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # 현재 시간을 포맷팅하여 출력에 추가
-    current_datetime=$(date +"%Y-%m-%d %H:%M:%S.%N")
-    result_json="{"
-    result_json+="\"execution_time\": $execution_time,"
-    result_json+="\"date\": \"$current_datetime\","
-    result_json+="\"output\": $output"
-    result_json+="}"
-
-    echo "$result_json" >> "$RESULTS_PATH"
+    # JSON 형식의 결과 문자열 생성
+    echo "\"$i\": {\"output\": \"$output\", \"실행시간\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
-        errors+=("Error executing $script_name: $output")
-    else
-        results+=("\"$i\": {\"$output\",  $execution_time}")
+        errors+=("$script_name: $output")
     fi
 done
 
-# 결과를 JSON 파일로 저장
-echo "{" > "$RESULTS_PATH"
-echo "${results[*]}" | sed 's/} "/}, "/g' >> "$RESULTS_PATH"
-echo "}" >> "$RESULTS_PATH"
+# 파일 마지막에 JSON 닫기
+sed -i '$ s/,$/}/' "$RESULTS_PATH" # 마지막 쉼표를 닫는 중괄호로 변경
 
 # 오류가 있으면 로그 파일에 기록
 if [ ${#errors[@]} -ne 0 ]; then
