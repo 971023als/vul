@@ -10,14 +10,19 @@ def check_spam_mail_relay_restrictions():
         "코드": "U-31",
         "위험도": "상",
         "진단 항목": "스팸 메일 릴레이 제한",
-        "진단 결과": "오류",  # 기본적으로 오류로 설정
+        "진단 결과": None,  # 기본적으로 오류로 설정
         "현황": [],
         "대응방안": "SMTP 서비스 릴레이 제한 설정"
     }
 
     try:
-        sendmail_cf_files = subprocess.check_output("find / -name 'sendmail.cf' -type f 2>/dev/null", shell=True, text=True).strip().split('\n')
-        if sendmail_cf_files == ['']:
+        # Specify the directory where sendmail.cf might be located
+        search_directory = '/etc/mail/'
+
+        # Search for sendmail.cf file in the specified directory
+        sendmail_cf_files = subprocess.check_output(f"find {search_directory} -name 'sendmail.cf' -type f 2>/dev/null", shell=True, text=True).strip().split('\n')
+
+        if not sendmail_cf_files:
             raise FileNotFoundError("sendmail.cf 파일을 찾을 수 없습니다.")
 
         for file_path in sendmail_cf_files:

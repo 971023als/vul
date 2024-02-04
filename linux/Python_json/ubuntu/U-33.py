@@ -21,19 +21,24 @@ def check_dns_security_patch():
     minimum_version = "9.18.7"
 
     try:
-        rpm_output = subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True, stderr=subprocess.DEVNULL).strip()
+        rpm_output = subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True, stderr=subprocess.PIPE).strip()
         if rpm_output:
             version_match = re.search(r'bind-(\d+\.\d+\.\d+)', rpm_output)
-            if version_match and parse_version(version_match.group(1)) < parse_version(minimum_version):
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다: {version_match.group(1)}")
+            if version_match:
+                current_version = version_match.group(1)
+                if parse_version(current_version) < parse_version(minimum_version):
+                    results["진단 결과"] = "취약"
+                    results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다: {current_version}")
+                else:
+                    results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {current_version}")
             else:
-                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {version_match.group(1)}")
+                results["진단 결과"] = "오류"
+                results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
         else:
             results["현황"].append("DNS 서비스(BIND)가 설치되어 있지 않습니다.")
     except subprocess.CalledProcessError as e:
         results["진단 결과"] = "오류"
-        results["현황"].append("BIND 버전 확인 중 오류 발생")
+        results["현황"].append(f"BIND 버전 확인 중 오류 발생: {e.stderr}")
 
     return results
 

@@ -33,7 +33,11 @@ def check_suid_sgid_permissions():
         if os.path.isfile(executable):
             mode = os.stat(executable).st_mode
             if mode & (stat.S_ISUID | stat.S_ISGID):
-                vulnerable_files.append(executable)
+                vulnerable_files.append({
+                    "파일 경로": executable,
+                    "SUID 설정": bool(mode & stat.S_ISUID),
+                    "SGID 설정": bool(mode & stat.S_ISGID)
+                })
 
     if vulnerable_files:
         results["진단 결과"] = "취약"
