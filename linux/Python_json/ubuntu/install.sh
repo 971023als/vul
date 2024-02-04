@@ -62,6 +62,7 @@ else
     echo "PHP가 이미 설치되어 있습니다."
 fi
 
+
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
 if crontab -l | grep -Fq "$CRON_JOB"; then

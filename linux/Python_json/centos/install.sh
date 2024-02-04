@@ -62,6 +62,21 @@ else
     echo "PHP가 이미 설치되어 있습니다."
 fi
 
+# jq 설치 여부 확인 및 설치
+if ! command -v jq &> /dev/null; then
+    echo "jq가 설치되어 있지 않습니다. jq를 설치합니다."
+    if [[ "$PKG_MANAGER" == "apt" ]]; then
+        sudo apt update && sudo apt install jq -y
+    elif [[ "$PKG_MANAGER" == "yum" ]]; then
+        sudo yum install jq -y
+    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+        sudo dnf install jq -y
+    fi
+else
+    echo "jq가 이미 설치되어 있습니다."
+fi
+
+
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
 if crontab -l | grep -Fq "$CRON_JOB"; then
