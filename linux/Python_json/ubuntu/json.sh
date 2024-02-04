@@ -5,7 +5,7 @@ RESULTS_PATH="/var/www/html/results.json"
 ERRORS_PATH="/var/www/html/errors.log"
 HTML_PATH="/var/www/html/index.html"
 
-# 결과 및 오류 초기화
+# 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
 errors=()
 
@@ -15,17 +15,24 @@ for i in $(seq -w 1 72); do
     start_time=$(date +%s.%N)
     output=$(python3 "$script_name" 2>&1)
     end_time=$(date +%s.%N)
+    execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # JSON 형식의 결과 문자열 생성
-    echo "\"$i\": {\"output\": \"$output\"}," >> "$RESULTS_PATH"
+    # jq를 사용하여 JSON 문자열 생성
+    jq -n --arg i "$i" --arg output "$output" --arg execution_time "$execution_time" \
+       '{($i): {"output": $output, "execution_time": $execution_time}}' >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
     fi
+
+    # 마지막 항목이 아니라면 쉼표 추가
+    if [[ $i -ne 72 ]]; then
+        echo "," >> "$RESULTS_PATH"
+    fi
 done
 
 # 파일 마지막에 JSON 닫기
-sed -i '$ s/,$/}/' "$RESULTS_PATH" # 마지막 쉼표를 닫는 중괄호로 변경
+echo "}" >> "$RESULTS_PATH"
 
 # 오류가 있으면 로그 파일에 기록
 if [ ${#errors[@]} -ne 0 ]; then
