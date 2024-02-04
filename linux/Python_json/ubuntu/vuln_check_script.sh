@@ -50,7 +50,7 @@ for i in $(seq -w 1 72); do
     if [[ $output == *ERROR* ]]; then
         errors+=("Error executing $script_name: $output")
     else
-        results+=("\"script_$i\": {\"result\": \"$output\", \"execution_time\": $execution_time}")
+        results+=("\"U-$i\": {\"result\": \"$output\", \"execution_time\": $execution_time}")
     fi
 done
 
