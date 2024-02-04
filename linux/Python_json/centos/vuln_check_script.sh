@@ -1,23 +1,29 @@
 #!/bin/bash
 
-# Apache 설치 여부 확인 및 설치
+# 파이썬 설치 여부 확인 및 설치
+if ! command -v python3 &> /dev/null; then
+    echo "파이썬이 설치되어 있지 않습니다. 파이썬을 설치합니다."
+    sudo apt update && sudo apt install python3 -y
+else
+    echo "파이썬이 이미 설치되어 있습니다."
+fi
+
+# 아파치 설치 여부 확인 및 설치
 if ! command -v apache2 &> /dev/null; then
-    echo "아파치 없음"
+    echo "아파치가 설치되어 있지 않습니다. 아파치를 설치합니다."
     sudo apt update && sudo apt install apache2 -y
 else
-    echo "아파치 존재"
+    echo "아파치가 이미 설치되어 있습니다."
 fi
 
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vuln_check_script.py"
 if crontab -l | grep -Fq "$CRON_JOB"; then
-    echo "Cron job 존재함."
+    echo "Cron job이 이미 존재합니다."
 else
-    (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # Daily script execution") | crontab -
-    echo "Cron job 존재하지 않음."
+    (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # 매일 스크립트 실행") | crontab -
+    echo "Cron job이 존재하지 않습니다."
 fi
-
-#!/bin/bash
 
 # 결과 및 오류 로그 저장 경로
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
@@ -50,7 +56,7 @@ for i in $(seq -w 1 72); do
     if [[ $output == *ERROR* ]]; then
         errors+=("Error executing $script_name: $output")
     else
-        results+=("\"$i\": {\"result\": \"$output\", \"execution_time\": $execution_time}")
+        results+=("\"$i\": {\"$output\",  $execution_time}")
     fi
 done
 
@@ -72,11 +78,12 @@ cat > "$HTML_PATH" <<EOF
     <title>주요통신기반시설 취약점 진단</title>
     <meta charset="utf-8">
     <style>
-        body { font-family: Arial, sans-serif; }
+        body { font-family: Arial, sans-serif; text-align: center; } /* 전체 페이지 가운데 정렬 */
+        h1 { text-align: center; } /* 제목 가운데 정렬 */
+        table { margin: 0 auto; } /* 표 중앙 정렬 */
         pre {
             white-space: pre-wrap;
             word-wrap: break-word;
-            text-align: center; /* 가운데 정렬을 위한 CSS 속성 추가 */
         }
         /* 기타 스타일링 및 CSS 규칙 추가 가능 */
     </style>
@@ -84,7 +91,19 @@ cat > "$HTML_PATH" <<EOF
 <body>
     <h1>주요통신기반시설 취약점 진단</h1>
     <div id="results">
-        <pre>$(cat "$RESULTS_PATH")</pre>
+        <table border="1">
+            <tr>
+                <th>순서</th>
+                <th>분류</th>
+                <th>위험도</th>
+                <th>진단항목</th>
+                <th>진단결과</th>
+                <th>현황</th>
+                <th>대응방안</th>
+                <th>생성시간</th>
+            </tr>
+            <!-- JSON 데이터를 여기에 동적으로 삽입하도록 수정 필요 -->
+        </table>
     </div>
     $(if [ -s "$ERRORS_PATH" ]; then echo "<h2>Error Log</h2><pre>$(cat "$ERRORS_PATH")</pre>"; fi)
 </body>
