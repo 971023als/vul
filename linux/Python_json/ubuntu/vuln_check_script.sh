@@ -76,6 +76,20 @@ echo "Results saved to $RESULTS_PATH"
 [ ${#errors[@]} -ne 0 ] && echo "Errors logged to $ERRORS_PATH"
 echo "HTML results page created at $HTML_PATH"
 
+# 원하는 기본 인코딩 코드 설정
+encoding_code="utf-8"
+
+# httpd.conf 파일 수정
+sudo sed -i "s/AddDefaultCharset .*/AddDefaultCharset $encoding_code/" /etc/httpd/conf/httpd.conf
+
+# 웹 페이지가 있는 디렉토리 경로 설정
+web_directory="/var/www/html"
+
+# 각 HTML 파일에 META 태그 추가
+for html_file in $(find $web_directory -name "*.html"); do
+    echo "<meta charset=\"$encoding_code\">" >> "$html_file"
+done
+
 # Apache 서비스 재시작
 sudo systemctl restart apache2
 echo "Apache service restarted."
