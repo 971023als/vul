@@ -19,8 +19,8 @@ def check_security_patches_and_recommendations():
     return results
 
 def main():
-    security_patches_and_recommendations_check_results = check_security_patches_and_recommendations()
-    print(security_patches_and_recommendations_check_results)
+    results = check_security_patches_and_recommendations()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

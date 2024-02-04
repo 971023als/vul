@@ -20,8 +20,8 @@ def check_log_review_and_reporting():
     return results
 
 def main():
-    log_review_and_reporting_check_results = check_log_review_and_reporting()
-    print(log_review_and_reporting_check_results)
+    results = check_log_review_and_reporting()
+    print(json.dumps(results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()
