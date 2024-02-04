@@ -18,8 +18,16 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # JSON 문자열을 Bash에서 직접 생성
-    echo "\"$i\": {\"output\": \"$(echo "$output" | sed 's/"/\\"/g')\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    # JSON 문자열을 Bash에서 직접 생성할 때 빈 값이 있는 경우를 처리
+    output_escaped=$(echo "$output" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+
+    # output이 비어 있는 경우를 확인하고, 빈 문자열을 할당
+    if [ -z "$output_escaped" ]; then
+        output_escaped="\"\""
+    fi
+
+    printf "\"$i\": {\"output\": %s, \"execution_time\": \"%s\"},\n" "$output_escaped" "$execution_time" >> "$RESULTS_PATH"
+
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
