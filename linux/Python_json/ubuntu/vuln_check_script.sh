@@ -12,10 +12,10 @@ fi
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vuln_check_script.py"
 if crontab -l | grep -Fq "$CRON_JOB"; then
-    echo "Cron job 존재하지 않음."
+    echo "Cron job 존재함."
 else
     (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # Daily script execution") | crontab -
-    echo "Cron job 존재함."
+    echo "Cron job 존재하지 않음."
 fi
 
 # 결과 및 오류 로그 저장 경로
