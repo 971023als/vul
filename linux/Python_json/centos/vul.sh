@@ -12,31 +12,40 @@ cat > "$HTML_PATH" <<EOF
     <title>주요통신기반시설 취약점 진단</title>
     <meta charset="utf-8">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; } /* 전체 페이지 가운데 정렬 */
-        h1 { text-align: center; } /* 제목 가운데 정렬 */
-        table { margin: 0 auto; } /* 표 중앙 정렬 */
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { text-align: center; }
+        table { margin: 0 auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; }
+        th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
-    <h1>주요통신기반시설 취약점 진단</h1>
+    <h1>주요통신기반시설 취약점 진단 결과</h1>
     <div id="results">
-        <table border="1">
+        <table>
             <tr>
-                <th>순서</th>
                 <th>분류</th>
+                <th>코드</th>
                 <th>위험도</th>
                 <th>진단항목</th>
                 <th>진단결과</th>
                 <th>현황</th>
                 <th>대응방안</th>
             </tr>
+            <?php foreach ($data as $row): ?>
+            <tr>
+                <td><?= htmlspecialchars($row['분류']) ?></td>
+                <td><?= htmlspecialchars($row['코드']) ?></td>
+                <td><?= htmlspecialchars($row['위험도']) ?></td>
+                <td><?= htmlspecialchars($row['진단항목']) ?></td>
+                <td><?= htmlspecialchars($row['진단결과']) ?></td>
+                <td><?= htmlspecialchars($row['현황']) ?></td>
+                <td><?= htmlspecialchars($row['대응방안']) ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endforeach; ?>
         </table>
     </div>
-    <script src="json.js"></script> <!-- 스크립트 파일을 포함합니다 -->
 </body>
 </html>
 

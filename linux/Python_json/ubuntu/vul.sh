@@ -24,8 +24,8 @@ cat > "$HTML_PATH" <<EOF
     <div id="results">
         <table>
             <tr>
-                <th>순서</th>
                 <th>분류</th>
+                <th>코드</th>
                 <th>위험도</th>
                 <th>진단항목</th>
                 <th>진단결과</th>
@@ -34,14 +34,18 @@ cat > "$HTML_PATH" <<EOF
             </tr>
             <?php foreach ($data as $row): ?>
             <tr>
-                <td><?= htmlspecialchars($row['id']) ?></td>
-                <td><?= htmlspecialchars($row['name']) ?></td>
-                <td><?= htmlspecialchars($row['email']) ?></td>
+                <td><?= htmlspecialchars($row['분류']) ?></td>
+                <td><?= htmlspecialchars($row['코드']) ?></td>
+                <td><?= htmlspecialchars($row['위험도']) ?></td>
+                <td><?= htmlspecialchars($row['진단항목']) ?></td>
+                <td><?= htmlspecialchars($row['진단결과']) ?></td>
+                <td><?= htmlspecialchars($row['현황']) ?></td>
+                <td><?= htmlspecialchars($row['대응방안']) ?></td>
             </tr>
+            <?php endforeach; ?>
             <?php endforeach; ?>
         </table>
     </div>
-    <script src="json.js"></script> <!-- 스크립트 파일을 포함합니다 -->
 </body>
 </html>
 

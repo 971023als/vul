@@ -4,7 +4,7 @@
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 RESULTS_PATH="/var/www/html/results.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-HTML_PATH="/var/www/html/index.html"
+HTML_PATH="/var/www/html/index.php"
 
 # 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
