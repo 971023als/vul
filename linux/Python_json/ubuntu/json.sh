@@ -32,4 +32,5 @@ sed -i '$ s/,$/\n}/' "$RESULTS_PATH" # 마지막 쉼표를 닫는 중괄호로 �
 
 # 오류가 있으면 로그 파일에 기록
 if [ ${#errors[@]} -ne 0 ]; then
-    printf 
+    printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
+fi
