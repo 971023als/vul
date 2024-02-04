@@ -2,7 +2,7 @@
 
 # 결과 및 오류 로그 저장 경로
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results.json"
+RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 HTML_PATH="/var/www/html/index.php"
 
@@ -18,9 +18,8 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # jq를 사용하여 JSON 문자열 생성 및 출력 내용의 제어 문자 이스케이프 처리
-    # --argjson를 사용하여 숫자 값을 처리
-    printf "\"$i\": {\"output\": $(jq -aRs . <<< "$output"), \"execution_time\": $execution_time},\n" >> "$RESULTS_PATH"
+    # JSON 문자열을 Bash에서 직접 생성
+    echo "\"$i\": {\"output\": \"$(echo "$output" | sed 's/"/\\"/g')\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
