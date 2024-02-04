@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import json
+import subprocess  # Import the 'subprocess' module
 
 def check_security_patches_and_recommendations():
     results = {

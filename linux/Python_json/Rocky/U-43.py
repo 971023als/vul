@@ -6,7 +6,7 @@ import json
 def check_log_review_and_reporting():
     results = {
         "분류": "로그 관리",
-        "코드": "U-41",
+        "코드": "U-43",
         "위험도": "상",
         "진단 항목": "로그의 정기적 검토 및 보고",
         "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트

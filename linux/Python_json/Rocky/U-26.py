@@ -16,7 +16,7 @@ def check_automountd_disabled():
     try:
         # automountd 또는 autofs 서비스 실행 여부 확인
         automountd_running = subprocess.check_output(
-            "ps -ef | grep -iE 'automount|autofs' | grep -v 'grep'", 
+            "ps -ef | grep -iE '[a]utomount|[a]utofs'", 
             shell=True, text=True
         ).strip()
 

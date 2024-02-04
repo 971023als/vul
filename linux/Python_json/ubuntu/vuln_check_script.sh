@@ -17,6 +17,8 @@ else
     echo "Cron job 존재하지 않음."
 fi
 
+#!/bin/bash
+
 # 결과 및 오류 로그 저장 경로
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 RESULTS_PATH="/var/www/html/results_${NOW}.json"
@@ -34,6 +36,16 @@ for i in $(seq -w 1 72); do
     output=$(python3 "$script_name" 2>&1)
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
+
+    # 현재 시간을 포맷팅하여 출력에 추가
+    current_datetime=$(date +"%Y-%m-%d %H:%M:%S.%N")
+    result_json="{"
+    result_json+="\"execution_time\": $execution_time,"
+    result_json+="\"date\": \"$current_datetime\","
+    result_json+="\"output\": $output"
+    result_json+="}"
+
+    echo "$result_json" >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("Error executing $script_name: $output")
@@ -61,11 +73,16 @@ cat > "$HTML_PATH" <<EOF
     <meta charset="utf-8">
     <style>
         body { font-family: Arial, sans-serif; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: center; /* 가운데 정렬을 위한 CSS 속성 추가 */
+        }
+        /* 기타 스타일링 및 CSS 규칙 추가 가능 */
     </style>
 </head>
 <body>
-    <h1>Script Execution Results</h1>
+    <h1>주요통신기반시설 취약점 진단</h1>
     <div id="results">
         <pre>$(cat "$RESULTS_PATH")</pre>
     </div>
@@ -73,6 +90,7 @@ cat > "$HTML_PATH" <<EOF
 </body>
 </html>
 EOF
+
 
 echo "Results saved to $RESULTS_PATH"
 [ ${#errors[@]} -ne 0 ] && echo "Errors logged to $ERRORS_PATH"

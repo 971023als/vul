@@ -16,7 +16,7 @@ def check_nis_services_status():
     try:
         # NIS 관련 프로세스 확인을 위한 명령어 실행
         nis_processes = subprocess.check_output(
-            "ps -ef | grep -iE 'ypserv|ypbind|ypxfrd|rpc.yppasswdd|rpc.ypupdated' | grep -v 'grep'", 
+            "ps -ef | grep '[y]pserv\|[y]pbind\|[y]pxfrd\|[r]pc.yppasswdd\|[r]pc.ypupdated'", 
             shell=True, text=True
         ).strip()
 
