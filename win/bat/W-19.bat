@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì„ ìš”ì²­í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -60,28 +59,17 @@ FOR /F "tokens=2" %%j IN (C:\Window_%COMPUTERNAME%_raw\W-19.txt) DO (
 cacls %%j>> C:\Window_%COMPUTERNAME%_raw\W-19-1.txt
 )
 type C:\Window_%COMPUTERNAME%_raw\W-19-1.txt | Find /I "Everyone" > nul
-REM Ãë¾à
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à  
 	echo W-19,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®°¡ ¾ø°Å³ª °øÀ¯ µð·ºÅÍ¸® Á¢±Ù ±ÇÇÑ¿¡ Everyone ±ÇÇÑÀÌ ¾ø´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®¿¡¼­ Everyone ±ÇÇÑÀÌ Á¸ÀçÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ë¬¸ì œ ë°œê²¬ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ê³µìœ  í´ë” ì„¤ì •ì„ ì ê²€í•˜ê±°ë‚˜ í•„ìš”í•œ í´ë”ë§Œ ê³µìœ í•˜ë©°, ê³µìœ  ì„¤ì •ì—ì„œ Everyone ê·¸ë£¹ì˜ ì ‘ê·¼ì„ ì œí•œí•˜ì„¸ìš”. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ê³µìœ  í´ë”ì—ì„œ Everyone ê·¸ë£¹ì˜ ì ‘ê·¼ì„ ì œê±°í•˜ì„¸ìš”. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	type C:\Window_%COMPUTERNAME%_raw\W-19-1.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®¿¡¼­ Everyone ±ÇÇÑÀÌ Á¸ÀçÇÏ¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
-	REM ¾çÈ£
 	echo W-19,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®°¡ ¾ø°Å³ª °øÀ¯ µð·ºÅÍ¸® Á¢±Ù ±ÇÇÑ¿¡ Everyone ±ÇÇÑÀÌ ¾ø´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®¿¡ Everyone ±ÇÇÑÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ÀÏ¹Ý °øÀ¯ µð·ºÅÍ¸®¿¡ Everyone ±ÇÇÑÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ë¬¸ì œ ì—†ìŒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ê³µìœ  í´ë” ë³´ì•ˆ ì„¤ì •ì´ ì ì ˆí•˜ë©°, Everyone ê·¸ë£¹ì˜ ì ‘ê·¼ì´ ì œí•œë˜ì–´ ìžˆìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
 

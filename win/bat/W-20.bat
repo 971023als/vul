@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì„ ìš”ì²­í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -56,44 +55,38 @@ echo ------------------------------------------end------------------------------
 
 echo ------------------------------------------W-20------------------------------------------
 net share | FIND /V "IPC$" | FIND /V "ADMIN" | FIND /V "command PRINT$ FAX$" | FIND "$" | findstr /I "^[A-Z]" > nul
-REM Ãë¾à 
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à  
 	echo W-20,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo AutoShareServer°¡ 0ÀÌ¸ç ±âº» °øÀ¯°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ±âº» °øÀ¯°¡ Á¸ÀçÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ë¬¸ì œ ë°œê²¬ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo AutoShareServerê°€ 0ì´ë©´ ê¸°ë³¸ ê³µìœ ê°€ ìƒì„±ë˜ì§€ ì•ŠëŠ” ë¬¸ì œë¥¼ í•´ê²° >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ê¸°ë³¸ ê³µìœ ë¥¼ ë¹„í™œì„±í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	net share | FIND /V "IPC$" | FIND /V "ADMIN" | FIND /V "command PRINT$ FAX$" | FIND "$" | findstr /I "^[A-Z]" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ±âº» °øÀ¯°¡ Á¸ÀçÇÏ¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ë¬¸ì œ í•´ê²° >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ê¸°ë³¸ ê³µìœ ë¥¼ ë¹„í™œì„±í™”í•˜ë¯€ë¡œ ë³´ì•ˆ ê°•í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
-	REM ¾çÈ£
 	reg query HKLM\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters | FIND /I "AutoShareServer" | FIND /I "0x0" > nul
-	REM ¾çÈ£
 	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£
 		echo W-20,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo AutoShareServer°¡ 0ÀÌ¸ç ±âº» °øÀ¯°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo AutoShareServer°¡ 0ÀÌ°Å³ª ±âº» °øÀ¯°¡ Á¸ÀçÇÏÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¬¸ì œ ì—†ìŒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo AutoShareServerê°€ 0ì´ë©´ ê¸°ë³¸ ê³µìœ ê°€ ìƒì„±ë˜ì§€ ì•Šì•„ ë³´ì•ˆ ê°•í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo AutoShareServerê°€ 0ì´ê±°ë‚˜ ê¸°ë³¸ ê³µìœ ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìžˆìŒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		reg query HKLM\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters | FIND /I "AutoShareServer" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ±âº» °øÀ¯ Æú´õ°¡ Á¸ÀçÇÏÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo AutoShareServer°¡ 0ÀÌ¸ç ±âº» °øÀ¯°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ê¸°ë³¸ ê³µìœ  ë¹„í™œì„±í™”ë¡œ ë³´ì•ˆ ê°•í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¬¸ì œ í•´ê²° >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo AutoShareServerê°€ 0ì´ë¯€ë¡œ ê¸°ë³¸ ê³µìœ ê°€ ìƒì„±ë˜ì§€ ì•Šì•„ ë³´ì•ˆ ê°•í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE ( 
-		REM Ãë¾à
 		echo W-20,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo AutoShareServer°¡ 0ÀÌ¸ç ±âº» °øÀ¯°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo AutoShareServer°¡ 0ÀÌ ¾Æ´Ï°Å³ª ±âº»°øÀ¯°¡ Á¸ÀçÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¬¸ì œ ë°œê²¬ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo AutoShareServerê°€ 0ì´ ì•„ë‹ˆë©´ ê¸°ë³¸ ê³µìœ ê°€ ìƒì„±ë  ìœ„í—˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo AutoShareServerë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•˜ê±°ë‚˜ ê¸°ë³¸ê³µìœ ë¥¼ ë¹„í™œì„±í™” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		reg query HKLM\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ±âº» °øÀ¯´Â Á¸ÀçÇÏÁö ¾ÊÁö¸¸ AutoShareServer ·¹Áö½ºÆ®¸® °ªÀÌ 0À¸·Î ¼³Á¤µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¬¸ì œ í•´ê²° >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ê¸°ë³¸ ê³µìœ  ìƒì„±ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ AutoShareServer ì„¤ì •ì„ ì—…ë°ì´íŠ¸í•˜ê±°ë‚˜ 0ìœ¼ë¡œ ì„¤ì • í•„ìš” >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 )
