@@ -18,7 +18,7 @@ for html_file in $(find $web_directory -name "*.html"); do
     echo "<meta charset=\"$encoding_code\">" >> "$html_file"
 done
 
-# ubunut Apache 설정 파일 경로
+# 우분투 Apache 설정 파일 경로
 apache_config_file="/etc/apache2/conf-available/charset.conf"
 
 # 주석 처리를 해제할 문자열
@@ -28,7 +28,26 @@ replace_string="AddDefaultCharset UTF-8"
 # 주석 처리된 부분을 해제하고 파일을 수정
 sed -i "s/$search_string/$replace_string/" "$apache_config_file"
 
-# centos Apache 설정 파일 경로
+
+# 복사할 파일 목록
+FILES=("json.js")
+
+# /var/www/html로 파일 복사
+for file in "${FILES[@]}"; do
+  if [ -f "$file" ]; then
+    echo "$file을(를) /var/www/html로 복사합니다."
+    cp "$file" "/var/www/html/"
+  else
+    echo "경고: $file이(가) 존재하지 않아 복사되지 않습니다."
+  fi
+done
+
+echo "파일 복사가 완료되었습니다."
+
+# Apache 서비스 재시작
+sudo systemctl restart apache2
+
+# CentOS Apache 설정 파일 경로
 apache_config="/etc/httpd/conf/httpd.conf"
 
 # 주석 처리를 해제할 문자열
@@ -39,8 +58,4 @@ replace="AddDefaultCharset UTF-8"
 sed -i "s/$search/$replace/" "$apache_config"
 
 # Apache 서비스 재시작
-sudo systemctl restart apache2
-
-sudo service apache2 restart
-
-echo "Apache 설정이 업데이트되었고 서비스가 재시작되었습니다."
+sudo systemctl restart httpd
