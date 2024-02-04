@@ -1,6 +1,6 @@
 function insertData() {
     // JSON 파일 로드
-    fetch('/var/www/html/results_${NOW}.json')
+    fetch('/var/www/html/results.json')
         .then(response => response.json())
         .then(data => {
             var results = data; // JSON 데이터를 가져옵니다.

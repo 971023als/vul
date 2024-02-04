@@ -7,7 +7,6 @@
 # HTML 파일 생성
 cat > "$HTML_PATH" <<EOF
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html>
 <head>
     <title>주요통신기반시설 취약점 진단</title>
