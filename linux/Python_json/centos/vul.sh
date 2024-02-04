@@ -34,7 +34,7 @@ cat > "$HTML_PATH" <<'EOF'
             </tr>
             <?php
             // JSON 파일 로드 및 데이터를 PHP 배열로 변환
-            $jsonData = file_get_contents('results.json');
+            $jsonData = file_get_contents($RESULTS_PATH);
             $data = json_decode($jsonData, true);
 
             foreach ($data as $row):

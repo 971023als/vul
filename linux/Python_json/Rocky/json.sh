@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 결과 및 오류 로그 저장 경로 설정
-NOW=$(date +'%Y-%m-%d_%H-%M-%S')
+NOW=$(date +'%Y-%m-%d_%H')
 RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 HTML_PATH="/var/www/html/index.php"
