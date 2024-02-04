@@ -33,7 +33,6 @@ cat > "$HTML_PATH" <<EOF
                 <th>진단결과</th>
                 <th>현황</th>
                 <th>대응방안</th>
-                <th>생성시간</th>
             </tr>
         </table>
     </div>

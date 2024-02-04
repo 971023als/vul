@@ -19,7 +19,6 @@ function fillTable(data) {
                 <td>${entry.진단결과}</td>
                 <td>${entry.현황.join('<br>')}</td>
                 <td>${entry.대응방안}</td>
-                <td>${entry.생성시간}</td>
             `;
             table.appendChild(tr); // 생성된 행을 테이블에 추가
         }

@@ -15,10 +15,9 @@ for i in $(seq -w 1 72); do
     start_time=$(date +%s.%N)
     output=$(python3 "$script_name" 2>&1)
     end_time=$(date +%s.%N)
-    execution_time=$(echo "$end_time - $start_time" | bc)
 
     # JSON 형식의 결과 문자열 생성
-    echo "\"$i\": {\"output\": \"$output\", \"실행시간\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    echo "\"$i\": {\"output\": \"$output\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
