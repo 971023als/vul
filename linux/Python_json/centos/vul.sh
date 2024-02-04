@@ -17,7 +17,7 @@ else
 fi
 
 # 현재 사용자의 crontab 설정
-CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vuln_check_script.py"
+CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
 if crontab -l | grep -Fq "$CRON_JOB"; then
     echo "Cron job이 이미 존재합니다."
 else
@@ -85,8 +85,8 @@ cat > "$HTML_PATH" <<EOF
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-        /* 기타 스타일링 및 CSS 규칙 추가 가능 */
     </style>
+    <script src="script.js"></script> <!-- 스크립트 파일을 포함합니다 -->
 </head>
 <body>
     <h1>주요통신기반시설 취약점 진단</h1>
@@ -102,7 +102,6 @@ cat > "$HTML_PATH" <<EOF
                 <th>대응방안</th>
                 <th>생성시간</th>
             </tr>
-            <!-- JSON 데이터를 여기에 동적으로 삽입하도록 수정 필요 -->
         </table>
     </div>
     $(if [ -s "$ERRORS_PATH" ]; then echo "<h2>Error Log</h2><pre>$(cat "$ERRORS_PATH")</pre>"; fi)
