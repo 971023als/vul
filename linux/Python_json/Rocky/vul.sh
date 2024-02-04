@@ -7,6 +7,7 @@
 # HTML 파일 생성
 cat > "$HTML_PATH" <<EOF
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>주요통신기반시설 취약점 진단</title>
@@ -20,7 +21,6 @@ cat > "$HTML_PATH" <<EOF
             word-wrap: break-word;
         }
     </style>
-    <script src="json.js"></script> <!-- 스크립트 파일을 포함합니다 -->
 </head>
 <body>
     <h1>주요통신기반시설 취약점 진단</h1>
@@ -38,9 +38,10 @@ cat > "$HTML_PATH" <<EOF
             </tr>
         </table>
     </div>
-    $(if [ -s "$ERRORS_PATH" ]; then echo "<h2>Error Log</h2><pre>$(cat "$ERRORS_PATH")</pre>"; fi)
+    <script src="json.js"></script> <!-- 스크립트 파일을 포함합니다 -->
 </body>
 </html>
+
 EOF
 
 . encode.sh

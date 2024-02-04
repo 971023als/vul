@@ -1,8 +1,6 @@
-// json.js
-
 function insertData() {
     // JSON 파일 로드
-    fetch('root/vul/linux/Python_json/ubuntu/results.json')
+    fetch('/var/www/html/results_${NOW}.json')
         .then(response => response.json())
         .then(data => {
             var results = data; // JSON 데이터를 가져옵니다.
