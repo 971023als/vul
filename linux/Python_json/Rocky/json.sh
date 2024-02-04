@@ -18,24 +18,18 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # jq를 사용하여 JSON 문자열 생성
-    jq -n --arg i "$i" --arg output "$output" --arg execution_time "$execution_time" \
-       '{($i): {"output": $output, "execution_time": $execution_time}}' >> "$RESULTS_PATH"
+    # jq를 사용하여 JSON 문자열 생성 및 출력 내용의 제어 문자 이스케이프 처리
+    # --argjson를 사용하여 숫자 값을 처리
+    printf "\"$i\": {\"output\": $(jq -aRs . <<< "$output"), \"execution_time\": $execution_time},\n" >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
     fi
-
-    # 마지막 항목이 아니라면 쉼표 추가
-    if [[ $i -ne 72 ]]; then
-        echo "," >> "$RESULTS_PATH"
-    fi
 done
 
 # 파일 마지막에 JSON 닫기
-echo "}" >> "$RESULTS_PATH"
+sed -i '$ s/,$/\n}/' "$RESULTS_PATH" # 마지막 쉼표를 닫는 중괄호로 안전하게 변경
 
 # 오류가 있으면 로그 파일에 기록
 if [ ${#errors[@]} -ne 0 ]; then
-    printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
-fi
+    printf 
