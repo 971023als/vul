@@ -2,6 +2,11 @@
 import os
 import stat
 import json
+import sys
+
+# Python3에서 표준 출력의 인코딩을 UTF-8로 설정
+if sys.version_info.major == 3:
+    sys.stdout.reconfigure(encoding='utf-8')
 
 def check_suid_sgid_permissions():
     results = {
@@ -41,7 +46,11 @@ def check_suid_sgid_permissions():
 
 def main():
     suid_sgid_permissions_check_results = check_suid_sgid_permissions()
+    # 결과를 콘솔에 출력할 때
     print(json.dumps(suid_sgid_permissions_check_results, ensure_ascii=False, indent=4))
+    # 결과를 파일에 쓸 때
+    with open('suid_sgid_check_results.json', 'w', encoding='utf-8') as f:
+        json.dump(suid_sgid_permissions_check_results, f, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
     main()
