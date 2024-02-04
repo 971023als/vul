@@ -18,16 +18,16 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
+    # output 값의 줄바꿈과 따옴표를 이스케이프 처리
+    output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
+
     # output 값이 비어있지 않은 경우에만 처리
     if [ -z "$output" ]; then
-        output="\"\"" # 비어 있는 경우 빈 문자열 할당
-    else
-        # 줄바꿈, 따옴표 등을 JSON 문자열에 맞게 이스케이프 처리
-        output=$(echo "$output" | jq -aRs .)
+        output_escaped="\"\""
     fi
 
     # JSON 구조에 output 값을 포함시키기
-    echo "\"$i\": {\"output\": $output, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
