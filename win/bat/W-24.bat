@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -10,12 +9,13 @@ if '%errorlevel%' NEQ '0' (
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
-chcp 437
+chcp 949
 color 02
+
 setlocal enabledelayedexpansion
 echo ------------------------------------------Setting---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
@@ -55,9 +55,9 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-24------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
+REM ï¿½ï¿½ï¿½
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
+	REM ï¿½ï¿½ï¿½
 	IF EXIST C:\inetpub\scripts (
 		echo C:\inetpub\scripts >> C:\Window_%COMPUTERNAME%_raw\W-24.txt
 		cacls C:\inetpub\scripts | FIND "Everyone" | find "F" >> C:\Window_%COMPUTERNAME%_raw\W-24.txt
@@ -75,36 +75,36 @@ IF NOT ERRORLEVEL 1 (
 	)
 	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-24.txt
 	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£ 
+		REM ï¿½ï¿½È£ 
 		echo W-24,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç µð·ºÅÍ¸® Everyone¿¡ ¸ðµç±ÇÇÑ, ¼öÁ¤±ÇÇÑ, ¾²±â±ÇÇÑÀÌ ºÎ¿©µÇÁö ¾ÊÀº °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç µð·ºÅÍ¸® Everyone¿¡ ¸ðµç±ÇÇÑ, ¼öÁ¤±ÇÇÑ, ¾²±â±ÇÇÑÀÌ ºÎ¿©µÇÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo cgi-bin, scripts µð·ºÅÍ¸®¿¡ Everyone¿¡ ¸ðµç±ÇÇÑ, ¼öÁ¤±ÇÇÑ, ¾²±â±ÇÇÑÀÌ ºÎ¿©µÇÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo cgi-bin, scripts ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½È£ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		REM Ãë¾à
+		REM ï¿½ï¿½ï¿½
 		echo W-24,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç µð·ºÅÍ¸® Everyone¿¡ ¸ðµç±ÇÇÑ, ¼öÁ¤±ÇÇÑ, ¾²±â±ÇÇÑÀÌ ºÎ¿©µÇÁö ¾ÊÀº °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç µð·ºÅÍ¸®[cgi-bin, scripts] Everyone¿¡ ±ÇÇÑÀÌ ºÎ¿©µÇ¾î ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½[cgi-bin, scripts] Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		type C:\Window_%COMPUTERNAME%_raw\W-24.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo cgi-bin, scripts µð·ºÅÍ¸®¿¡ Everyone¿¡ ¸ðµç±ÇÇÑ, ¼öÁ¤±ÇÇÑ, ¾²±â±ÇÇÑ Áß ºÎ¿©µÇ¾îÀÖÀ¸¹Ç·Î Ãë¾àÇÔ>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo cgi-bin, scripts ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ Everyoneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE (
-	REM ¾çÈ£
+	REM ï¿½ï¿½È£
 	echo W-24,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ï¿½ï¿½ï¿½ñ½º°ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½È² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ï¿½ï¿½ï¿½ñ½º°ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ï¿½ï¿½ï¿½ñ½º°ï¿½ È°ï¿½ï¿½È­ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½È£ï¿½ï¿½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------

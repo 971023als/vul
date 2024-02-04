@@ -1,16 +1,15 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한을 요청합니다...
+    echo Requesting administrative privileges...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "getadmin.vbs"
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
@@ -55,9 +54,9 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-23------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM 취약
+REM Directory Browsing Check
 IF NOT ERRORLEVEL 1 (
-	REM 취약
+	REM Check directory browsing settings
 	FOR /F "tokens=1 delims=#" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
 		cd %%a
 		type web.config | find "directoryBrowse" | find "true" >> C:\Window_%COMPUTERNAME%_raw\W-23.txt
@@ -65,53 +64,33 @@ IF NOT ERRORLEVEL 1 (
 	)
 	cd "%install_path%"
 	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-23.txt
-		REM 양호
+		REM Evaluate result
 	IF NOT ERRORLEVEL 1 (
-		REM 양호
+		REM Directory browsing is not enabled (Secure)
 		echo W-23,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "디렉터리 검색"이 체크되어 있지 않은 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "디렉터리 검색"이 체크되어 있지 않음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "디렉터리 검색"이 체크되어 있지 않으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Secure state >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Directory browsing is not enabled, system is secure. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		REM 취약
+		REM Directory browsing might be enabled (Insecure)
 		type C:\Window_%COMPUTERNAME%_raw\W-23.txt | find "directoryBrowse" > nul
 		IF NOT ERRORLEVEL 1 (
-			REM 양호 
+			REM Directory browsing is enabled (Insecure)
 			echo W-23,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo "디렉터리 검색"이 체크되어 있지 않은 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo Insecure state >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo Directory browsing is enabled, system is insecure. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 			TYPE C:\Window_%COMPUTERNAME%_raw\W-23.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo "디렉터리 검색"이 체크되어 있으므로 취약함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		) ELSE (
-			REM 취약
+			REM No directory browsing setting found (Considered secure)
 			echo W-23,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo "디렉터리 검색"이 체크되어 있지 않은 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 결과 값이 나오지 않으므로 디렉터리 검색 기능이 비활성화 되어있음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			type C:\Window_%COMPUTERNAME%_raw\W-25.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo 결과 값이 나오지 않으므로 디렉터리 검색 기능이 비활성화 되어있으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo Secure state >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+			echo No directory browsing setting found, system is considered secure. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		)
 	)
 ) ELSE (
-	REM 양호
+	REM World Wide Web Publishing Service not running (Considered secure)
 	echo W-23,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ■ 기준 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS 서비스가 필요하지 않아 이용하지 않는 경우 양호 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ■ 현황 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS 서비스가 비활성화 되어있음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ■ 설명 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS 서비스가 활성화 되어있지 않으므로 양호함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo Secure state >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo World Wide Web Publishing Service is not running, system is considered secure. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
 

@@ -1,23 +1,22 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "getadmin.vbs"
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------ì„¤ì •---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS ì„¤ì •-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -52,10 +51,10 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------ì¢…ë£Œ-------------------------------------------
 echo ------------------------------------------W-22------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
+REM ê²½ë¡œ ë¶„ì„
 find C:\Window_%COMPUTERNAME%_raw\path*.txt "http" | find "http">> C:\Window_%COMPUTERNAME%_raw\http.txt
 for /f "delims=" %%x in ('type C:\Window_%COMPUTERNAME%_raw\http.txt') do set "token=%%x"
 :NextLine_http
@@ -84,28 +83,28 @@ FOR /F "tokens=1 delims=/" %%c IN ('type C:\Window_%COMPUTERNAME%_raw\http5.txt'
 )
 type C:\Window_%COMPUTERNAME%_raw\http_path1.txt | find /v "ECHO" >> C:\Window_%COMPUTERNAME%_raw\http_path.txt
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
+	REM ìœ„í—˜
 	echo W-22,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º[World Wide Web Publishing Service]°¡ È°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ìœ„í—˜ ìƒíƒœ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì›¹ ì„œë¹„ìŠ¤ê°€ í•„ìš”í•˜ì§€ ì•Šì€ ìƒí™©ì—ì„œ í™œì„±í™”ë˜ì–´ ìžˆëŠ” ê²½ìš° ë³´ì•ˆ ìœ„í—˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì„œë¹„ìŠ¤[World Wide Web Publishing Service]ê°€ í™œì„±í™”ë˜ì–´ ìžˆìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	net start | find "World Wide Web Publishing Service" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	ECHO IIS ì›¹ ì„œë¹„ìŠ¤ê°€ í™œì„±í™”ë˜ì–´ ìžˆìœ¼ë¯€ë¡œ ë¹„í™œì„±í™”í•´ì•¼ í•©ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
-	REM ¾çÈ£
+	REM ì •ìƒ
 	echo W-22,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º[World Wide Web Publishing Service]°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖ¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì •ìƒ ìƒíƒœ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì›¹ ì„œë¹„ìŠ¤ê°€ í•„ìš”í•˜ì§€ ì•Šì€ ìƒí™©ì—ì„œ ë¹„í™œì„±í™”ë˜ì–´ ìžˆëŠ” ê²½ìš° ì •ìƒ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì„œë¹„ìŠ¤[World Wide Web Publishing Service]ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìžˆìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì›¹ ì„œë¹„ìŠ¤ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìžˆìœ¼ë¯€ë¡œ ì •ìƒìž…ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------ì¢…ë£Œ------------------------------------------
 
 echo --------------------------------------W-22------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 net start | find "World Wide Web Publishing Service">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt

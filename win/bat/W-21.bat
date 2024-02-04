@@ -1,23 +1,22 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "%getadmin.vbs"
     set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
+    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%getadmin.vbs"
+    "%getadmin.vbs"
+    del "%getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------ì„¤ì •---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS ì„¤ì •-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -52,35 +51,29 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------ì¢…ë£Œ-------------------------------------------
 echo ------------------------------------------W-21------------------------------------------
 net start | findstr /I "Alerter ClipBook Messenger">> C:\Window_%COMPUTERNAME%_raw\W-21.txt
 net start | find /I "Simple TCP/IP Services">> C:\Window_%COMPUTERNAME%_raw\W-21.txt
 ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-21.txt
-REM ¾çÈ£
+REM ê²°ê³¼
 IF NOT ERRORLEVEL 1 (
-	REM ¾çÈ£
+	REM ì •ìƒ
 	echo W-21,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ºÒÇÊ¿äÇÑ ¼­ºñ½º "Alerter, ClipBook, Messenger, Simple TCP/IP Services"°¡ ÁßÁöµÇ¾îÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO ºÒÇÊ¿äÇÑ ¼­ºñ½º°¡ Á¸ÀçÇÏÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ºÒÇÊ¿äÇÑ ¼­ºñ½º "Alerter, ClipBook, Messenger, Simple TCP/IP Services"°¡ ÁßÁöµÇ¾îÀÖ¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì •ìƒ ìƒíƒœ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì‹œìŠ¤í…œì— "Alerter, ClipBook, Messenger, Simple TCP/IP Services"ê°€ ì„¤ì¹˜ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	ECHO ì‹œìŠ¤í…œì´ ì•ˆì „í•˜ê²Œ êµ¬ì„±ë˜ì—ˆìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
-	REM Ãë¾à
+	REM ìœ„í—˜
 	echo W-21,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ºÒÇÊ¿äÇÑ ¼­ºñ½º "Alerter, ClipBook, Messenger, Simple TCP/IP Services"°¡ ÁßÁöµÇ¾îÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ºÒÇÊ¿äÇÑ ¼­ºñ½º "Alerter, ClipBook, Messenger, Simple TCP/IP Services"°¡ È°¼ºÈ­ µÇ¾îÀÖÀ½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ìœ„í—˜ ìƒíƒœ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì‹œìŠ¤í…œì— "Alerter, ClipBook, Messenger, Simple TCP/IP Services"ê°€ ì„¤ì¹˜ë˜ì–´ ìžˆìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì¡°ì¹˜ ë°©ì•ˆ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì´ ì„œë¹„ìŠ¤ë“¤ì„ ë¹„í™œì„±í™”í•˜ê±°ë‚˜ ì œê±°í•´ì•¼ í•©ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	TYPE C:\Window_%COMPUTERNAME%_raw\W-21.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ºÒÇÊ¿äÇÑ ¼­ºñ½º "Alerter, ClipBook, Messenger, Simple TCP/IP Services"°¡ ½ÇÇàÁßÀÌ¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------ì¢…ë£Œ------------------------------------------
 
 echo --------------------------------------W-21------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 net start | findstr "Alerter ClipBook Messenger">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
