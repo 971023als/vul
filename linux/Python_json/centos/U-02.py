@@ -31,7 +31,7 @@ def check_password_complexity():
 
     for file_path in files_to_check:
         if os.path.exists(file_path):
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding='utf-8') as file:  # 인코딩 명시
                 for line in file:
                     line = line.strip()
                     if not line.startswith("#") and line != "":
@@ -57,7 +57,7 @@ def check_password_complexity():
 
 def main():
     results = check_password_complexity()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+    print(json.dumps(results, ensure_ascii=False, indent=4))  # JSON 형태로 출력, 유니코드 문자 그대로 출력
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 
 def check_system_logging_policy():
     results = {
@@ -11,16 +12,12 @@ def check_system_logging_policy():
         "대응방안": "로그 기록 정책 설정 및 보안 정책에 따른 로그 관리"
     }
 
-    # As this check requires manual inspection, further automated checks aren't implemented.
-    # Normally, you'd inspect log configuration files or system settings to verify compliance with logging policies.
-    # This could include checking configuration files such as /etc/rsyslog.conf, /etc/syslog.conf, or others
-    # depending on the system's logging daemon.
-
     return results
 
 def main():
     system_logging_policy_check_results = check_system_logging_policy()
-    print(system_logging_policy_check_results)
+    # JSON으로 변환하고, ensure_ascii=False 옵션을 사용하여 UTF-8로 인코딩된 문자열을 출력합니다.
+    print(json.dumps(system_logging_policy_check_results, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
     main()

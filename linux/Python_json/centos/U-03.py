@@ -25,7 +25,7 @@ def check_account_lockout_threshold():
     for file_path in files_to_check:
         if os.path.exists(file_path):
             deny_files_checked = True
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding='utf-8') as file:  # 인코딩 명시
                 for line in file:
                     line = line.strip()
                     if not line.startswith("#") and "deny" in line:
@@ -38,17 +38,16 @@ def check_account_lockout_threshold():
                                     if deny_value <= 10:
                                         account_lockout_threshold_set = True
                                     else:
-                                        results["현황"].append(f"{file_path}에 설정된 계정 잠금 임계값이 10회 초과입니다.")
-                                        break  # Stop checking further as we found a non-compliant setting
+                                        results["현황"].append(f"{file_path}에서 설정된 계정 잠금 임계값이 10회를 초과합니다.")
 
     if not deny_files_checked:
-        results["현황"].append("계정 잠금 임계값을 설정하는 파일이 없습니다.")
+        results["현황"].append("계정 잠금 임계값을 설정하는 파일을 찾을 수 없습니다.")
         results["진단 결과"] = "취약"
     elif not account_lockout_threshold_set:
-        results["현황"].append("계정 잠금 임계값을 설정한 파일이 없습니다.")
+        results["현황"].append("적절한 계정 잠금 임계값 설정이 없습니다.")
         results["진단 결과"] = "취약"
     else:
-        results["현황"].append("계정 잠금 임계값을 설정 완료")
+        results["현황"].append("계정 잠금 임계값이 적절히 설정되었습니다.")
         results["진단 결과"] = "양호"
 
     return results

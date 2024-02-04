@@ -2,6 +2,15 @@
 import os
 import stat
 import json
+import sys
+
+# Python3에서 표준 출력의 인코딩을 UTF-8로 설정
+if sys.version_info.major == 3:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # Python 3.6 이하 버전에는 reconfigure 메소드가 없으므로, 이 경우에는 별도의 처리가 필요 없음
+        pass
 
 def check_etc_shadow_permissions():
     results = {

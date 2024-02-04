@@ -2,6 +2,11 @@
 import os
 import stat
 import json
+import sys
+
+# Python3의 경우, 표준 출력의 인코딩을 UTF-8로 설정
+if sys.version_info.major == 3:
+    sys.stdout.reconfigure(encoding='utf-8')
 
 def check_etc_passwd_permissions():
     results = {
@@ -37,10 +42,14 @@ def check_etc_passwd_permissions():
         results["현황"].append("/etc/passwd 파일이 없습니다.")
 
     return results
-
+    
 def main():
     results = check_etc_passwd_permissions()
+    # 결과를 콘솔에 출력할 때
     print(json.dumps(results, ensure_ascii=False, indent=4))
+    # 결과를 파일에 쓸 때
+    with open('results.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
     main()

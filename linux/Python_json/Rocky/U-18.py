@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 import json
+import sys
+
+# Python 3.7 이상에서 표준 출력의 인코딩을 UTF-8로 설정
+if sys.stdout.encoding != 'UTF-8':
+    sys.stdout.reconfigure(encoding='utf-8')
 
 def check_access_control_files():
     results = {
@@ -32,7 +37,7 @@ def check_access_control_files():
 
 def check_file_exists_and_content(file_path, search_string):
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             for line in file:
                 if search_string.lower() in line.lower() and not line.strip().startswith('#'):
                     return True

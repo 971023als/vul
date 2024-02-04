@@ -2,7 +2,17 @@
 import os
 import stat
 import json
+import sys
 
+# Ensure standard output encoding is set to UTF-8
+if sys.version_info.major >= 3:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # This is for compatibility with Python versions before 3.7
+        # In Python 3.7 and above, sys.stdout.reconfigure is available
+        pass
+        
 def check_etc_hosts_permissions():
     results = {
         "분류": "파일 및 디렉터리 관리",

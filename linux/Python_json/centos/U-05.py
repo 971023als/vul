@@ -33,7 +33,7 @@ def check_insecure_path():
         ".bash_login"
     ]
 
-    # Check global configuration files
+    # 글로벌 설정 파일 검사
     for file in global_files:
         if os.path.exists(file):
             with open(file, 'r') as f:
@@ -41,7 +41,7 @@ def check_insecure_path():
                 if re.search(r'\.:|::', content):
                     results["현황"].append(f"{file} 파일 내에 PATH 환경 변수에 '.' 또는 '::' 이 포함되어 있습니다.")
 
-    # Check user home directories
+    # 사용자 홈 디렉터리 설정 파일 검사
     users = pwd.getpwall()
     for user in users:
         home_dir = user.pw_dir
@@ -53,6 +53,7 @@ def check_insecure_path():
                     if re.search(r'\.:|::', content):
                         results["현황"].append(f"{file_path} 파일 내에 PATH 환경 변수에 '.' 또는 '::' 이 포함되어 있습니다.")
 
+    # 진단 결과 설정
     if results["현황"]:
         results["진단 결과"] = "취약"
     else:
