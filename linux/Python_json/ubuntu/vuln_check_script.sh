@@ -1,21 +1,27 @@
 #!/bin/bash
 
 # Apache 설치 여부 확인 및 설치
-if ! command -v apache2 >/dev/null; then
-    echo "Apache is not installed. Installing Apache..."
+if ! command -v apache2 > /dev/null; then
+    echo "아파치 존재하지 않음"
     sudo apt update
     sudo apt install apache2 -y
 else
-    echo "Apache is already installed."
+    echo "아파치 존재하지 않음."
 fi
 
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/vuln_check_script.py"
-(crontab -l 2>/dev/null | grep -Fq "$CRON_JOB") || (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # Daily script execution") | crontab -
+if crontab -l | grep -Fq "$CRON_JOB"; then
+    echo "Cron job already exists."
+else
+    (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # Daily script execution") | crontab -
+    echo "Cron job has been added."
+fi
 
 # 결과 및 오류 로그 저장 경로
-RESULTS_PATH="/var/www/html/results_$(date +'%Y-%m-%d_%H-%M-%S').json"
-ERRORS_PATH="/var/www/html/errors_$(date +'%Y-%m-%d_%H-%M-%S').log"
+NOW=$(date +'%Y-%m-%d_%H-%M-%S')
+RESULTS_PATH="/var/www/html/results_${NOW}.json"
+ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 HTML_PATH="/var/www/html/index.html"
 
 # 결과 및 오류 초기화
