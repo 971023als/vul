@@ -90,6 +90,17 @@ for html_file in $(find $web_directory -name "*.html"); do
     echo "<meta charset=\"$encoding_code\">" >> "$html_file"
 done
 
+# Apache 설정 파일 경로
+apache_config_file="/etc/apache2/conf-available/charset.conf"
+
+# 주석 처리를 해제할 문자열
+search_string="#AddDefaultCharset UTF-8"
+replace_string="AddDefaultCharset UTF-8"
+
+# 주석 처리된 부분을 해제하고 파일을 수정
+sed -i "s/$search_string/$replace_string/" "$apache_config_file"
+
 # Apache 서비스 재시작
-sudo systemctl restart apache2
-echo "Apache service restarted."
+service apache2 restart
+
+echo "Apache 설정이 업데이트되었고 서비스가 재시작되었습니다."
