@@ -57,7 +57,7 @@ cat > "$HTML_PATH" <<EOF
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Script Execution Results</title>
+    <title>주요통신기반시설 취약점 진단 가이드</title>
     <style>
         body { font-family: Arial, sans-serif; }
         pre { white-space: pre-wrap; word-wrap: break-word; }
@@ -90,7 +90,7 @@ for html_file in $(find $web_directory -name "*.html"); do
     echo "<meta charset=\"$encoding_code\">" >> "$html_file"
 done
 
-# Apache 설정 파일 경로
+# ubunut Apache 설정 파일 경로
 apache_config_file="/etc/apache2/conf-available/charset.conf"
 
 # 주석 처리를 해제할 문자열
@@ -99,6 +99,16 @@ replace_string="AddDefaultCharset UTF-8"
 
 # 주석 처리된 부분을 해제하고 파일을 수정
 sed -i "s/$search_string/$replace_string/" "$apache_config_file"
+
+# centos Apache 설정 파일 경로
+apache_config="/etc/httpd/conf/httpd.conf"
+
+# 주석 처리를 해제할 문자열
+search="#AddDefaultCharset UTF-8"
+replace="AddDefaultCharset UTF-8"
+
+# 주석 처리된 부분을 해제하고 파일을 수정
+sed -i "s/$search/$replace/" "$apache_config"
 
 # Apache 서비스 재시작
 service apache2 restart
