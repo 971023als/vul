@@ -57,7 +57,7 @@ cat > "$HTML_PATH" <<EOF
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vulnerability Check Results</title>
+    <title>주요통신기반시설 취약점 진단</title>
     <meta charset="utf-8">
     <style>
         body { font-family: Arial, sans-serif; }
