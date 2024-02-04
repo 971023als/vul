@@ -24,9 +24,6 @@ def check_security_patches_and_recommendations():
         else:
             results["진단 결과"] = "취약"
             results["현황"] = "시스템에 보안 패치가 필요합니다."
-        
-        # 패치 내용을 출력에 추가할 수 있습니다.
-        results["패치 내용"] = output
 
     except subprocess.CalledProcessError as e:
         results["진단 결과"] = "취약"
