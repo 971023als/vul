@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json  # Import the json module
 
 def check_password_min_usage_period():
     results = {

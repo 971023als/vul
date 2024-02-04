@@ -8,16 +8,16 @@ def check_ftp_service():
         "분류": "서비스 관리",
         "코드": "U-61",
         "위험도": "하",
-        "진단 항목": "ftp 서비스 확인",
-        "진단 결과": "",  # 초기 값 설정하지 않음
+        "진단 항목": "FTP 서비스 확인",
+        "진단 결과": "",
         "현황": [],
         "대응방안": "FTP 서비스가 비활성화 되어 있는 경우"
     }
 
     ftp_ports = []
-    ftp_found = False  # FTP 서비스 발견 여부 표시
+    ftp_found = False
 
-    # Check for FTP service in /etc/services
+    # /etc/services에서 FTP 서비스 포트 확인
     try:
         with open('/etc/services', 'r') as file:
             services_content = file.read()
@@ -28,20 +28,20 @@ def check_ftp_service():
     except FileNotFoundError:
         results["현황"].append("/etc/services 파일을 찾을 수 없습니다.")
 
-    # Check for running FTP services
-    netstat_output = subprocess.run(['netstat', '-tuln'], stdout=subprocess.PIPE, text=True).stdout
-    if any(port in netstat_output for port in ftp_ports):
+    # 실행 중인 FTP 서비스 확인 (ss 사용)
+    ss_output = subprocess.run(['ss', '-tuln'], stdout=subprocess.PIPE, text=True).stdout
+    if any(port in ss_output for port in ftp_ports):
         results["현황"].append("FTP 서비스가 실행 중입니다.")
         ftp_found = True
 
-    # Check for vsftpd and proftpd configuration files
+    # vsftpd 및 proftpd 설정 파일 확인
     for ftp_conf in ['vsftpd.conf', 'proftpd.conf']:
         find_conf = subprocess.run(['find', '/', '-name', ftp_conf], stdout=subprocess.PIPE, text=True).stdout.splitlines()
         if find_conf:
             results["현황"].append(f"{ftp_conf} 파일이 시스템에 존재합니다.")
             ftp_found = True
 
-    # Process check for common FTP services
+    # 일반 FTP 서비스 프로세스 확인
     ps_output = subprocess.run(['ps', '-ef'], stdout=subprocess.PIPE, text=True).stdout
     if re.search(r'ftpd|vsftpd|proftpd', ps_output, re.IGNORECASE):
         results["현황"].append("FTP 관련 프로세스가 실행 중입니다.")

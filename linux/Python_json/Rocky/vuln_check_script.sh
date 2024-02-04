@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # Apache 설치 여부 확인 및 설치
-if ! command -v apache2 > /dev/null; then
-    echo "아파치 존재하지 않음"
-    sudo apt update
-    sudo apt install apache2 -y
+if ! command -v apache2 &> /dev/null; then
+    echo "아파치 없음"
+    sudo apt update && sudo apt install apache2 -y
 else
-    echo "아파치 존재함."
+    echo "아파치 존재"
 fi
 
 # 현재 사용자의 crontab 설정
@@ -32,13 +31,14 @@ errors=()
 for i in $(seq -w 1 72); do
     script_name="U-${i}.py"
     start_time=$(date +%s.%N)
+    output=$(python3 "$script_name" 2>&1)
+    end_time=$(date +%s.%N)
+    execution_time=$(echo "$end_time - $start_time" | bc)
 
-    if output=$(python3 "$script_name" 2>&1); then
-        end_time=$(date +%s.%N)
-        execution_time=$(echo "$end_time - $start_time" | bc)
-        results+=("\"script_$i\": {\"result\": $output, \"execution_time\": $execution_time}")
-    else
+    if [[ $output == *ERROR* ]]; then
         errors+=("Error executing $script_name: $output")
+    else
+        results+=("\"script_$i\": {\"result\": \"$output\", \"execution_time\": $execution_time}")
     fi
 done
 
@@ -57,7 +57,8 @@ cat > "$HTML_PATH" <<EOF
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Script Execution Results</title>
+    <title>주요통신기반시설 취약점 진단</title>
+    <meta charset="utf-8">
     <style>
         body { font-family: Arial, sans-serif; }
         pre { white-space: pre-wrap; word-wrap: break-word; }
@@ -68,6 +69,7 @@ cat > "$HTML_PATH" <<EOF
     <div id="results">
         <pre>$(cat "$RESULTS_PATH")</pre>
     </div>
+    $(if [ -s "$ERRORS_PATH" ]; then echo "<h2>Error Log</h2><pre>$(cat "$ERRORS_PATH")</pre>"; fi)
 </body>
 </html>
 EOF
@@ -90,7 +92,7 @@ for html_file in $(find $web_directory -name "*.html"); do
     echo "<meta charset=\"$encoding_code\">" >> "$html_file"
 done
 
-# Apache 설정 파일 경로
+# ubunut Apache 설정 파일 경로
 apache_config_file="/etc/apache2/conf-available/charset.conf"
 
 # 주석 처리를 해제할 문자열
@@ -100,7 +102,19 @@ replace_string="AddDefaultCharset UTF-8"
 # 주석 처리된 부분을 해제하고 파일을 수정
 sed -i "s/$search_string/$replace_string/" "$apache_config_file"
 
+# centos Apache 설정 파일 경로
+apache_config="/etc/httpd/conf/httpd.conf"
+
+# 주석 처리를 해제할 문자열
+search="#AddDefaultCharset UTF-8"
+replace="AddDefaultCharset UTF-8"
+
+# 주석 처리된 부분을 해제하고 파일을 수정
+sed -i "s/$search/$replace/" "$apache_config"
+
 # Apache 서비스 재시작
-service apache2 restart
+sudo systemctl restart apache2
+
+sudo service apache2 restart
 
 echo "Apache 설정이 업데이트되었고 서비스가 재시작되었습니다."

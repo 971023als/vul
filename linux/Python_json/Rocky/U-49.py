@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import json
+import pwd
 
 def check_unnecessary_accounts():
     results = {
@@ -13,36 +14,27 @@ def check_unnecessary_accounts():
         "대응방안": "불필요한 계정이 존재하지 않도록 관리"
     }
 
+    # 로그인이 가능한 계정만 대상으로 함
+    login_shells = ["/bin/bash", "/bin/sh"]
+    # 불필요한 계정 예시 목록 (사용 환경에 따라 수정 필요)
     unnecessary_accounts = [
-        "root", "bin", "daemon", "adm", "lp", "sync", "shutdown", "halt", "ubuntu",
-        "messagebus", "syslog", "avahi", "kernoops", "whoopsie", "colord",
-        "systemd-network", "systemd-resolve", "systemd-timesync", "dbus", "rpc",
-        "rpcuser", "haldaemon", "apache", "postfix", "gdm", "sys", "games", "man",
-        "news", "uucp", "proxy", "www-data", "backup", "list", "irc", "gnats", "nobody",
-        "_apt", "tss", "uuidd", "tcpdump", "avahi-autoipd", "usbmux", "rtkit", "dnsmasq",
-        "cups-pk-helper", "speech-dispatcher", "saned", "nm-openvpn", "hplip", "geoclue",
-        "pulse", "gnome-initial-setup", "systemd-coredump", "fwupd-refresh", "adios", "mysql",
-        "curvid", "user"
+        "user", "test", "guest", "info", "adm", "mysql", "user1"
     ]
 
-    if os.path.isfile("/etc/passwd"):
-        with open("/etc/passwd", 'r') as file:
-            passwd_contents = file.readlines()
-            found_accounts = []
-            for account in passwd_contents:
-                account_name = account.split(":")[0]
-                if account_name in unnecessary_accounts:
-                    found_accounts.append(account_name)
+    # 시스템 계정을 제외한 로그인 가능한 계정 찾기
+    all_accounts = pwd.getpwall()
+    found_accounts = []
+    for account in all_accounts:
+        if account.pw_shell in login_shells and account.pw_name in unnecessary_accounts:
+            found_accounts.append(account.pw_name)
 
-            if found_accounts:
-                results["진단 결과"] = "취약"
-                results["현황"].append("불필요한 계정이 존재합니다: " + ", ".join(found_accounts))
-            else:
-                # If no unnecessary accounts are found, it's considered Good and we don't need to update anything.
-                pass
-    else:
+    if found_accounts:
         results["진단 결과"] = "취약"
-        results["현황"].append("/etc/passwd 파일이 없습니다.")
+        results["현황"].append("불필요한 계정이 존재합니다: " + ", ".join(found_accounts))
+    else:
+        # 양호: 불필요한 로그인 가능한 계정이 없음
+        results["진단 결과"] = "양호"
+        results["현황"].append("불필요한 계정이 존재하지 않습니다.")
 
     return results
 
