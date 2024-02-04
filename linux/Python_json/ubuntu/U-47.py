@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import json  # Import the json module
 
 def check_password_max_usage_period():
     results = {
@@ -41,4 +42,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

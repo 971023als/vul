@@ -2,10 +2,10 @@
 
 # Apache 설치 여부 확인 및 설치
 if ! command -v apache2 &> /dev/null; then
-    echo "Apache is not installed. Installing Apache."
+    echo "아파치 없음"
     sudo apt update && sudo apt install apache2 -y
 else
-    echo "Apache is already installed."
+    echo "아파치 존재"
 fi
 
 # 현재 사용자의 crontab 설정

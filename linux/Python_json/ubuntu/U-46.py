@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import os
-import subprocess
+import json  # Import the json module
 
 def check_password_min_length():
     results = {
