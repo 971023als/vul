@@ -68,18 +68,26 @@ echo "<!DOCTYPE html>
         </tr>" > $HTML_PATH
 
 # JSON 파일을 읽고 HTML로 변환하여 추가
+# JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
 import json
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
-    print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
-        '번호', '분류', '코드', '위험도', '진단항목', '진단결과', '현황', '대응방안'))
     for k, v in data.items():
         # 각 키에 대한 데이터 접근 방식 확인 및 배열 데이터 처리
-        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
-            k, v.get('분류', ''), v.get('코드', ''), v.get('위험도', ''), v.get('진단항목', ''), v.get('진단결과', ''), 
-            '<br>'.join(v.get('현황', [])), v.get('대응방안', '')))
+        현황 = '<br>'.join(v.get('현황', [])) if isinstance(v.get('현황', []), list) else v.get('현황', '')
+        print('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td></tr>'.format(
+            k, 
+            v.get('분류', ''), 
+            v.get('코드', ''), 
+            v.get('위험도', ''), 
+            v.get('진단항목', ''), 
+            v.get('진단결과', ''), 
+            현황, 
+            v.get('대응방안', '')
+        ))
 " >> $HTML_PATH
+
 
 echo " </table>
 
