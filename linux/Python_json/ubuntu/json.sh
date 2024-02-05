@@ -46,7 +46,7 @@ echo "결과가 $RESULTS_PATH에 저장되었습니다"
 echo "<!DOCTYPE html>
 <html>
 <head>
-    <title>진단 결과</title>
+    <title>주요 통신 기반 시설</title>
     <meta charset='utf-8'>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
@@ -56,14 +56,17 @@ echo "<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>진단 결과</h1>
+    <h1>주요 통신 기반 시설</h1>
     <table>
         <tr>
-            <th>번호</th>
-            <th>진단항목</th>
-            <th>결과</th>
-            <th>실행시간</th>
-        </tr>" > $HTML_PATH
+                <th>분류</th>
+                <th>코드</th>
+                <th>위험도</th>
+                <th>진단항목</th>
+                <th>진단결과</th>
+                <th>현황</th>
+                <th>대응방안</th>
+            </tr>" > $HTML_PATH
 
 # JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
