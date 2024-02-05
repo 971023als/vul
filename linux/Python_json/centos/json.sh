@@ -30,7 +30,6 @@ for i in $(seq -w 1 72); do
 done
 
 # 파일 마지막에 JSON 닫기
-# sed를 사용하여 마지막 콤마를 제거하고 닫는 중괄호 추가
 sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 
 # 오류가 있으면 로그 파일에 기록
@@ -38,15 +37,14 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
-# 결과 로그 출력
 echo "결과가 $RESULTS_PATH에 저장되었습니다"
 [ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
 
-# JSON 데이터를 HTML로 변환하여 저장
+# JSON 데이터를 HTML로 변환하여 저장하는 부분 수정
 echo "<!DOCTYPE html>
 <html>
 <head>
-    <title>주요 통신 기반 시설</title>
+    <title>주요 통신 기반 시설 진단 결과</title>
     <meta charset='utf-8'>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
@@ -56,32 +54,41 @@ echo "<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>주요 통신 기반 시설</h1>
+    <h1>주요 통신 기반 시설 진단 결과</h1>
     <table>
         <tr>
-                <th>분류</th>
-                <th>코드</th>
-                <th>위험도</th>
-                <th>진단항목</th>
-                <th>진단결과</th>
-                <th>현황</th>
-                <th>대응방안</th>
-            </tr>" > $HTML_PATH
+            <th>번호</th>
+            <th>분류</th>
+            <th>코드</th>
+            <th>위험도</th>
+            <th>진단항목</th>
+            <th>진단결과</th>
+            <th>현황</th>
+            <th>대응방안</th>
+        </tr>" > $HTML_PATH
 
 # JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
 import json
-def html_line_break(value):
-    return value.replace('\n', '<br>')
-with open('$RESULTS_PATH') as f:
-    data = json.load(f)
+def replace_newlines(s):
+    return s.replace('\n', '<br>') if s else s
+with open('$RESULTS_PATH') as json_file:
+    data = json.load(json_file)
     for k, v in data.items():
-        print(f\"</td><td>{html_line_break(v.get('분류', ''))}</td><td>{html_line_break(v.get('코드', ''))}</td><td>{html_line_break(v.get('위험도', ''))}</td><td>{html_line_break(v.get('진단항목', ''))}</td><td>{html_line_break(v.get('진단결과', ''))}</td><td>{html_line_break(v.get('현황', ''))}</td><td>{html_line_break(v.get('대응방안', ''))}</td></tr>\")
+        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(k, replace_newlines(v.get('분류', '')), replace_newlines(v.get('코드', '')), replace_newlines(v.get('위험도', '')), replace_newlines(v.get('진단항목', '')), replace_newlines(v.get('진단결과', '')), replace_newlines(v.get('현황', '')), replace_newlines(v.get('대응방안', ''))))
 " >> $HTML_PATH
+echo " </table>
 
-
-echo "    </table>
 </body>
 </html>" >> $HTML_PATH
-
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
+
+# Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
+sudo systemctl restart apache2
+
+# 오류 발생시 처리
+if [ $? -ne 0 ]; then
+echo "Apache 서비스 재시작에 실패했습니다. 서비스 상태를 확인하세요."
+else
+echo "Apache 서비스가 성공적으로 재시작되었습니다."
+fi
