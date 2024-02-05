@@ -22,7 +22,7 @@ for i in $(seq -w 1 72); do
     output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
 
     # JSON 구조에 output 값을 포함시키기
-    echo "\"$i\": {\"output\": \"$output_escaped\"}," >> "$RESULTS_PATH"
+    echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
@@ -71,13 +71,12 @@ echo "<!DOCTYPE html>
 python3 -c "
 import json
 def replace_newlines(s):
-    return s.replace('\\n', '<br>') if isinstance(s, str) else ''
+    return s.replace('\n', '<br>') if isinstance(s, str) else ''
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
     for k, v in data.items():
-        output = v['output'].replace('\\n', '<br>') if 'output' in v and isinstance(v['output'], str) else ''
-        execution_time = v.get('execution_time', '')
-        print(f'<tr><td>{k}</td><td></td><td></td><td></td><td></td><td>{output}</td><td></td><td>{execution_time}</td></<tr></tr>')
+        status = '<br>'.join(v.get('현황', []))  # 배열 형태의 '현황'을 문자열로 결합
+        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{<td>{}</td></tr>'.format(k, v.get('분류', ''), v.get('코드', ''), v.get('위험도', ''), v.get('진단 항목', ''), v.get('진단 결과', ''), replace_newlines(status), v.get('대응방안', '')))
 " >> $HTML_PATH
 
 echo "    </table>
