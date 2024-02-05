@@ -22,7 +22,7 @@ for i in $(seq -w 1 72); do
     output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
 
     # JSON 구조에 output 값을 포함시키기
-    echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    echo "\"$i\": {\"output\": \"$output_escaped\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
