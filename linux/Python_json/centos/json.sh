@@ -59,7 +59,7 @@ with open(HTML_PATH, 'w') as html_file:
         for key, value in data.items():
             item = json.loads(value['output'])
             현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
-            html_file.write(f'<tr><td>{key}</td><td>{item.get(\"분류\", '')}</td><td>{item.get(\"코드\", '')}</td><td>{item.get(\"위험도\", '')}</td><td>{item.get(\"진단 항목\", '')}</td><td>{item.get(\"진단 결과\", '')}</td><td>{현황}</td><td>{item.get(\"대응방안\", '')}</td></tr>\\n')
+            html_file.write(f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황}</td><td>{item.get('대응방안', '')}</td></tr>\\n")
 
     html_file.write('</table></body>\\n</html>')"
 
