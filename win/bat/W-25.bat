@@ -1,10 +1,10 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
+
 :UACPrompt
     echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
     set params = %*:"=""
@@ -55,57 +55,34 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-25------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
-IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
+if NOT ERRORLEVEL 1 (
 	type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | find /I "asp enableParentPaths">> C:\Window_%COMPUTERNAME%_raw\W-25.txt
 	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-25.txt
 	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£ 
 		echo W-25,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo applicationHost.Config ÆÄÀÏ¿¡ ¼³Á¤ °ªÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î µðÆúÆ®·Î Á¦°Å ¼³Á¤ÀÌ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ì±… ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš© ì„¤ì •ì´ ë¹„í™œì„±í™”ë˜ì–´ ìžˆì–´ ë³´ì•ˆ ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš©ì„ ë¹„í™œì„±í™”í•´ì•¼ í•¨ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo applicationHost.Config íŒŒì¼ì—ì„œ ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš© ì„¤ì •ì„ falseë¡œ ì„¤ì •í•˜ì—¬ ë³´ì•ˆì„ ê°•í™”í•´ì•¼ í•¨ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ê²€í†  ê²°ê³¼ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš© ì„¤ì •ì´ ë¹„í™œì„±í™”ë˜ì–´ ìžˆì–´ ë³´ì•ˆ ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		type C:\Window_%COMPUTERNAME%_raw\W-25.txt | find /I "enableParentPaths=""false""" > nul
-		IF NOT ERRORLEVEL 1 (
-			REM ¾çÈ£ 
-			echo W-25,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			type C:\Window_%COMPUTERNAME%_raw\W-25.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		) ELSE (
-			REM Ãë¾à
-			echo W-25,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÑ °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			type C:\Window_%COMPUTERNAME%_raw\W-25.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo »óÀ§ ÆÐ½º ±â´ÉÀ» Á¦°ÅÇÏ°í ÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		)
+		echo W-25,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ì±… ìœ„ë°˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš© ì„¤ì •ì´ í™œì„±í™”ë˜ì–´ ìžˆì–´ ë³´ì•ˆ ìœ„ë°˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì¡°ì¹˜ ë°©ë²• >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš©ì„ ë¹„í™œì„±í™”í•´ì•¼ í•¨ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		type C:\Window_%COMPUTERNAME%_raw\W-25.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ê²€í†  ê²°ê³¼ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë¶€ëª¨ ê²½ë¡œ ì‚¬ìš© ì„¤ì •ì´ í™œì„±í™”ë˜ì–´ ìžˆì–´ ë³´ì•ˆ ìœ„ë°˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE (
-	REM ¾çÈ£
 	echo W-25,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ì •ì±… ì¤€ìˆ˜ (IIS ì„œë¹„ìŠ¤ ë¯¸ì‚¬ìš©) >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì„œë¹„ìŠ¤ê°€ ì‹¤í–‰ë˜ì§€ ì•Šì•„ ë³´ì•ˆ ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
@@ -113,3 +90,4 @@ echo -------------------------------------------end-----------------------------
 echo --------------------------------------W-25------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config | find "enableParentPaths">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+
