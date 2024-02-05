@@ -18,11 +18,11 @@ for i in $(seq -w 1 72); do
     end_time=$(date +%s.%N)
     execution_time=$(echo "$end_time - $start_time" | bc)
 
-    # output 값의 줄바꿈과 따옴표를 이스케이프 처리
-    output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
+    # output 값의 줄바꿈과 따옴표를 JSON 안전하게 이스케이프 처리
+    output_escaped=$(echo "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
     # JSON 구조에 output 값을 포함시키기
-    echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    echo "\"$i\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
@@ -33,62 +33,55 @@ done
 sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 
 # 오류가 있으면 로그 파일에 기록
-if [ ${#errors[@]} -ne 0 ]; then
+if [ ${#errors[@]} -gt 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
+    echo "오류가 $ERRORS_PATH에 기록되었습니다"
 fi
 
+echo "결과가 $RESULTS_PATH에 저장되었습니다"
+
+# Python 코드 실행: JSON 파일을 읽고 HTML로 변환
 python3 -c "
 import json
 
-# 환경 변수에서 경로를 직접 할당합니다.
-HTML_PATH = '/var/www/html/index.html'
-RESULTS_PATH = '/var/www/html/results.json'  # 실제 JSON 파일 경로로 수정하세요.
+HTML_PATH = '$HTML_PATH'
+RESULTS_PATH = '$RESULTS_PATH'
 
-try:
-    with open(RESULTS_PATH, 'r') as json_file:
-        data = json.load(json_file)
+html_content = '<!DOCTYPE html>\
+<html>\
+<head>\
+    <title>주요 통신 기반 시설 진단 결과</title>\
+    <meta charset=\"utf-8\">\
+    <style>\
+        body { font-family: Arial, sans-serif; text-align: center; }\
+        table { margin: 0 auto; border-collapse: collapse; }\
+        th, td { border: 1px solid black; padding: 8px; }\
+        th { background-color: #f2f2f2; }\
+    </style>\
+</head>\
+<body>\
+    <h1>주요 통신 기반 시설 진단 결과</h1>\
+    <table>\
+        <tr>\
+            <th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th>\
+        </tr>'
 
-    # HTML 파일의 기본 구조를 설정합니다.
-    html_content = '''<!DOCTYPE html>
-<html>
-<head>
-    <title>주요 통신 기반 시설 진단 결과</title>
-    <meta charset="utf-8">
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        table { margin: 0 auto; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 8px; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <h1>주요 통신 기반 시설 진단 결과</h1>
-    <table>
-        <tr>
-            <th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th>
-        </tr>'''
-
-    # JSON 파일의 데이터를 읽고 HTML 테이블에 행을 추가합니다.
+with open(RESULTS_PATH, 'r') as json_file:
+    data = json.load(json_file)
     for key, value in data.items():
         item = json.loads(value['output'])
         현황_formatted = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-        html_content += f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황_formatted}</td><td>{item.get('대응방안', '')}</td></tr>"
+        html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>'
 
-    # HTML 파일의 종료 태그를 추가합니다.
-    html_content += '''
-    </table>
-</body>
-</html>'''
+html_content += '</table></body></html>'
 
-    # 최종 HTML 내용을 파일에 쓰기
-    with open(HTML_PATH, 'w') as html_file:
-        html_file.write(html_content)
+with open(HTML_PATH, 'w') as html_file:
+    html_file.write(html_content)
 
-    print(f"HTML 결과 페이지가 {HTML_PATH}에 생성되었습니다.")
-
-except Exception as e:
-    print(f"Error: {e}")
+print(f'HTML 결과 페이지가 {HTML_PATH}에 생성되었습니다.')
 "
+
+
 
 
 
