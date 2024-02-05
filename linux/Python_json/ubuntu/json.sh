@@ -42,3 +42,7 @@ sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
+
+echo "결과가 $RESULTS_PATH에 저장되었습니다"
+[ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
+echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다"

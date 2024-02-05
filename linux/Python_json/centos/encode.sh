@@ -1,9 +1,5 @@
 #!/bin/bash
 
-echo "결과가 $RESULTS_PATH에 저장되었습니다"
-[ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다"
-
 # 원하는 기본 인코딩 코드 설정
 encoding_code="utf-8"
 
