@@ -74,7 +74,7 @@ import json
 with open('$RESULTS_PATH') as f:
     data = json.load(f)
     for k, v in data.items():
-        print(f'<tr><td>{k}</td><td>{v['output'].replace('\\n','<br>')}</td><td>{v['execution_time']}</td></tr>')
+        print(f'<tr><td>{v.get('분류', '')}</td><td>{v.get('코드', '')}</td><td>{v.get('위험도', '')}</td><td>{v.get('진단항목', '').replace('\\n','<br>')}</td><td>{v.get('진단결과', '').replace('\\n','<br>')}</td><td>{v.get('현황', '').replace('\\n','<br>')}</td><td>{v.get('대응방안', '').replace('\\n','<br>')}</td></tr>')
 " >> $HTML_PATH
 
 echo "    </table>
