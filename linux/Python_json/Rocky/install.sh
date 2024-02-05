@@ -43,26 +43,6 @@ else
     echo "아파치가 이미 설치되어 있습니다."
 fi
 
-# PHP 설치 여부 확인 및 설치
-if ! command -v php &> /dev/null; then
-    echo "PHP가 설치되어 있지 않습니다. PHP를 설치합니다."
-    if [[ "$PKG_MANAGER" == "apt" ]]; then
-        sudo apt update && sudo apt install php libapache2-mod-php -y
-        # PHP 모듈을 활성화하고 아파치를 재시작할 필요가 있을 수 있습니다.
-        sudo a2enmod php7.4
-        sudo systemctl restart apache2
-    else # CentOS, RHEL, Fedora
-        sudo $PKG_MANAGER install php php-cli php-fpm php-json -y
-        # PHP-FPM을 활성화하고 아파치를 재시작합니다.
-        sudo systemctl start php-fpm
-        sudo systemctl enable php-fpm
-        sudo systemctl restart httpd
-    fi
-else
-    echo "PHP가 이미 설치되어 있습니다."
-fi
-
-
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
 if crontab -l | grep -Fq "$CRON_JOB"; then
