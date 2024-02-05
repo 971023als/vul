@@ -37,30 +37,30 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
-# Python 스크립트를 실행하여 HTML 파일 생성
+
+# Python 스크립트 실행
 python3 -c "
 import json
-import sys
 
-# 커맨드 라인에서 경로를 받습니다.
-HTML_PATH = sys.argv[1]
-RESULTS_PATH = sys.argv[2]
+HTML_PATH = '${HTML_PATH}'
+RESULTS_PATH = '${RESULTS_PATH}'
 
-with open(HTML_PATH, 'w') as html_file:
-    # HTML 문서 시작
-    html_file.write('<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>진단 결과</h1>\\n<table border=\"1\">\\n<thead>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>\\n</thead>\\n<tbody>\\n')
+# HTML 파일 시작
+html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n<style>body { font-family: Arial, sans-serif; text-align: center; } table { margin: 0 auto; border-collapse: collapse; } th, td { border: 1px solid black; padding: 8px; } th { background-color: #f2f2f2; }</style>\\n</head>\\n<body>\\n<h1>주요 통신 기반 시설 진단 결과</h1>\\n<table>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>'
 
-    # 결과 JSON 파일 읽기
-    with open(RESULTS_PATH) as f:
-        results = json.load(f)
-        for key, value in results.items():
-            result = json.loads(value['output'])
-            html_file.write(f'<tr><td>{key}</td><td>{result.get("분류","")}</td><td>{result.get("코드","")}</td><td>{result.get("위험도","")}</td><td>{result.get("진단 항목","")}</td><td>{result.get("진단 결과","")}</td><td>{"<br>".join(result.get("현황",[]))}</td><td>{result.get("대응방안","")}</td></tr>\\n')
+# JSON 파일 읽기
+with open(RESULTS_PATH) as file:
+    results = json.load(file)
+    for key, value in results.items():
+        result = json.loads(value['output'].replace('\\\\n', '<br>')) # JSON 내부의 \n을 HTML <br>로 변환
+        html_content += f'<tr><td>{key}</td><td>{result.get("분류", "")}</td><td>{result.get("코드", "")}</td><td>{result.get("위험도", "")}</td><td>{result.get("진단 항목", "")}</td><td>{result.get("진단 결과", "")}</td><td>{"<br>".join(result.get("현황", []))}</td><td>{result.get("대응방안", "")}</td></tr>'
 
-    # HTML 문서 마무리
-    html_file.write('</tbody>\\n</table>\\n</body>\\n</html>')
+html_content += '</table>\\n</body>\\n</html>'
 
-" "$HTML_PATH" "$RESULTS_PATH"  # Python 스크립트에 경로 인자 전달
+# HTML 파일 쓰기
+with open(HTML_PATH, 'w') as file:
+    file.write(html_content)
+"
 
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
 
