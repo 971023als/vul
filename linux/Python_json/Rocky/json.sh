@@ -41,6 +41,9 @@ echo "결과가 $RESULTS_PATH에 저장되었습니다"
 [ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
 
 
+# HTML 파일 시작 부분에 메시지 쓰기
+echo "Starting HTML conversion..." > $HTML_PATH
+
 # JSON 파일을 읽고 HTML로 변환하여 저장하는 부분 수정
 python3 -c "
 import json
@@ -91,6 +94,9 @@ with open('$HTML_PATH', 'w') as html_file:
 </html>
 \""")
 "
+
+# HTML 파일 끝 부분에 메시지 쓰기
+echo "HTML conversion completed successfully." >> $HTML_PATH
 
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
 
