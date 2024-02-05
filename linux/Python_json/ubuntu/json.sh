@@ -41,33 +41,50 @@ fi
 python3 -c "
 import json
 
-# Specify the HTML and RESULTS path directly
-HTML_PATH = '$HTML_PATH'
-RESULTS_PATH = '$RESULTS_PATH'
+HTML_PATH = '/var/www/html/index.html'
+RESULTS_PATH = '/var/www/html/results_2024-02-05_18-10-00.json'  # 예시 경로, 실제 경로로 수정 필요
 
-# Open the HTML file for writing
+# HTML 파일 시작 부분
+html_content = '''<!DOCTYPE html>
+<html>
+<head>
+    <title>주요 통신 기반 시설 진단 결과</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { margin: 0 auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>주요 통신 기반 시설 진단 결과</h1>
+    <table>
+        <tr>
+            <th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th>
+        </tr>
+'''
+
+# JSON 파일을 읽고 HTML로 변환하여 추가
+with open(RESULTS_PATH, 'r') as json_file:
+    data = json.load(json_file)
+    for key, value in data.items():
+        item = json.loads(value['output'])
+        현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
+        html_content += f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황}</td><td>{item.get('대응방안', '')}</td></tr>\n"
+
+html_content += '''
+    </table>
+</body>
+</html>
+'''
+
+# HTML 파일에 쓰기
 with open(HTML_PATH, 'w') as html_file:
-    # Write the HTML structure
-    html_file.write('<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n<style>\\nbody { font-family: Arial, sans-serif; text-align: center; }\\ntable { margin: 0 auto; border-collapse: collapse; }\\nth, td { border: 1px solid black; padding: 8px; }\\nth { background-color: #f2f2f2; }\\n</style>\\n</head>\\n<body>\\n<h1>주요 통신 기반 시설 진단 결과</h1>\\n<table>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
-    
-    # Read and process the JSON file
-    with open(RESULTS_PATH) as json_file:
-        data = json.load(json_file)
-        for key, value in data.items():
-            # Parse the JSON output from each script's result
-            try:
-                item = json.loads(value['output'])
-                status = '<br>'.join(item.get('현황', [])) if '현황' in item else ''
-                # Write each row of the table
-                html_file.write(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{status}</td><td>{item.get("대응방안", "")}</td></tr>\\n')
-            except json.JSONDecodeError:
-                # Handle possible JSON decoding errors
-                html_file.write(f'<tr><td colspan=\"8\">Error processing item {key}</td></tr>\\n')
+    html_file.write(html_content)
 
-    # Close the HTML structure
-    html_file.write('</table>\\n</body>\\n</html>')"
-
-echo "HTML conversion completed and saved to ${HTML_PATH}."
+echo "HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다."
+'''
 
 
 
