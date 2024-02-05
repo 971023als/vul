@@ -35,10 +35,10 @@ sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 # 오류가 있으면 로그 파일에 기록
 if [ ${#errors[@]} -gt 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
-    echo "오류가 $ERRORS_PATH에 기록되었습니다"
+    echo "오류가 $ERRORS_PATH에 기록되었습니다."
 fi
 
-echo "결과가 $RESULTS_PATH에 저장되었습니다"
+echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
 # Python 코드 실행: JSON 파일을 읽고 HTML로 변환
 python3 -c "
@@ -46,6 +46,9 @@ import json
 
 HTML_PATH = '$HTML_PATH'
 RESULTS_PATH = '$RESULTS_PATH'
+
+with open(RESULTS_PATH, 'r') as json_file:
+    data = json.load(json_file)
 
 html_content = '<!DOCTYPE html>\
 <html>\
@@ -66,12 +69,10 @@ html_content = '<!DOCTYPE html>\
             <th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th>\
         </tr>'
 
-with open(RESULTS_PATH, 'r') as json_file:
-    data = json.load(json_file)
-    for key, value in data.items():
-        item = json.loads(value['output'])
-        현황_formatted = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-        html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>'
+for key, value in data.items():
+    item = json.loads(value['output'])
+    현황_formatted = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
+    html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>'
 
 html_content += '</table></body></html>'
 
@@ -81,12 +82,10 @@ with open(HTML_PATH, 'w') as html_file:
 print(f'HTML 결과 페이지가 {HTML_PATH}에 생성되었습니다.')
 "
 
-
-
-
-
 # Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
 sudo systemctl restart apache2
+
+# 오류
 
 
 
