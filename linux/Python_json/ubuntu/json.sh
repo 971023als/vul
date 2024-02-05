@@ -37,19 +37,19 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
-# Execute Python code to convert JSON to HTML
+# Python 코드 실행
 python3 -c "
 import json
 
-HTML_PATH = '/var/www/html/index.html'
-RESULTS_PATH = '/var/www/html/results_2024-02-05_18-10-00.json'  # 예시 경로, 실제 경로로 수정 필요
+HTML_PATH = '${HTML_PATH}'
+RESULTS_PATH = '${RESULTS_PATH}'
 
 # HTML 파일 시작 부분
 html_content = '''<!DOCTYPE html>
 <html>
 <head>
     <title>주요 통신 기반 시설 진단 결과</title>
-    <meta charset="utf-8">
+    <meta charset=\"utf-8\">
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         table { margin: 0 auto; border-collapse: collapse; }
@@ -65,26 +65,28 @@ html_content = '''<!DOCTYPE html>
         </tr>
 '''
 
-# JSON 파일을 읽고 HTML로 변환하여 추가
+# JSON 파일을 읽고, HTML 테이블 행을 추가
 with open(RESULTS_PATH, 'r') as json_file:
     data = json.load(json_file)
     for key, value in data.items():
-        item = json.loads(value['output'])
-        현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
-        html_content += f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황}</td><td>{item.get('대응방안', '')}</td></tr>\n"
+        item = json.loads(value['output'].replace('\\n', '<br>'))
+        현황 = item.get('현황', '')
+        현황_formatted = '<br>'.join(현황) if isinstance(현황, list) else 현황
+        html_content += f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황_formatted}</td><td>{item.get('대응방안', '')}</td></tr>\\n"
 
+# HTML 파일 종료 태그 추가
 html_content += '''
     </table>
 </body>
 </html>
 '''
 
-# HTML 파일에 쓰기
+# 최종 HTML 내용을 파일에 쓰기
 with open(HTML_PATH, 'w') as html_file:
     html_file.write(html_content)
 
-echo "HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다."
-'''
+print("HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다.")
+"
 
 
 
