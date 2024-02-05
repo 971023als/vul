@@ -1,7 +1,7 @@
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
+    echo 관리자 권한을 요청합니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 
@@ -17,7 +17,7 @@ if '%errorlevel%' NEQ '0' (
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Settings Initialization---------------------------------------
+echo ------------------------------------------설정 초기화---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +28,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Settings Analysis-----------------------------------
+echo ------------------------------------------IIS 설정 분석-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -52,38 +52,38 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
     echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------End of Settings-------------------------------------------
+echo ------------------------------------------설정 끝-------------------------------------------
 
-echo ------------------------------------------W-11 User Password Analysis------------------------------------------
+echo ------------------------------------------W-11 사용자 암호 분석------------------------------------------
 cd C:\Window_%COMPUTERNAME%_raw\
 FOR /F "tokens=1" %%j IN ('type C:\Window_%COMPUTERNAME%_raw\user.txt') DO (
-    net user %%j | find "Account active" | findstr "Yes" >nul
+    net user %%j | find "계정 활성" | findstr "예" >nul
     IF NOT ERRORLEVEL 1 (
         echo ----------------------------------------------------  >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
-        net user %%j | find "User name" >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
-        net user %%j | find "Password last set" >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
+        net user %%j | find "사용자 이름" >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
+        net user %%j | find "암호 마지막 설정" >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
         echo ----------------------------------------------------  >> C:\Window_%COMPUTERNAME%_raw\user_pw.txt
     ) ELSE (
-        ECHO Skipped inactive account.
+        ECHO 비활성 계정은 건너뜁니다.
     )
 )
 
-FOR /F "tokens=3" %%Y in ('type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt ^| find "MaximumPasswordAge" ^| findstr -v "Parameters"') DO set MaximumPasswordAge=%%Y
+FOR /F "tokens=3" %%Y in ('type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt ^| find "최대암호사용기간" ^| findstr -v "Parameters"') DO set MaximumPasswordAge=%%Y
 IF "%MaximumPasswordAge%" LSS "91" (
     echo W-11,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Maximum password age policy is compliant, set to less than 90 days. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | find "MaximumPasswordAge" | findstr -v "Parameters" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Review the following for password last set dates: >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최대 암호 사용 기간 정책이 준수됩니다, 90일 미만으로 설정됨. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | find "최대암호사용기간" | findstr -v "Parameters" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 암호 마지막 설정 날짜를 검토하세요: >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\user_pw.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
     echo W-11,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Maximum password age policy is non-compliant, set to 90 days or more. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | find "MaximumPasswordAge" | findstr -v "Parameters" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Review the following for password last set dates: >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최대 암호 사용 기간 정책이 비준수입니다, 90일 이상으로 설정됨. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | find "최대암호사용기간" | findstr -v "Parameters" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 암호 마지막 설정 날짜를 검토하세요: >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\user_pw.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------End of Analysis-------------------------------------------
+echo -------------------------------------------분석 끝-------------------------------------------
 
-echo --------------------------------------W-11 Data Capture-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "MaximumPasswordAge" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo --------------------------------------W-11 데이터 캡처-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "최대암호사용기간" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
