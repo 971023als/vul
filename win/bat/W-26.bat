@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -55,62 +54,36 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-26------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
 	IF EXIST "c:\program files\common files\system\msadc\sample" (
 		echo c:\program files\common files\system\msadc\sample >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
+	) ELSE IF EXIST "c:\winnt\help\iishelp" (
+		echo c:\winnt\help\iishelp >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
+	) ELSE IF EXIST "c:\inetpub\iissamples" (
+		echo c:\inetpub\iissamples >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
+	) ELSE IF EXIST "%SystemRoot%\System32\Inetsrv\IISADMPWD" (
+		echo %SystemRoot%\System32\Inetsrv\IISADMPWD >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
 	) ELSE (
-		IF EXIST "c:\winnt\help\iishelp" (
-			echo c:\winnt\help\iishelp >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
-		) ELSE (
-			IF EXIST "c:\inetpub\iissamples" (
-				echo c:\inetpub\iissamples >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
-			) ELSE (
-				IF EXIST "%SystemRoot%\System32\Inetsrv\IISADMPWD" (
-					echo %SystemRoot%\System32\Inetsrv\IISADMPWD >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
-				) ELSE (
-					type C:\Window_%COMPUTERNAME%_raw\compare.txt >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
-				)
-			)
-		)
+		type C:\Window_%COMPUTERNAME%_raw\compare.txt >> C:\Window_%COMPUTERNAME%_raw\W-26.txt
 	)
 	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-26.txt
 	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£ 
 		echo W-26,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÏÁö ¾ÊÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ì±… ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo í•´ë‹¹ ë””ë ‰í† ë¦¬ê°€ ì¡´ìž¬í•˜ì§€ ì•Šì•„ ë³´ì•ˆ ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		REM Ãë¾à
 		echo W-26,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD Áß °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì •ì±… ìœ„ë°˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ì·¨ì•½í•œ ë””ë ‰í† ë¦¬ê°€ ì¡´ìž¬í•˜ì—¬ ë³´ì•ˆ ìœ„ë°˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		type C:\Window_%COMPUTERNAME%_raw\W-26.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ÇØ´ç À¥ »çÀÌÆ®¿¡ IISsample, IISHelp, IISADMPWD °¡»ó µð·ºÅÍ¸®°¡ Á¸ÀçÇÏ¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE (
-	REM ¾çÈ£   
 	echo W-26,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS ì„œë¹„ìŠ¤ê°€ ì‹¤í–‰ë˜ì§€ ì•Šì•„ ì •ì±… ì¤€ìˆ˜ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------end-------------------------------------------
 
-echo --------------------------------------W-26------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt  
+echo --------------------------------------W-26------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\W-26.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+
