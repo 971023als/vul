@@ -44,61 +44,26 @@ echo "결과가 $RESULTS_PATH에 저장되었습니다"
 # HTML 파일 시작 부분에 메시지 쓰기
 echo "Starting HTML conversion..." > $HTML_PATH
 
-# JSON 파일을 읽고 HTML로 변환하여 저장하는 부분 수정
+# Python 코드 실행
 python3 -c "
 import json
 
-# 결과를 저장할 HTML 파일 열기
-with open('$HTML_PATH', 'w') as html_file:
-    html_file.write(\"\"\"<!DOCTYPE html>
-<html>
-<head>
-    <title>주요 통신 기반 시설 진단 결과</title>
-    <meta charset='utf-8'>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        table { margin: 0 auto; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 8px; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <h1>주요 통신 기반 시설 진단 결과</h1>
-    <table>
-        <tr>
-            <th>번호</th>
-            <th>분류</th>
-            <th>코드</th>
-            <th>위험도</th>
-            <th>진단항목</th>
-            <th>진단결과</th>
-            <th>현황</th>
-            <th>대응방안</th>
-        </tr>
-\"\"\")
+HTML_PATH = '$HTML_PATH'
+RESULTS_PATH = '$RESULTS_PATH'
 
-    try:
-        with open('$RESULTS_PATH') as json_file:
-            data = json.load(json_file)
+with open(HTML_PATH, 'w') as html_file:
+    html_file.write('<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n<style>\\nbody { font-family: Arial, sans-serif; text-align: center; }\\ntable { margin: 0 auto; border-collapse: collapse; }\\nth, td { border: 1px solid black; padding: 8px; }\\nth { background-color: #f2f2f2; }\\n</style>\\n</head>\\n<body>\\n<h1>주요 통신 기반 시설 진단 결과</h1>\\n<table>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
 
-            for key, value in data.items():
-                item = json.loads(value['output'])
-                현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
-                html_file.write(f\"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황}</td><td>{item.get('대응방안', '')}</td></tr>\")
-    except Exception as e:
-        print(f'Error reading or processing file: {e}')
+    with open(RESULTS_PATH) as json_file:
+        data = json.load(json_file)
+        for key, value in data.items():
+            item = json.loads(value['output'])
+            현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
+            html_file.write(f'<tr><td>{key}</td><td>{item.get(\"분류\", '')}</td><td>{item.get(\"코드\", '')}</td><td>{item.get(\"위험도\", '')}</td><td>{item.get(\"진단 항목\", '')}</td><td>{item.get(\"진단 결과\", '')}</td><td>{현황}</td><td>{item.get(\"대응방안\", '')}</td></tr>\\n')
 
-    html_file.write(\"""
-    </table>
-</body>
-</html>
-\""")
-"
+    html_file.write('</table></body>\\n</html>')"
 
-# HTML 파일 끝 부분에 메시지 쓰기
-echo "HTML conversion completed successfully." >> $HTML_PATH
-
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
+echo "HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다."
 
 
 # Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
