@@ -1,7 +1,7 @@
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
+    echo 관리자 권한을 요청 중입니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 
@@ -17,7 +17,7 @@ if '%errorlevel%' NEQ '0' (
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Settings Initialization---------------------------------------
+echo ------------------------------------------설정 초기화---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +28,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Settings Analysis-----------------------------------
+echo ------------------------------------------IIS 설정 분석-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -52,25 +52,25 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
     echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------End of IIS Settings-------------------------------------------
+echo ------------------------------------------IIS 설정 분석 종료-------------------------------------------
 
-echo ------------------------------------------W-15 Security Policy Audit------------------------------------------
+echo ------------------------------------------W-15 보안 정책 감사 시작------------------------------------------
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LSAAnonymousNameLookup" | findstr "0" > nul
 IF NOT ERRORLEVEL 1 (
     echo W-15,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Compliance detected >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "LSA anonymous name lookup is correctly disabled, ensuring security policy compliance." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 준수 상태 감지됨 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "LSA 익명 이름 조회가 올바르게 비활성화되어 보안 정책 준수를 보장합니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LSAAnonymousNameLookup" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Analysis complete >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 분석 완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
     echo W-15,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Non-Compliance detected >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "LSA anonymous name lookup is not correctly configured, indicating a security risk." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 비준수 상태 감지됨 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "LSA 익명 이름 조회가 올바르게 구성되지 않아 보안 위험을 나타냅니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LSAAnonymousNameLookup" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Analysis complete >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 분석 완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------End of Security Policy Audit------------------------------------------
+echo -------------------------------------------보안 정책 감사 종료------------------------------------------
 
-echo --------------------------------------W-15 Data Capture-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo --------------------------------------W-15 원본 데이터 캡처-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "LSAAnonymousNameLookup">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
