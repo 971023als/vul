@@ -71,21 +71,27 @@ echo "<!DOCTYPE html>
 python3 -c "
 import json
 
-with open('$RESULTS_PATH') as json_file:
-    data = json.load(json_file)
-    
-    # HTML 테이블 헤더 출력
-    print('<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
-    
-    for key, value in data.items():
-        # 각 output 값은 JSON 문자열이므로, 다시 JSON 객체로 파싱
-        item = json.loads(value['output'])
-        
-        # 현황 정보는 리스트 형태이므로, 리스트 내용을 <br>로 연결
-        현황 = '<br>'.join(item.get('현황', []))
-        
-        # HTML 테이블 행 출력
-        print(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>')
+try:
+    with open('$RESULTS_PATH') as json_file:
+        data = json.load(json_file)
+
+        # HTML 테이블 헤더 출력
+        print('<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
+
+        for key, value in data.items():
+            try:
+                # 각 output 값을 JSON 객체로 파싱
+                item = json.loads(value['output'])
+
+                # 현황 정보 파싱
+                현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
+
+                # HTML 테이블 행 출력
+                print(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>')
+            except json.JSONDecodeError:
+                print(f'<tr><td>{key}</td><td colspan="7">Error parsing JSON for item</td></tr>')
+except Exception as e:
+    print(f'Error reading or processing file: {e}')
 " >> $HTML_PATH
 
 
