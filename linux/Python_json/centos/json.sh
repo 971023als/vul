@@ -2,39 +2,9 @@
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-JSON_PATH="/path/to/your_file.json"
-CSV_PATH="/var/www/html/results_${NOW}.csv"
+RESULTS_PATH="/var/www/html/results_${NOW}.json"
+ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 HTML_PATH="/var/www/html/index.html"
-
-# JSON을 CSV로 변환하는 Python 코드 직접 실행
-python3 -c "
-import pandas as pd
-import sys
-
-json_file_path = sys.argv[1]
-csv_file_path = sys.argv[2]
-
-df = pd.read_json(json_file_path)
-df.to_csv(csv_file_path, index=False)
-" "$JSON_PATH" "$CSV_PATH"
-
-# CSV를 HTML로 변환하는 Python 코드 직접 실행
-python3 -c "
-import pandas as pd
-import sys
-
-csv_file_path = sys.argv[1]
-html_file_path = sys.argv[2]
-
-df = pd.read_csv(csv_file_path)
-html_string = df.to_html()
-
-with open(html_file_path, 'w') as html_file:
-    html_file.write(html_string)
-" "$CSV_PATH" "$HTML_PATH"
-
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
-
 
 # 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
@@ -50,11 +20,6 @@ for i in $(seq -w 1 72); do
 
     # output 값의 줄바꿈과 따옴표를 이스케이프 처리
     output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
-
-    # output 값이 비어있지 않은 경우에만 처리
-    if [ -z "$output" ]; then
-        output_escaped="\"\""
-    fi
 
     # JSON 구조에 output 값을 포함시키기
     echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
@@ -73,6 +38,44 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
+# 결과 로그 출력
 echo "결과가 $RESULTS_PATH에 저장되었습니다"
 [ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다"
+
+# JSON 데이터를 HTML로 변환하여 저장
+echo "<!DOCTYPE html>
+<html>
+<head>
+    <title>진단 결과</title>
+    <meta charset='utf-8'>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { margin: 0 auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>진단 결과</h1>
+    <table>
+        <tr>
+            <th>번호</th>
+            <th>진단항목</th>
+            <th>결과</th>
+            <th>실행시간</th>
+        </tr>" > $HTML_PATH
+
+# JSON 파일을 읽고 HTML로 변환하여 추가
+python3 -c "
+import json
+with open('$RESULTS_PATH') as f:
+    data = json.load(f)
+    for k, v in data.items():
+        print(f'<tr><td>{k}</td><td>{v['output'].replace('\\n','<br>')}</td><td>{v['execution_time']}</td></tr>')
+" >> $HTML_PATH
+
+echo "    </table>
+</body>
+</html>" >> $HTML_PATH
+
+echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
