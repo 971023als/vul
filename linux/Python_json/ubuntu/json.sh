@@ -37,14 +37,16 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
-# Python 코드 실행
+# Python 코드 실행: JSON 파일을 읽고 HTML로 변환
+# Python 코드 실행: JSON 파일을 읽고 HTML로 변환
 python3 -c "
 import json
 
-HTML_PATH = '${HTML_PATH}'
-RESULTS_PATH = '${RESULTS_PATH}'
+# 경로 직접 할당
+HTML_PATH = '/var/www/html/index.html'
+RESULTS_PATH = '/var/www/html/results.json'
 
-# HTML 파일 시작 부분
+# HTML 파일의 기본 구조
 html_content = '''<!DOCTYPE html>
 <html>
 <head>
@@ -65,16 +67,19 @@ html_content = '''<!DOCTYPE html>
         </tr>
 '''
 
-# JSON 파일을 읽고, HTML 테이블 행을 추가
-with open(RESULTS_PATH, 'r') as json_file:
-    data = json.load(json_file)
-    for key, value in data.items():
-        item = json.loads(value['output'].replace('\\n', '<br>'))
-        현황 = item.get('현황', '')
-        현황_formatted = '<br>'.join(현황) if isinstance(현황, list) else 현황
-        html_content += f"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황_formatted}</td><td>{item.get('대응방안', '')}</td></tr>\\n"
+try:
+    with open(RESULTS_PATH, 'r') as json_file:
+        data = json.load(json_file)
+        for key, value in data.items():
+            try:
+                item = json.loads(value['output'])
+                현황 = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
+                html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>\\n'
+            except json.JSONDecodeError:
+                html_content += f'<tr><td>{key}</td><td colspan=\"7\">Error parsing JSON for item</td></tr>\\n'
+except Exception as e:
+    print(f'Failed to process JSON data: {e}')
 
-# HTML 파일 종료 태그 추가
 html_content += '''
     </table>
 </body>
@@ -82,10 +87,12 @@ html_content += '''
 '''
 
 # 최종 HTML 내용을 파일에 쓰기
-with open(HTML_PATH, 'w') as html_file:
-    html_file.write(html_content)
-
-print("HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다.")
+try:
+    with open(HTML_PATH, 'w') as html_file:
+        html_file.write(html_content)
+    print(f'HTML 결과 페이지가 {HTML_PATH}에 생성되었습니다.')
+except Exception as e:
+    print(f'Failed to write HTML content: {e}')
 "
 
 
