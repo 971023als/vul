@@ -10,8 +10,24 @@ HTML_PATH="/var/www/html/index.html"
 echo "{" > "$RESULTS_PATH"
 errors=()
 
-# U-01.py부터 U-72.py까지 실행하며 JSON 파일 생성 (예제 코드는 생략)
-# 여기에 Python 스크립트를 실행하는 코드를 넣으세요
+# U-01.py부터 U-72.py까지 실행하며 JSON 파일 생성
+for i in $(seq -w 1 72); do
+    script_name="U-${i}.py"
+    start_time=$(date +%s.%N)
+    output=$(python3 "$script_name" 2>&1)
+    end_time=$(date +%s.%N)
+    execution_time=$(echo "$end_time - $start_time" | bc)
+
+    # output 값의 줄바꿈과 따옴표를 이스케이프 처리
+    output_escaped=$(echo "$output" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' ORS='')
+
+    # JSON 구조에 output 값을 포함시키기
+    echo "\"$i\": {\"output\": \"$output_escaped\", \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+
+    if [[ $output == *ERROR* ]]; then
+        errors+=("$script_name: $output")
+    fi
+done
 
 # 파일 마지막에 JSON 닫기
 sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
@@ -21,39 +37,34 @@ if [ ${#errors[@]} -ne 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
 fi
 
-echo "결과가 $RESULTS_PATH에 저장되었습니다"
-[ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
-
-# HTML 파일 생성 전 로그 메시지
-echo "Starting HTML conversion..." >> conversion.log
-
-# Python 코드 실행: JSON 파일을 읽고 HTML로 변환
+# Python 스크립트를 실행하여 HTML 파일 생성
 python3 -c "
 import json
+import sys
 
-HTML_PATH = '$HTML_PATH'
-RESULTS_PATH = '$RESULTS_PATH'
+# 커맨드 라인에서 경로를 받습니다.
+HTML_PATH = sys.argv[1]
+RESULTS_PATH = sys.argv[2]
 
-# HTML 파일에 기본 HTML 구조 작성
 with open(HTML_PATH, 'w') as html_file:
-    html_file.write('<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n<style>\\nbody { font-family: Arial, sans-serif; text-align: center; }\\ntable { margin: 0 auto; border-collapse: collapse; }\\nth, td { border: 1px solid black; padding: 8px; }\\nth { background-color: #f2f2f2; }\\n</style>\\n</head>\\n<body>\\n<h1>주요 통신 기반 시설 진단 결과</h1>\\n<table>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>\\n')
+    # HTML 문서 시작
+    html_file.write('<!DOCTYPE html>\\n<html>\\n<head>\\n<title>주요 통신 기반 시설 진단 결과</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>진단 결과</h1>\\n<table border=\"1\">\\n<thead>\\n<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>\\n</thead>\\n<tbody>\\n')
 
-    # JSON 데이터를 HTML 테이블 행으로 변환하여 파일에 추가
-    with open(RESULTS_PATH) as json_file:
-        data = json.load(json_file)
-        for key, value in data.items():
-            try:
-                item = json.loads(value['output'].replace('\\n', '\\\\n'))
-                현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
-                html_file.write(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>\\n')
-            except json.JSONDecodeError:
-                html_file.write(f'<tr><td>{key}</td><td colspan=\"7\">Error parsing JSON for item</td></tr>\\n')
+    # 결과 JSON 파일 읽기
+    with open(RESULTS_PATH) as f:
+        results = json.load(f)
+        for key, value in results.items():
+            result = json.loads(value['output'])
+            html_file.write(f'<tr><td>{key}</td><td>{result.get("분류","")}</td><td>{result.get("코드","")}</td><td>{result.get("위험도","")}</td><td>{result.get("진단 항목","")}</td><td>{result.get("진단 결과","")}</td><td>{"<br>".join(result.get("현황",[]))}</td><td>{result.get("대응방안","")}</td></tr>\\n')
 
-    html_file.write('</table>\\n</body>\\n</html>')"
+    # HTML 문서 마무리
+    html_file.write('</tbody>\\n</table>\\n</body>\\n</html>')
 
-echo "HTML 결과 페이지가 ${HTML_PATH}에 생성되었습니다." >> conversion.log
+" "$HTML_PATH" "$RESULTS_PATH"  # Python 스크립트에 경로 인자 전달
 
-# Apache 웹 서버 재시작
+echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
+
+# Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
 sudo systemctl restart apache2
 
 
