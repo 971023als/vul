@@ -1,7 +1,7 @@
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
+    echo 관리자 권한을 요청 중입니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -16,7 +16,7 @@ if '%errorlevel%' NEQ '0' (
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------설정---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -27,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS 설정-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -51,25 +51,25 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
     echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------끝-------------------------------------------
 echo ------------------------------------------W-07------------------------------------------
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "EveryoneIncludesAnonymous" | findstr "0" > nul
 IF NOT ERRORLEVEL 1 (
     echo W-07,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Compliance detected >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "The policy 'Everyone includes anonymous users' is correctly set to 'Disabled' ensuring higher security." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 준수 상태 감지됨 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "'모든 사용자가 익명 사용자를 포함' 정책이 '사용 안 함'으로 올바르게 설정되어 더 높은 보안을 보장합니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "EveryoneIncludesAnonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "This setting helps prevent unauthorized access by anonymous users." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "이 설정은 익명 사용자에 의한 무단 접근을 방지하는 데 도움이 됩니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE ( 
     echo W-07,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Non-compliance detected >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "The policy 'Everyone includes anonymous users' is not set to 'Disabled', posing a potential security risk." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 비준수 상태 감지됨 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "'모든 사용자가 익명 사용자를 포함' 정책이 '사용 안 함'으로 설정되지 않아 잠재적 보안 위험을 초래합니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "EveryoneIncludesAnonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo "Adjusting this policy to include anonymous users in the 'Everyone' group can significantly increase the system's vulnerability to unauthorized access." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo "'모두' 그룹에 익명 사용자를 포함시키는 이 정책을 조정하면 시스템의 무단 접근에 대한 취약성이 크게 증가할 수 있습니다." >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
     echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------끝------------------------------------------
 
 echo --------------------------------------W-07------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "EveryoneIncludesAnonymous">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
