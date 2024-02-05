@@ -71,16 +71,19 @@ echo "<!DOCTYPE html>
 python3 -c "
 import json
 def replace_newlines(s):
-    return s.replace('\n', '<br>') if s else s
+    return s.replace('\\n', '<br>') if isinstance(s, str) else ''
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
     for k, v in data.items():
-        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(k, replace_newlines(v.get('분류', '')), replace_newlines(v.get('코드', '')), replace_newlines(v.get('위험도', '')), replace_newlines(v.get('진단항목', '')), replace_newlines(v.get('진단결과', '')), replace_newlines(v.get('현황', '')), replace_newlines(v.get('대응방안', ''))))
+        output = v['output'].replace('\\n', '<br>') if 'output' in v and isinstance(v['output'], str) else ''
+        execution_time = v.get('execution_time', '')
+        print(f'<tr><td>{k}</td><td></td><td></td><td></td><td></td><td>{output}</td><td></td><td>{execution_time}</td></<tr></tr>')
 " >> $HTML_PATH
-echo " </table>
 
+echo "    </table>
 </body>
 </html>" >> $HTML_PATH
+
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
 
 # Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
@@ -88,7 +91,8 @@ sudo systemctl restart apache2
 
 # 오류 발생시 처리
 if [ $? -ne 0 ]; then
-echo "Apache 서비스 재시작에 실패했습니다. 서비스 상태를 확인하세요."
+    echo "Apache 서비스 재시작에 실패했습니다. 서비스 상태를 확인하세요."
 else
-echo "Apache 서비스가 성공적으로 재시작되었습니다."
+    echo "Apache 서비스가 성공적으로 재시작되었습니다."
 fi
+
