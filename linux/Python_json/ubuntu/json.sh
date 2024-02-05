@@ -1,10 +1,40 @@
 #!/bin/bash
 
-# 결과 및 오류 로그 저장 경로 설정
-NOW=$(date +'%Y-%m-%d_%H')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"
-ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-HTML_PATH="/var/www/html/index.php"
+# 파일 경로 설정
+NOW=$(date +'%Y-%m-%d_%H-%M-%S')
+JSON_PATH="/path/to/your_file.json"
+CSV_PATH="/var/www/html/results_${NOW}.csv"
+HTML_PATH="/var/www/html/index.html"
+
+# JSON을 CSV로 변환하는 Python 코드 직접 실행
+python3 -c "
+import pandas as pd
+import sys
+
+json_file_path = sys.argv[1]
+csv_file_path = sys.argv[2]
+
+df = pd.read_json(json_file_path)
+df.to_csv(csv_file_path, index=False)
+" "$JSON_PATH" "$CSV_PATH"
+
+# CSV를 HTML로 변환하는 Python 코드 직접 실행
+python3 -c "
+import pandas as pd
+import sys
+
+csv_file_path = sys.argv[1]
+html_file_path = sys.argv[2]
+
+df = pd.read_csv(csv_file_path)
+html_string = df.to_html()
+
+with open(html_file_path, 'w') as html_file:
+    html_file.write(html_string)
+" "$CSV_PATH" "$HTML_PATH"
+
+echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
+
 
 # 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
