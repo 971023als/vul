@@ -73,20 +73,11 @@ python3 -c "
 import json
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
-    for k, v in data.items():
-        # 각 키에 대한 데이터 접근 방식 확인 및 배열 데이터 처리
-        현황 = '<br>'.join(v.get('현황', [])) if isinstance(v.get('현황', []), list) else v.get('현황', '')
-        print('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td></tr>'.format(
-            k, 
-            v.get('분류', ''), 
-            v.get('코드', ''), 
-            v.get('위험도', ''), 
-            v.get('진단항목', ''), 
-            v.get('진단결과', ''), 
-            현황, 
-            v.get('대응방안', '')
-        ))
+    for item in data.values():
+        현황 = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황', []), list) else item.get('현황', '')
+        print(f'<tr><td>{item.get("코드", "")}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단항목", "")}</td><td>{item.get("진단결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>')
 " >> $HTML_PATH
+
 
 
 echo " </table>
