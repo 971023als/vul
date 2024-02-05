@@ -70,13 +70,24 @@ echo "<!DOCTYPE html>
 # JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
 import json
+
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
-    print(data)  # 디버깅을 위해 데이터 출력
-    for idx, item in enumerate(data, start=1):
-        현황 = '<br>'.join(item['현황']) if '현황' in item else ''
-        print(f'<tr><td>{idx}</td><td>{item.get("분류", "")}</td>...<td>{현황}</td>...</tr>')
+    
+    # HTML 테이블 헤더 출력
+    print('<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
+    
+    for key, value in data.items():
+        # 각 output 값은 JSON 문자열이므로, 다시 JSON 객체로 파싱
+        item = json.loads(value['output'])
+        
+        # 현황 정보는 리스트 형태이므로, 리스트 내용을 <br>로 연결
+        현황 = '<br>'.join(item.get('현황', []))
+        
+        # HTML 테이블 행 출력
+        print(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>')
 " >> $HTML_PATH
+
 
 
 
