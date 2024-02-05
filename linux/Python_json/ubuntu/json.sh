@@ -70,22 +70,21 @@ echo "<!DOCTYPE html>
 # JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
 import json
-def replace_newlines(s):
-    return '<br>'.join(s) if isinstance(s, list) else s
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
+    print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
+        '번호', '분류', '코드', '위험도', '진단항목', '진단결과', '현황', '대응방안'))
     for k, v in data.items():
-        # JSON 키 이름 확인 및 수정
+        # 각 키에 대한 데이터 접근 방식 확인 및 배열 데이터 처리
         print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
             k, v.get('분류', ''), v.get('코드', ''), v.get('위험도', ''), v.get('진단항목', ''), v.get('진단결과', ''), 
-            replace_newlines(v.get('현황', [])), v.get('대응방안', '')))
+            '<br>'.join(v.get('현황', [])), v.get('대응방안', '')))
 " >> $HTML_PATH
 
+echo " </table>
 
-echo "    </table>
 </body>
 </html>" >> $HTML_PATH
-
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
 
 # Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
