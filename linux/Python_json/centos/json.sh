@@ -72,7 +72,8 @@ html_content = '<!DOCTYPE html>\
 for key, value in data.items():
     item = json.loads(value['output'])
     현황_formatted = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-    html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>'
+# 오류 메시지에서 지적된 부분을 수정
+html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>'
 
 html_content += '</table></body></html>'
 
@@ -82,11 +83,11 @@ with open(HTML_PATH, 'w') as html_file:
 print(f'HTML 결과 페이지가 {HTML_PATH}에 생성되었습니다.')
 "
 
-# Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
+# Ubuntu/Debian 시스템용
 sudo systemctl restart apache2
 
-# 오류
-
+# CentOS/RHEL 시스템용 (필요한 경우)
+sudo systemctl restart httpd
 
 
 # 오류 발생시 처리
