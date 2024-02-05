@@ -71,13 +71,16 @@ echo "<!DOCTYPE html>
 python3 -c "
 import json
 def replace_newlines(s):
-    return s.replace('\n', '<br>') if isinstance(s, str) else ''
+    return '<br>'.join(s) if isinstance(s, list) else s
 with open('$RESULTS_PATH') as json_file:
     data = json.load(json_file)
     for k, v in data.items():
-        status = '<br>'.join(v.get('현황', []))  # 배열 형태의 '현황'을 문자열로 결합
-        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{<td>{}</td></tr>'.format(k, v.get('분류', ''), v.get('코드', ''), v.get('위험도', ''), v.get('진단 항목', ''), v.get('진단 결과', ''), replace_newlines(status), v.get('대응방안', '')))
+        # JSON 키 이름 확인 및 수정
+        print('<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
+            k, v.get('분류', ''), v.get('코드', ''), v.get('위험도', ''), v.get('진단항목', ''), v.get('진단결과', ''), 
+            replace_newlines(v.get('현황', [])), v.get('대응방안', '')))
 " >> $HTML_PATH
+
 
 echo "    </table>
 </body>
