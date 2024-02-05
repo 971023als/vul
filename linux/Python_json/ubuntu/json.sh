@@ -76,7 +76,7 @@ def html_line_break(value):
 with open('$RESULTS_PATH') as f:
     data = json.load(f)
     for k, v in data.items():
-        print(f\"<tr><td>{k}</td><td>{html_line_break(v.get('분류', ''))}</td><td>{html_line_break(v.get('코드', ''))}</td><td>{html_line_break(v.get('위험도', ''))}</td><td>{html_line_break(v.get('진단항목', ''))}</td><td>{html_line_break(v.get('진단결과', ''))}</td><td>{html_line_break(v.get('현황', ''))}</td><td>{html_line_break(v.get('대응방안', ''))}</td></tr>\")
+        print(f\"</td><td>{html_line_break(v.get('분류', ''))}</td><td>{html_line_break(v.get('코드', ''))}</td><td>{html_line_break(v.get('위험도', ''))}</td><td>{html_line_break(v.get('진단항목', ''))}</td><td>{html_line_break(v.get('진단결과', ''))}</td><td>{html_line_break(v.get('현황', ''))}</td><td>{html_line_break(v.get('대응방안', ''))}</td></tr>\")
 " >> $HTML_PATH
 
 
