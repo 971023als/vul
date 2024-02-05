@@ -40,8 +40,14 @@ fi
 echo "결과가 $RESULTS_PATH에 저장되었습니다"
 [ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
 
-# JSON 데이터를 HTML로 변환하여 저장하는 부분 수정
-echo "<!DOCTYPE html>
+
+# JSON 파일을 읽고 HTML로 변환하여 저장하는 부분 수정
+python3 -c "
+import json
+
+# 결과를 저장할 HTML 파일 열기
+with open('$HTML_PATH', 'w') as html_file:
+    html_file.write(\"\"\"<!DOCTYPE html>
 <html>
 <head>
     <title>주요 통신 기반 시설 진단 결과</title>
@@ -65,45 +71,29 @@ echo "<!DOCTYPE html>
             <th>진단결과</th>
             <th>현황</th>
             <th>대응방안</th>
-        </tr>" > $HTML_PATH
+        </tr>
+\"\"\")
 
-# JSON 파일을 읽고 HTML로 변환하여 추가
-python3 -c "
-import json
+    try:
+        with open('$RESULTS_PATH') as json_file:
+            data = json.load(json_file)
 
-try:
-    with open('$RESULTS_PATH') as json_file:
-        data = json.load(json_file)
-
-        # HTML 테이블 헤더 출력
-        print('<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>')
-
-        for key, value in data.items():
-            try:
-                # 각 output 값을 JSON 객체로 파싱
+            for key, value in data.items():
                 item = json.loads(value['output'])
-
-                # 현황 정보 파싱
                 현황 = '<br>'.join(item.get('현황', [])) if item.get('현황') else ''
+                html_file.write(f\"<tr><td>{key}</td><td>{item.get('분류', '')}</td><td>{item.get('코드', '')}</td><td>{item.get('위험도', '')}</td><td>{item.get('진단 항목', '')}</td><td>{item.get('진단 결과', '')}</td><td>{현황}</td><td>{item.get('대응방안', '')}</td></tr>\")
+    except Exception as e:
+        print(f'Error reading or processing file: {e}')
 
-                # HTML 테이블 행 출력
-                print(f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황}</td><td>{item.get("대응방안", "")}</td></tr>')
-            except json.JSONDecodeError:
-                print(f'<tr><td>{key}</td><td colspan="7">Error parsing JSON for item</td></tr>')
-except Exception as e:
-    print(f'Error reading or processing file: {e}')
-" >> $HTML_PATH
-
-
-
-
-
-
-echo " </table>
-
+    html_file.write(\"""
+    </table>
 </body>
-</html>" >> $HTML_PATH
+</html>
+\""")
+"
+
 echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
+
 
 # Apache 웹 서버 재시작 (Ubuntu/Debian 시스템 기준)
 sudo systemctl restart apache2
