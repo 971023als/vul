@@ -71,11 +71,14 @@ echo "<!DOCTYPE html>
 # JSON 파일을 읽고 HTML로 변환하여 추가
 python3 -c "
 import json
+def html_line_break(value):
+    return value.replace('\n', '<br>')
 with open('$RESULTS_PATH') as f:
     data = json.load(f)
     for k, v in data.items():
-        print(f\"<tr><td>{k}</td><td>{v.get('분류', '').replace('\\n','<br>')}</td><td>{v.get('코드', '').replace('\\n','<br>')}</td><td>{v.get('위험도', '').replace('\\n','<br>')}</td><td>{v.get('진단항목', '').replace('\\n','<br>')}</td><td>{v.get('진단결과', '').replace('\\n','<br>')}</td><td>{v.get('현황', '').replace('\\n','<br>')}</td><td>{v.get('대응방안', '').replace('\\n','<br>')}</td></tr>\")
+        print(f\"<tr><td>{k}</td><td>{html_line_break(v.get('분류', ''))}</td><td>{html_line_break(v.get('코드', ''))}</td><td>{html_line_break(v.get('위험도', ''))}</td><td>{html_line_break(v.get('진단항목', ''))}</td><td>{html_line_break(v.get('진단결과', ''))}</td><td>{html_line_break(v.get('현황', ''))}</td><td>{html_line_break(v.get('대응방안', ''))}</td></tr>\")
 " >> $HTML_PATH
+
 
 echo "    </table>
 </body>
