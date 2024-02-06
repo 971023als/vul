@@ -2,10 +2,11 @@
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-CSV_PATH="/var/www/html/results_${NOW}.csv"  # CSV 파일 경로
-HTML_PATH="/var/www/html/index.html"         # HTML 파일 경로
-JSON_COMBINED_PATH="/var/www/html/combined_${NOW}.json"  # 합쳐진 JSON 파일 경로
-CSV_WEB_PATH="results_${NOW}.csv"            # CSV 파일의 웹 경로
+RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 수정된 부분: 정확한 변수 정의
+ERRORS_PATH="/var/www/html/errors_${NOW}.log"
+CSV_PATH="/var/www/html/results_${NOW}.csv"
+HTML_PATH="/var/www/html/index.html"
+JSON_COMBINED_PATH="/var/www/html/combined_${NOW}.json"
 
 # 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
@@ -23,7 +24,7 @@ for i in $(seq -w 1 72); do
     output_escaped=$(echo "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
     # JSON 구조에 output 값을 포함시키기
-    echo "\"$i\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
+    echo "\"U-${i}\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
 
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
@@ -37,6 +38,8 @@ sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 if [ ${#errors[@]} -gt 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
     echo "오류가 $ERRORS_PATH에 기록되었습니다."
+else
+    echo "오류 로그가 없습니다."
 fi
 
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
@@ -54,12 +57,10 @@ json_combined_path = '${JSON_COMBINED_PATH}'
 csv_web_path = '${CSV_WEB_PATH}'
 
 def get_filelist(subfolder, file_extension):
-    '''하위 폴더 내의 모든 파일을 불러오는 함수'''
     data_path = Path.cwd() / subfolder
-    return list(data_path.glob('**/*.{}' .format(file_extension)))
+    return list(data_path.glob('**/*.' + file_extension))
 
 def combine_json_files(files):
-    '''JSON 파일들을 하나의 리스트로 합치는 함수'''
     all_data = []
     for json_file in files:
         with open(json_file, 'r') as file:
@@ -68,12 +69,10 @@ def combine_json_files(files):
     return all_data
 
 def save_to_csv(data, csv_path):
-    '''데이터를 CSV 파일로 저장하는 함수'''
     df = pd.DataFrame(data)
     df.to_csv(csv_path, index=False)
 
 def generate_html(data, html_path, csv_web_path):
-    '''데이터를 기반으로 HTML 파일을 생성하는 함수, 다운로드 링크 포함'''
     html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>결과 보고서</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>결과 보고서</h1>\\n<a href=\"' + csv_web_path + '\" download>CSV 파일 다운로드</a>\\n<table>\\n<tr>'
     for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']:
         html_content += f'<th>{key}</th>'
@@ -84,16 +83,11 @@ def generate_html(data, html_path, csv_web_path):
     with open(html_path, 'w') as html_file:
         html_file.write(html_content)
 
-# 'data' 하위 폴더에서 .json 확장자를 가진 모든 파일을 불러옴
 files = get_filelist('data', 'json')
-# JSON 파일들을 하나의 리스트로 합치고
 all_data = combine_json_files(files)
-# 합쳐진 데이터를 CSV 파일로 저장
 save_to_csv(all_data, csv_path)
-# HTML 파일 생성, 다운로드 링크 포함
 generate_html(all_data, html_path, csv_web_path)
 
-# 선택적: 합쳐진 JSON 데이터를 파일로 저장
 with open(json_combined_path, 'w') as json_file:
     json.dump(all_data, json_file)
 "
