@@ -25,13 +25,24 @@ else
     echo "이 스크립트는 리눅스에서만 지원됩니다."
 fi
 
-# 파이썬 설치 여부 확인 및 설치
+# 파이썬 및 pip 설치 여부 확인 및 설치
 if ! command -v python3 &> /dev/null; then
     echo "파이썬이 설치되어 있지 않습니다. 파이썬을 설치합니다."
     sudo $PKG_MANAGER update && sudo $PKG_MANAGER install python3 -y
 else
     echo "파이썬이 이미 설치되어 있습니다."
 fi
+
+if ! command -v pip3 &> /dev/null; then
+    echo "pip이 설치되어 있지 않습니다. pip을 설치합니다."
+    sudo $PKG_MANAGER install python3-pip -y
+else
+    echo "pip이 이미 설치되어 있습니다."
+fi
+
+# pandas 설치
+echo "pandas를 설치합니다."
+pip3 install pandas
 
 # 아파치 및 mod_wsgi 설치 여부 확인 및 설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
