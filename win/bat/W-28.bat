@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -55,65 +54,29 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-28------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
-	FOR /F "tokens=1 delims=#" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
-	cd %%a	
-	ATTRIB /s | findstr ".lnk"  >> C:\Window_%COMPUTERNAME%_raw\W-28.txt  
-	)
-	cd "%install_path%"
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-28.txt
-	REM ¶È°°À¸¸é ¾çÈ£, ´Ù¸£¸é Ãë¾à 
-	IF NOT ERRORLEVEL 1 (
-		REM ¾çÈ£
-		echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëµÇ¾îÀÖÁö ¾ÊÀ½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëµÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		REM Ãë¾à
-		type C:\Window_%COMPUTERNAME%_raw\W-28.txt | findstr ".lnk" >nul
-		IF NOT ERRORLEVEL 1 (
-			REM ¾çÈ£
-			echo W-28,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ÇØ´ç È¨ µð·ºÅÍ¸®¿¡ ¸µÅ© ÆÄÀÏÀÌ Á¸ÀçÇÔ  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëµÇ¾î ÀÖÀ¸¹Ç·Î Ãë¾àÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		) ELSE (
-			REM Ãë¾à
-			echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëµÇ¾îÀÖÁö ¾ÊÀ½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ½Éº¼¸¯ ¸µÅ©, aliases, ¹Ù·Î°¡±â µîÀÇ »ç¿ëÀ» Çã¿ëµÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	FOR /F "tokens=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
+		cd %%a
+		IF EXIST *.lnk (
+			echo Found shortcut files (*.lnk) in %%a >> C:\Window_%COMPUTERNAME%_raw\W-28.txt
 		)
 	)
+	cd "%install_path%"
+	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-28.txt >nul
+	IF ERRORLEVEL 1 (
+		echo W-28,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Shortcut files found in critical IIS paths, indicating potential security risks. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	) ELSE (
+		echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo No unauthorized shortcut files found in critical IIS paths. System complies with security standards. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	)
 ) ELSE (
-	REM ¾çÈ£
 	echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo World Wide Web Publishing Service is not running. No need to check for shortcut files. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------end-------------------------------------------
 
 echo --------------------------------------W-28------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-TYPE C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt

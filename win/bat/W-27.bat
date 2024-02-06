@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo °ü¸®ÀÚ ±ÇÇÑÀ» ¿äÃ»ÇÕ´Ï´Ù...
+    echo ê´€ë¦¬ìž ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -55,45 +54,23 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-27------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
-REM Ãë¾à
 IF NOT ERRORLEVEL 1 (
-	REM Ãë¾à
 	reg query "HKLM\SYSTEM\CurrentControlSet\Services\IISADMIN" | find "ObjectName" | find "LocalSystem" > nul
 	IF NOT ERRORLEVEL 1 (
-		REM Ãë¾à
 		echo W-27,N/A,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀ¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀÌ ¾Æ´Ñ "·ÎÄÃ ½Ã½ºÅÛ °èÁ¤"À¸·Î ¼³Á¤µÇ¾îÀÖÀ½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKLM\SYSTEM\CurrentControlSet\Services\IISADMIN" | find "ObjectName" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀ¸·Î ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î Ãë¾àÇÏÁö¸¸ Windows Server 2012ÀÇ °æ¿ì º¯°æ ½Ã ¼­¹ö ¿ÀÀÛµ¿ÀÌ ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿ÜÃ³¸® >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ´Ü ·ÎÄÃ ½Ã½ºÅÛ °èÁ¤ ÆÐ½º¿öµå °ü¸®[º¹Àâ¼º ¹× ÆÐ½º¿öµå º¯°æ ÁÖ±â]¸¦ ±Ç°íÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo IISADMIN ì„œë¹„ìŠ¤ê°€ LocalSystem ê³„ì •ìœ¼ë¡œ ì‹¤í–‰ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ íŠ¹ë³„í•œ ì¡°ì¹˜ê°€ í•„ìš”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo í•´ë‹¹ ì„¤ì •ì€ ë³´ì•ˆì— ì˜í–¥ì„ ì¤„ ìˆ˜ ìžˆëŠ” ì¤‘ìš”í•œ ì„¤ì •ì´ë©°, LocalSystem ê³„ì • ëŒ€ì‹  ë” ì œí•œì ì¸ ê¶Œí•œì„ ê°€ì§„ ê³„ì •ì„ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ ê¶Œìž¥ë©ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
 		echo W-27,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀ¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀ¸·Î ¼³Á¤µÇ¾îÀÖÀ½>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo IISADMIN ì„œë¹„ìŠ¤ê°€ LocalSystem ê³„ì •ìœ¼ë¡œ ì‹¤í–‰ë©ë‹ˆë‹¤. ì´ëŠ” ê¶Œìž¥ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ë³´ì•ˆì„ ê°•í™”í•˜ë ¤ë©´, IISADMIN ì„œë¹„ìŠ¤ë¥¼ ë” ì œí•œì ì¸ ê¶Œí•œì„ ê°€ì§„ ê³„ì •ìœ¼ë¡œ ì‹¤í–‰í•˜ë„ë¡ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		reg query "HKLM\SYSTEM\CurrentControlSet\Services\IISADMIN" | find "ObjectName" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo À¥ ÇÁ·Î¼¼½º°¡ À¥ ¼­ºñ½º ¿î¿µ¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑ ±ÇÇÑÀ¸·Î ¼³Á¤µÇ¾î ÀÖÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE (
-	REM ¾çÈ£   
 	echo W-27,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ±âÁØ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ÇÊ¿äÇÏÁö ¾Ê¾Æ ÀÌ¿ëÇÏÁö ¾Ê´Â °æ¿ì ¾çÈ£ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ÇöÈ² >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ ºñÈ°¼ºÈ­ µÇ¾îÀÖÀ½ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ¡á ¼³¸í >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ¼­ºñ½º°¡ È°¼ºÈ­ µÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ¾çÈ£ÇÔ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo World Wide Web Publishing Serviceê°€ ì‹¤í–‰ë˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤. IIS ê´€ë ¨ ë³´ì•ˆ ì„¤ì •ì„ ê²€í† í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------end-------------------------------------------
 
 echo --------------------------------------W-27------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt  
 reg query "HKLM\SYSTEM\CurrentControlSet\Services\W3SVC" | FINDSTR /L "ObjectName">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
@@ -102,3 +79,4 @@ echo ---------------------------------------------------------------------------
 echo --------------------------localgroup Administrators---------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 net localgroup Administrators>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+
