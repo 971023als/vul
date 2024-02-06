@@ -41,25 +41,41 @@ fi
 
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
-# JSON 파일을 CSV로 변환
+# Python 코드 실행: 하위 폴더의 모든 JSON 파일을 하나의 JSON 객체로 합치고 CSV로 저장
 python3 -c "
 import json
-import csv
+from pathlib import Path
+import pandas as pd
 
-json_file_path = '$RESULTS_PATH'
-csv_file_path = '$CSV_PATH'
+def get_filelist(subfolder, file_extension):
+    data_path = Path.cwd() / subfolder
+    return list(data_path.glob('**/*.' + file_extension))
 
-with open(json_file_path, 'r') as json_file:
-    data = json.load(json_file)
+# 'data' 폴더 내 모든 JSON 파일 목록을 가져옴
+files = get_filelist('data', 'json')
 
-with open(csv_file_path, 'w', newline='') as csv_file:
-    writer = csv.writer(csv_file)
-    writer.writerow(['번호', '분류', '코드', '위험도', '진단항목', '진단결과', '현황', '대응방안'])
-    for key, value in data.items():
-        item = json.loads(value['output'])
-        현황_formatted = ', '.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-        writer.writerow([key, item.get('분류', ''), item.get('코드', ''), item.get('위험도', ''), item.get('진단 항목', ''), item.get('진단 결과', ''), 현황_formatted, item.get('대응방안', '')])
+# 모든 JSON 데이터를 저장할 리스트
+all_data = []
+
+# 파일들을 순회하며 데이터 리스트에 추가
+for json_file in files:
+    with open(json_file, 'r') as file:
+        data = json.load(file)
+        all_data.extend(data)  # 각 파일은 데이터의 리스트를 포함
+
+# JSON 데이터를 파일로 저장 (선택적)
+with open('$JSON_PATH', 'w') as file:
+    json.dump(all_data, file)
+
+# 모든 데이터를 pandas DataFrame으로 변환
+df = pd.DataFrame(all_data)
+
+# 결과를 CSV 파일로 저장
+df.to_csv('$CSV_PATH', index=False)
 "
+
+echo "합쳐진 JSON 파일이 $JSON_PATH 에 저장되었습니다."
+echo "CSV 파일이 $CSV_PATH 에 저장되었습니다."
 
 # Python 코드 실행: JSON 파일을 읽고 HTML로 변환
 python3 -c "
