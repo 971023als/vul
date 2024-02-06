@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo ������ ������ ��û�մϴ�...
+    echo 관리자 권한이 필요합니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -53,177 +52,19 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-32------------------------------------------
-net start | find "World Wide Web Publishing Service" >nul
-REM ���
-IF NOT ERRORLEVEL 1 (
-	REM ���
-	FOR /F "tokens=1 delims=#" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
-		cd %%a
-		echo -----------------------�ش� ���͸�--------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls %%a /T | findstr /I "Everyone"
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls %%a /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------exe--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.exe /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.exe /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------dll--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.dll /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.dll /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------cmd--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.cmd /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.cmd /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------pl--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.pl /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.pl /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------asp--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.asp /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.asp /T  >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------inc--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.inc /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.inc /T  >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------shtm--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.shtm /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.shtm /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------shtml--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.shtml /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.shtml /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------txt--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.txt /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.txt /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------gif--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.gif /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.gif /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------jpg--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.jpg /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.jpg /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-		echo -----------------------html--------------------------->> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		cacls *.html /T | findstr /I "Everyone"
-		REM ���
-		IF NOT ERRORLEVEL 1 (
-		REM ���
-			cacls *.html /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-		) ELSE (
-		REM ��ȣ
-			ECHO.
-		)
-	)
-	cd "%install_path%"
-	type C:\Window_%COMPUTERNAME%_raw\W-32.txt | findstr /I "Everyone" >> C:\Window_%COMPUTERNAME%_raw\W-32-1.txt
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-32-1.txt
-		REM ���
-	IF NOT ERRORLEVEL 1 (
-		REM ����
-		echo W-32,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Ȩ ���͸� ���� �ִ� ���� ���ϵ鿡 ���� Everyone ������ �������� �ʴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		ECHO Ȩ ���͸� ���� �ִ� ���� ���ϵ� �� Everyone ������ �������� ����>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Ȩ ���͸� ���� �ִ� ���� ���ϵ鿡 ���� Everyone ������ �������� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		REM �ٸ�   
-		echo W-32,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Ȩ ���͸� ���� �ִ� ���� ���ϵ鿡 ���� Everyone ������ �������� �ʴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\W-32.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo Ȩ ���͸� ���� �ִ� ���� ���ϵ鿡 ���� Everyone ������ �����ϹǷ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
-) ELSE (
-	REM ��ȣ   
-	echo W-32,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ���񽺰� �ʿ����� �ʾ� �̿����� �ʴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ���񽺰� ��Ȱ��ȭ �Ǿ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo IIS ���񽺰� Ȱ��ȭ �Ǿ����� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------end------------------------------------------
+echo ------------------------------------------결과 요약------------------------------------------
+:: 결과 요약 보고
+type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
+:: sendmail -to admin@example.com -subject "Security Audit Summary" -body C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt 에 저장되었습니다.
+
+:: 정리 작업
+echo 정리 작업을 수행합니다...
+del C:\Window_%COMPUTERNAME%_raw\*.txt
+del C:\Window_%COMPUTERNAME%_raw\*.vbs
+
+echo 스크립트를 종료합니다.
+exit
