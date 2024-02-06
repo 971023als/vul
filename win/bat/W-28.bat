@@ -80,3 +80,31 @@ echo -------------------------------------------end-----------------------------
 echo --------------------------------------W-28------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
 echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo ------------------------------------------W-28------------------------------------------
+net start | find "World Wide Web Publishing Service" >nul
+IF NOT ERRORLEVEL 1 (
+	FOR /F "tokens=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
+		cd %%a
+		IF EXIST *.lnk (
+			echo Found shortcut files (*.lnk) in %%a >> C:\Window_%COMPUTERNAME%_raw\W-28.txt
+		)
+	)
+	cd "%install_path%"
+	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-28.txt >nul
+	IF ERRORLEVEL 1 (
+		echo W-28,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo Shortcut files found in critical IIS paths, indicating potential security risks. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	) ELSE (
+		echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo No unauthorized shortcut files found in critical IIS paths. System complies with security standards. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	)
+) ELSE (
+	echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo World Wide Web Publishing Service is not running. No need to check for shortcut files. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+)
+echo -------------------------------------------end-------------------------------------------
+
+echo --------------------------------------W-28------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
