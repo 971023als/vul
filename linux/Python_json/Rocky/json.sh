@@ -2,14 +2,11 @@
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 정확한 변수 정의
+RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 최종 JSON 파일 경로
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-CSV_PATH="/var/www/html/results_${NOW}.csv"
+CSV_PATH="/var/www/html/results_${NOW}.csv"  # CSV 파일 경로도 이것으로 통일
 HTML_PATH="/var/www/html/index.html"
-JSON_COMBINED_PATH="/var/www/html/combined_${NOW}.json"
-CSV_WEB_PATH="/results_${NOW}.csv"  # 웹 접근 가능한 경로로 수정
-
-# 초기 JSON 객체 시작과 관련된 코드 제거(필요 없음)
+# CSV_WEB_PATH 변수는 제거하고 CSV_PATH를 사용
 
 errors=()
 
@@ -52,29 +49,16 @@ from pathlib import Path
 import pandas as pd
 
 # 파일 경로 설정
-csv_path = '$CSV_PATH'
+csv_path = '$CSV_PATH'  # CSV 파일 경로
 html_path = '$HTML_PATH'
-json_combined_path = '$JSON_COMBINED_PATH'
-csv_web_path = '$CSV_WEB_PATH'
-
-def get_filelist(subfolder, file_extension):
-    data_path = Path.cwd() / subfolder
-    return list(data_path.glob('**/*.' + file_extension))
-
-def combine_json_files(files):
-    all_data = []
-    for json_file in files:
-        with open(json_file, 'r') as file:
-            data = json.load(file)
-            all_data.extend(data if isinstance(data, list) else [data])
-    return all_data
+results_path = '$RESULTS_PATH'
 
 def save_to_csv(data, csv_path):
     df = pd.DataFrame(data)
     df.to_csv(csv_path, index=False)
 
-def generate_html(data, html_path, csv_web_path):
-    html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>결과 보고서</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>결과 보고서</h1>\\n<a href=\"' + csv_web_path + '\" download>CSV 파일 다운로드</a>\\n<table>\\n<tr>'
+def generate_html(data, html_path, csv_path):
+    html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>결과 보고서</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>결과 보고서</h1>\\n<a href=\"' + csv_path.replace('/var/www/html', '') + '\" download>CSV 파일 다운로드</a>\\n<table>\\n<tr>'
     for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']:
         html_content += f'<th>{key}</th>'
     html_content += '</tr>\\n'
@@ -87,9 +71,9 @@ def generate_html(data, html_path, csv_web_path):
 files = get_filelist('data', 'json')
 all_data = combine_json_files(files)
 save_to_csv(all_data, csv_path)
-generate_html(all_data, html_path, csv_web_path)
+generate_html(all_data, html_path, csv_path)
 
-with open(json_combined_path, 'w') as json_file:
+with open(results_path, 'w') as json_file:
     json.dump(all_data, json_file)
 "
 
