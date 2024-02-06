@@ -1,11 +1,11 @@
-##!/bin/bash
+#!/bin/bash
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"
-ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-CSV_PATH="/var/www/html/results_${NOW}.csv"  # CSV 파일 경로 추가
-HTML_PATH="/var/www/html/index.html"
+CSV_PATH="/var/www/html/results_${NOW}.csv"  # CSV 파일 경로
+HTML_PATH="/var/www/html/index.html"         # HTML 파일 경로
+JSON_COMBINED_PATH="/var/www/html/combined_${NOW}.json"  # 합쳐진 JSON 파일 경로
+CSV_WEB_PATH="results_${NOW}.csv"            # CSV 파일의 웹 경로
 
 # 초기 JSON 객체 시작
 echo "{" > "$RESULTS_PATH"
@@ -41,71 +41,67 @@ fi
 
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
-# JSON 파일을 CSV로 변환
+# Python 코드 실행: JSON 파일 처리 및 HTML 파일 생성
 python3 -c "
 import json
-import csv
+from pathlib import Path
+import pandas as pd
 
-json_file_path = '$RESULTS_PATH'
-csv_file_path = '$CSV_PATH'
+# 파일 경로 설정
+csv_path = '${CSV_PATH}'
+html_path = '${HTML_PATH}'
+json_combined_path = '${JSON_COMBINED_PATH}'
+csv_web_path = '${CSV_WEB_PATH}'
 
-with open(json_file_path, 'r') as json_file:
-    data = json.load(json_file)
+def get_filelist(subfolder, file_extension):
+    '''하위 폴더 내의 모든 파일을 불러오는 함수'''
+    data_path = Path.cwd() / subfolder
+    return list(data_path.glob('**/*.{}' .format(file_extension)))
 
-with open(csv_file_path, 'w', newline='') as csv_file:
-    writer = csv.writer(csv_file)
-    writer.writerow(['번호', '분류', '코드', '위험도', '진단항목', '진단결과', '현황', '대응방안'])
-    for key, value in data.items():
-        item = json.loads(value['output'])
-        현황_formatted = ', '.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-        writer.writerow([key, item.get('분류', ''), item.get('코드', ''), item.get('위험도', ''), item.get('진단 항목', ''), item.get('진단 결과', ''), 현황_formatted, item.get('대응방안', '')])
+def combine_json_files(files):
+    '''JSON 파일들을 하나의 리스트로 합치는 함수'''
+    all_data = []
+    for json_file in files:
+        with open(json_file, 'r') as file:
+            data = json.load(file)
+            all_data.extend(data if isinstance(data, list) else [data])
+    return all_data
+
+def save_to_csv(data, csv_path):
+    '''데이터를 CSV 파일로 저장하는 함수'''
+    df = pd.DataFrame(data)
+    df.to_csv(csv_path, index=False)
+
+def generate_html(data, html_path, csv_web_path):
+    '''데이터를 기반으로 HTML 파일을 생성하는 함수, 다운로드 링크 포함'''
+    html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>결과 보고서</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>결과 보고서</h1>\\n<a href=\"' + csv_web_path + '\" download>CSV 파일 다운로드</a>\\n<table>\\n<tr>'
+    for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']:
+        html_content += f'<th>{key}</th>'
+    html_content += '</tr>\\n'
+    for item in data:
+        html_content += '<tr>' + ''.join(f'<td>{item.get(key, "")}</td>' for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']) + '</tr>\\n'
+    html_content += '</table>\\n</body>\\n</html>'
+    with open(html_path, 'w') as html_file:
+        html_file.write(html_content)
+
+# 'data' 하위 폴더에서 .json 확장자를 가진 모든 파일을 불러옴
+files = get_filelist('data', 'json')
+# JSON 파일들을 하나의 리스트로 합치고
+all_data = combine_json_files(files)
+# 합쳐진 데이터를 CSV 파일로 저장
+save_to_csv(all_data, csv_path)
+# HTML 파일 생성, 다운로드 링크 포함
+generate_html(all_data, html_path, csv_web_path)
+
+# 선택적: 합쳐진 JSON 데이터를 파일로 저장
+with open(json_combined_path, 'w') as json_file:
+    json.dump(all_data, json_file)
 "
 
-# Python 코드 실행: JSON 파일을 읽고 HTML로 변환
-python3 -c "
-import json
+echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
 
-HTML_PATH = '$HTML_PATH'
-RESULTS_PATH = '$RESULTS_PATH'
-
-# HTML 파일 시작
-html_content = '<!DOCTYPE html>\\n'
-html_content += '<html>\\n<head>\\n'
-html_content += '<title>주요 통신 기반 시설 진단 결과</title>\\n'
-html_content += '<meta charset=\"utf-8\">\\n'
-html_content += '<style>\\n'
-html_content += 'body { font-family: Arial, sans-serif; text-align: center; }\\n'
-html_content += 'table { margin: 0 auto; border-collapse: collapse; }\\n'
-html_content += 'th, td { border: 1px solid black; padding: 8px; }\\n'
-html_content += 'th { background-color: #f2f2f2; }\\n'
-html_content += '</style>\\n'
-html_content += '</head>\\n<body>\\n'
-html_content += '<h1>주요 통신 기반 시설 진단 결과</h1>\\n'
-html_content += '<table>\\n'
-html_content += '<tr><th>번호</th><th>분류</th><th>코드</th><th>위험도</th><th>진단항목</th><th>진단결과</th><th>현황</th><th>대응방안</th></tr>\\n'
-
-with open(RESULTS_PATH, 'r') as json_file:
-    data = json.load(json_file)
-    for key, value in data.items():
-        item = json.loads(value['output'])
-        현황_formatted = '<br>'.join(item.get('현황', [])) if isinstance(item.get('현황'), list) else item.get('현황', '')
-        html_content += f'<tr><td>{key}</td><td>{item.get("분류", "")}</td><td>{item.get("코드", "")}</td><td>{item.get("위험도", "")}</td><td>{item.get("진단 항목", "")}</td><td>{item.get("진단 결과", "")}</td><td>{현황_formatted}</td><td>{item.get("대응방안", "")}</td></tr>\\n'
-
-html_content += '</table>\\n</body>\\n</html>'
-
-with open(HTML_PATH, 'w') as html_file:
-    html_file.write(html_content)
-"
-
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다."
-
-
-# Ubuntu/Debian 시스템용
-sudo systemctl restart apache2
-
-# CentOS/RHEL 시스템용 (필요한 경우)
-sudo systemctl restart httpd
-
+# Apache 서비스 재시작
+sudo systemctl restart apache2 || sudo systemctl restart httpd
 
 # 오류 발생시 처리
 if [ $? -ne 0 ]; then
@@ -113,4 +109,3 @@ if [ $? -ne 0 ]; then
 else
     echo "Apache 서비스가 성공적으로 재시작되었습니다."
 fi
-
