@@ -2,14 +2,15 @@
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 수정된 부분: 정확한 변수 정의
+RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 정확한 변수 정의
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
 JSON_COMBINED_PATH="/var/www/html/combined_${NOW}.json"
+CSV_WEB_PATH="/results_${NOW}.csv"  # 웹 접근 가능한 경로로 수정
 
-# 초기 JSON 객체 시작
-echo "{" > "$RESULTS_PATH"
+# 초기 JSON 객체 시작과 관련된 코드 제거(필요 없음)
+
 errors=()
 
 # U-01.py부터 U-72.py까지 실행하며 JSON 파일 생성
@@ -51,10 +52,10 @@ from pathlib import Path
 import pandas as pd
 
 # 파일 경로 설정
-csv_path = '${CSV_PATH}'
-html_path = '${HTML_PATH}'
-json_combined_path = '${JSON_COMBINED_PATH}'
-csv_web_path = '${CSV_WEB_PATH}'
+csv_path = '$CSV_PATH'
+html_path = '$HTML_PATH'
+json_combined_path = '$JSON_COMBINED_PATH'
+csv_web_path = '$CSV_WEB_PATH'
 
 def get_filelist(subfolder, file_extension):
     data_path = Path.cwd() / subfolder
