@@ -7,6 +7,17 @@ ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
 
+# Python 및 pandas 설치 확인 및 설치
+if ! command -v python3 &> /dev/null; then
+    echo "Python이 설치되어 있지 않습니다. Python을 설치합니다."
+    sudo apt-get update && sudo apt-get install python3 -y
+fi
+
+if ! python3 -c "import pandas" &> /dev/null; then
+    echo "pandas가 설치되어 있지 않습니다. pandas를 설치합니다."
+    pip3 install pandas
+fi
+
 declare -a errors
 
 execute_script() {
@@ -43,6 +54,7 @@ fi
 
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
+
 # Python 코드 실행: JSON 파일 처리 및 HTML 파일 생성
 python3 -c "
 import json
@@ -71,11 +83,10 @@ def generate_html(data, html_path, csv_path):
 
 echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
 
-# Apache 서비스 재시작
-if systemctl is-active --quiet apache2; then
-    sudo systemctl restart apache2 && echo "Apache 서비스가 성공적으로 재시작되었습니다." || echo "Apache 서비스 재시작에 실패했습니다."
-elif systemctl is-active --quiet httpd; then
-    sudo systemctl restart httpd && echo "Httpd 서비스가 성공적으로 재시작되었습니다." || echo "Httpd 서비스 재시작에 실패했습니다."
+# Apache 서비스 재시작 로직 개선
+APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
+if [ ! -z "$APACHE_SERVICE_NAME" ]; then
+    sudo systemctl restart "$APACHE_SERVICE_NAME" && echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다." || echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."
 else
     echo "Apache/Httpd 서비스를 찾을 수 없습니다."
 fi
