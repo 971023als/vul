@@ -87,11 +87,11 @@ def json_to_html(json_path, html_path, csv_file_name):
 
     with open(html_path, 'w', encoding='utf-8') as html_file:
         # HTML 파일 작성 시작
-        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>Security Check Results</title>\n')
+        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>취약점 진단 보고서</title>\n')
         html_file.write('<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid black; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }</style>\n')
         html_file.write('</head>\n<body>\n')
-        html_file.write('<h2>Security Check Results</h2>\n')
-        html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
+        html_file.write('<h2>취약점 진단 보고서</h2>\n')
+        html_file.write(f'<p><a href="{csv_file_name}">다운로드 CSV파일</a></p>\n')
         html_file.write('<table>\n<tr>\n')
 
         # 테이블 헤더 생성
