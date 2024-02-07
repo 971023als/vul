@@ -50,6 +50,7 @@ for file in "${FILES[@]}"; do
 done
 
 
-# Apache 서비스 재시작
-sudo service restart apache2
-sudo service restart httpd
+# Apache 서비스 재시작 로직 개선
+APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
+if [ ! -z "$APACHE_SERVICE_NAME" ]; then
+    sudo systemctl restart "$APACHE_SERVICE_NAME" && echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다." || echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."

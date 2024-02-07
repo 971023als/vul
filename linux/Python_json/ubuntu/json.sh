@@ -101,6 +101,3 @@ json_to_csv(json_path, csv_path)
 json_to_html(json_path, html_path, csv_file_name)
 EOF
 
-
-echo "결과가 $CSV_PATH 및 $HTML_PATH에 저장되었습니다."
-
