@@ -5,7 +5,7 @@ NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
-HTML_PATH="/var/www/html/index.html"
+HTML_PATH="/root//vul/linux/Python_json/ubuntu/index.html"
 
 # Initialize result file and error array
 echo "[" > "$RESULTS_PATH"
@@ -74,10 +74,6 @@ json_to_csv()
 json_to_html()
 EOF
 
-
-echo "결과가 $CSV_PATH 및 $HTML_PATH에 저장되었습니다."
-
-echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
 
 # Apache 서비스 재시작 로직 개선
 APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')

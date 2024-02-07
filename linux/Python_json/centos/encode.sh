@@ -42,8 +42,6 @@ for file in "${FILES[@]}"; do
   fi
 done
 
-echo "파일 복사가 완료되었습니다."
-
 # Apache 서비스 재시작
 sudo systemctl restart apache2
 
