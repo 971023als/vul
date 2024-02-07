@@ -30,15 +30,16 @@ if ! command -v python3-venv &> /dev/null; then
     
     # 패키지 매니저 확인
     if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-        echo "Debian/Ubuntu 시스템을 위한 python3-venv 패키지를 설치합니다."
-        sudo apt-get update
-        sudo apt-get install python3-venv -y
+      echo "Debian/Ubuntu 시스템을 위한 python3-venv 패키지를 설치합니다."
+      sudo apt-get update
+      sudo apt-get install python3-venv -y
     else
         echo "이 스크립트는 Debian/Ubuntu 시스템과 apt-get 패키지 매니저를 사용하는 시스템에만 적용됩니다."
     fi
 else
     echo "python3-venv이 이미 설치되어 있습니다."
 fi
+
 
 # 아파치 및 mod_wsgi 설치 여부 확인 및 설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
@@ -58,7 +59,6 @@ elif [[ "$PKG_MANAGER" == "dnf" ]] || [[ "$PKG_MANAGER" == "yum" ]]; then
         echo "아파치가 이미 설치되어 있습니다."
     fi
 fi
-
 
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
