@@ -7,6 +7,18 @@ ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
 
+# 가상 환경 경로 설정
+VENV_PATH="/root/vul/linux/Python_json/ubuntu/venv"
+
+# 가상 환경 생성 및 활성화
+if [ ! -d "$VENV_PATH" ]; then
+    echo "가상 환경이 없습니다. 가상 환경을 생성합니다."
+    python3 -m venv "$VENV_PATH"
+fi
+
+# 가상 환경 활성화
+source "$VENV_PATH/bin/activate"
+
 declare -a errors
 
 execute_script() {
@@ -21,7 +33,6 @@ execute_script() {
         errors+=("$script_name: $output")
     fi
 }
-
 # JSON 파일 생성 시작
 echo "{" > "$RESULTS_PATH"
 

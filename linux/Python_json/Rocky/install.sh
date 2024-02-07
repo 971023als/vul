@@ -40,9 +40,9 @@ else
     echo "pip이 이미 설치되어 있습니다."
 fi
 
-# pandas 설치
-echo "pandas를 설치합니다."
-pip3 install pandas
+# pandas 및 pyarrow 설치
+echo "pandas와 pyarrow를 설치합니다."
+pip3 install pandas pyarrow
 
 # 아파치 및 mod_wsgi 설치 여부 확인 및 설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
