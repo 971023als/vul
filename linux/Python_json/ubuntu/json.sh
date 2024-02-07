@@ -32,9 +32,9 @@ echo "]" >> "$RESULTS_PATH"
 # Log errors if any
 if [ ${#errors[@]} -gt 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
-    echo "Errors logged to $ERRORS_PATH"
+    echo "에러가 존재함 -> $ERRORS_PATH"
 else
-    echo "No errors encountered."
+    echo "에러 없음."
 fi
 
 # Generate CSV and HTML from JSON
