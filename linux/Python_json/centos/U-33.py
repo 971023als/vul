@@ -4,8 +4,24 @@ import json
 import re
 
 def parse_version(version_string):
-    """버전 문자열을 정수 튜플로 변환합니다."""
-    return tuple(map(int, version_string.split('.')))
+    """Parse version string to a tuple of integers."""
+    return tuple(map(int, re.findall(r'\d+', version_string)))
+
+def check_command_exists(command):
+    """Check if a command exists on the system."""
+    try:
+        subprocess.check_output(["which", command], stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def get_bind_version_rpm():
+    """Get BIND version using rpm."""
+    return subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True).strip()
+
+def get_bind_version_dpkg():
+    """Get BIND version using dpkg."""
+    return subprocess.check_output("dpkg -l | grep '^ii' | grep 'bind9'", shell=True, text=True).strip()
 
 def check_dns_security_patch():
     results = {
@@ -13,17 +29,22 @@ def check_dns_security_patch():
         "코드": "U-33",
         "위험도": "상",
         "진단 항목": "DNS 보안 버전 패치",
-        "진단 결과": "양호",  # 초기 상태 설정
+        "진단 결과": "양호",  # Default state
         "현황": [],
         "대응방안": "DNS 서비스 주기적 패치 관리"
     }
 
     minimum_version = "9.18.7"
+    bind_version_output = ""
 
     try:
-        rpm_output = subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True, stderr=subprocess.PIPE).strip()
-        if rpm_output:
-            version_match = re.search(r'bind-(\d+\.\d+\.\d+)', rpm_output)
+        if check_command_exists("rpm"):
+            bind_version_output = get_bind_version_rpm()
+        elif check_command_exists("dpkg"):
+            bind_version_output = get_bind_version_dpkg()
+
+        if bind_version_output:
+            version_match = re.search(r'bind(?:9)?-(\d+\.\d+\.\d+)', bind_version_output)
             if version_match:
                 current_version = version_match.group(1)
                 if parse_version(current_version) < parse_version(minimum_version):
@@ -36,9 +57,10 @@ def check_dns_security_patch():
                 results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
         else:
             results["현황"].append("DNS 서비스(BIND)가 설치되어 있지 않습니다.")
+
     except subprocess.CalledProcessError as e:
         results["진단 결과"] = "오류"
-        results["현황"].append(f"BIND 버전 확인 중 오류 발생: {e.stderr}")
+        results["현황"].append(f"BIND 버전 확인 중 오류 발생: {e.stderr if e.stderr else '명령어 실행 실패'}")
 
     return results
 

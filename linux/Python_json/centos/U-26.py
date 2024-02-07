@@ -13,28 +13,21 @@ def check_automountd_disabled():
         "대응방안": "automountd 서비스 비활성화"
     }
 
-    try:
-        # automountd 또는 autofs 서비스 실행 여부 확인
-        automountd_running = subprocess.check_output(
-            "ps -ef | grep -iE '[a]utomount|[a]utofs'", 
-            shell=True, text=True
-        ).strip()
+    cmd = "ps -ef | grep -iE '[a]utomount|[a]utofs'"
+    process = subprocess.run(cmd, shell=True, text=True, capture_output=True)
 
-        if automountd_running:
-            results["진단 결과"] = "취약"
-            results["현황"].append("automountd 서비스가 실행 중입니다.")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("automountd 서비스가 비활성화되어 있습니다.")
-
-    except subprocess.CalledProcessError as e:
-        results["진단 결과"] = "오류"
-        results["현황"].append(f"automountd 서비스 확인 중 오류 발생: {e}")
-
-    # 진단 결과가 명시적으로 설정되지 않은 경우 기본값을 "양호"로 설정
-    if results["진단 결과"] is None:
+    if process.returncode == 0:
+        # automountd 또는 autofs 서비스가 실행 중임
+        results["진단 결과"] = "취약"
+        results["현황"].append("automountd 서비스가 실행 중입니다.")
+    elif process.returncode == 1:
+        # automountd 또는 autofs 서비스가 실행 중이지 않음
         results["진단 결과"] = "양호"
-        results["현황"].append("automountd 서비스 관련 문제가 발견되지 않았습니다.")
+        results["현황"].append("automountd 서비스가 비활성화되어 있습니다.")
+    else:
+        # 명령어 실행 중 오류 발생
+        results["진단 결과"] = "오류"
+        results["현황"].append(f"automountd 서비스 확인 중 오류 발생: {process.stderr}")
 
     return results
 

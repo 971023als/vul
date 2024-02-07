@@ -14,9 +14,12 @@ def check_duplicate_uids():
         "대응방안": "동일한 UID로 설정된 사용자 계정을 제거하거나 수정"
     }
 
+    # Define the minimum UID for regular (non-system) user accounts
+    min_regular_user_uid = 1000
+
     if os.path.isfile("/etc/passwd"):
         with open("/etc/passwd", 'r') as file:
-            uids = [line.split(":")[2] for line in file if line.strip() and not line.startswith("#")]
+            uids = [line.split(":")[2] for line in file if line.strip() and not line.startswith("#") and int(line.split(":")[2]) >= min_regular_user_uid]
             uid_counts = Counter(uids)
             duplicate_uids = {uid: count for uid, count in uid_counts.items() if count > 1}
 

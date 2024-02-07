@@ -17,7 +17,10 @@ def check_admin_group_accounts():
         "daemon", "bin", "sys", "adm", "listen", "nobody", "nobody4",
         "noaccess", "diag", "operator", "gopher", "games", "ftp", "apache",
         "httpd", "www-data", "mysql", "mariadb", "postgres", "mail", "postfix",
-        "news", "lp", "uucp", "nuucp" "root", "daemon", "adm", "lp", "sync", "shutdown", "halt", "ubuntu", "user"
+        "news", "lp", "uucp", "nuucp", "root", "daemon", "adm", "lp", "sync", 
+        "shutdown", "halt", "mailnull", "smmsp", "uucp", "manager", "dumper", 
+        "abuse", "webmaster", "noc", "security", "hostmaster", "info", "marketing", 
+        "sales", "support", "accounts", "help", "admin", "guest", "user", "ubuntu"
     ]
 
     if os.path.isfile("/etc/group"):

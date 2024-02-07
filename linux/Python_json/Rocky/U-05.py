@@ -38,8 +38,8 @@ def check_insecure_path():
         if os.path.exists(file):
             with open(file, 'r') as f:
                 content = f.read()
-                if re.search(r'\.:|::', content):
-                    results["현황"].append(f"{file} 파일 내에 PATH 환경 변수에 '.' 또는 '::' 이 포함되어 있습니다.")
+                if re.search(r'\b\.\b|(^|:)\.(:|$)', content):
+                    results["현황"].append(f"{file} 파일 내에 PATH 환경 변수에 '.' 또는 중간에 '::' 이 포함되어 있습니다.")
 
     # 사용자 홈 디렉터리 설정 파일 검사
     users = pwd.getpwall()
@@ -50,7 +50,7 @@ def check_insecure_path():
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
                     content = f.read()
-                    if re.search(r'\.:|::', content):
+                    if re.search(r'\b\.\b|(^|:)\.(:|$)', content):
                         results["현황"].append(f"{file_path} 파일 내에 PATH 환경 변수에 '.' 또는 '::' 이 포함되어 있습니다.")
 
     # 진단 결과 설정
