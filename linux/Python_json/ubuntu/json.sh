@@ -7,42 +7,39 @@ ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
 
-# Python 및 pandas 설치 확인 및 설치
-if ! command -v python3 &> /dev/null; then
-    echo "Python이 설치되어 있지 않습니다. Python을 설치합니다."
-    sudo apt-get update && sudo apt-get install python3 -y
-fi
+# 결과 파일 초기화 및 시작 배열 마크업 작성
+echo "[" > "$RESULTS_PATH"
+first_entry=true
 
-if ! python3 -c "import pandas" &> /dev/null; then
-    echo "pandas가 설치되어 있지 않습니다. pandas를 설치합니다."
-    pip3 install pandas
-fi
-
+# 오류 저장 배열 초기화
 declare -a errors
 
-execute_script() {
-    local script_name=$1
-    local start_time=$(date +%s.%N)
-    local output=$(python3 "$script_name" 2>&1)
-    local end_time=$(date +%s.%N)
-    local execution_time=$(echo "$end_time - $start_time" | bc)
-    local output_escaped=$(echo "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
-    echo "\"$script_name\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
-    if [[ $output == *ERROR* ]]; then
-        errors+=("$script_name: $output")
-    fi
-}
-
-# JSON 파일 생성 시작
-echo "{" > "$RESULTS_PATH"
-
 # U-01.py부터 U-72.py까지 실행
-for i in $(seq -w 1 72); do
-    execute_script "U-${i}.py"
+for i in $(seq -f "%02g" 1 72)
+do
+    SCRIPT_PATH="U-$i.py"
+    if [ -f "$SCRIPT_PATH" ]; then
+        # Python 스크립트 실행하고 변수에 결과 저장
+        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH") # Python3으로 변경
+        if [ $? -eq 0 ]; then
+            # 첫 번째 항목이 아니라면, 배열 항목 구분을 위한 쉼표 추가
+            if [ "$first_entry" = true ]; then
+                first_entry=false
+            else
+                echo "," >> "$RESULTS_PATH"
+            fi
+            # 결과 출력
+            echo "$RESULT" >> "$RESULTS_PATH"
+        else
+            errors+=("Error running $SCRIPT_PATH")
+        fi
+    else
+        errors+=("$SCRIPT_PATH not found")
+    fi
 done
 
-# 파일 마지막에 JSON 닫기
-sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
+# 배열 닫기
+echo "]" >> "$RESULTS_PATH"
 
 # 오류 로그 기록
 if [ ${#errors[@]} -gt 0 ]; then
@@ -54,32 +51,55 @@ fi
 
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
-
-# Python 코드 실행: JSON 파일 처리 및 HTML 파일 생성
-python3 -c "
+# JSON 파일 처리 및 HTML, CSV 파일 생성을 위한 Python 코드 실행
+# JSON 파일 처리 및 HTML, CSV 파일 생성을 위한 Python 코드 실행
+python3 - <<EOF
 import json
-import pandas as pd
+import csv
 
-# 파일 경로 설정
-csv_path = '$CSV_PATH'
-html_path = '$HTML_PATH'
-results_path = '$RESULTS_PATH'
+json_path = "$RESULTS_PATH"
+csv_path = "$CSV_PATH"
+html_path = "$HTML_PATH"
+csv_file_name = "results_${NOW}.csv" # CSV 파일의 웹 경로
 
-def save_to_csv(data, csv_path):
-    df = pd.DataFrame(data)
-    df.to_csv(csv_path, index=False)
+# JSON 데이터를 CSV로 변환하는 함수
+def json_to_csv(json_path, csv_path):
+    with open(json_path, 'r') as json_file:
+        json_data = json.load(json_file)
+    with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
+        writer = csv.writer(csv_file)
+        if json_data:
+            writer.writerow(json_data[0].keys())
+            for item in json_data:
+                writer.writerow(item.values())
 
-def generate_html(data, html_path, csv_path):
-    html_content = '<!DOCTYPE html>\\n<html>\\n<head>\\n<title>결과 보고서</title>\\n<meta charset=\"utf-8\">\\n</head>\\n<body>\\n<h1>결과 보고서</h1>\\n<a href=\"' + csv_path.replace('/var/www/html', '') + '\" download>CSV 파일 다운로드</a>\\n<table>\\n<tr>'
-    for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']:
-        html_content += f'<th>{key}</th>'
-    html_content += '</tr>\\n'
-    for item in data:
-        html_content += '<tr>' + ''.join(f'<td>{item.get(key, \"\")}</td>' for key in ['분류', '코드', '위험도', '진단 항목', '진단 결과', '현황', '대응방안']) + '</tr>\\n'
-    html_content += '</table>\\n</body>\\n</html>'
-    with open(html_path, 'w') as html_file:
-        html_file.write(html_content)
-"
+# JSON 데이터를 HTML로 변환하는 함수 (다운로드 링크 포함)
+def json_to_html(json_path, html_path, csv_file_name):
+    with open(json_path, 'r') as json_file:
+        json_data = json.load(json_file)
+    with open(html_path, 'w', encoding='utf-8') as html_file:
+        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>Results</title>\n</head>\n<body>\n')
+        html_file.write('<h1>Analysis Results</h1>\n')
+        # CSV 다운로드 링크 추가
+        html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
+        html_file.write('<table border="1">\n<tr>\n')
+        if json_data:
+            for key in json_data[0].keys():
+                html_file.write(f'<th>{key}</th>\n')
+            html_file.write('</tr>\n')
+            for item in json_data:
+                html_file.write('<tr>\n')
+                for value in item.values():
+                    html_file.write(f'<td>{value}</td>\n')
+                html_file.write('</tr>\n')
+        html_file.write('</table>\n</body>\n</html>')
+
+json_to_csv(json_path, csv_path)
+json_to_html(json_path, html_path, csv_file_name)
+EOF
+
+
+echo "결과가 $CSV_PATH 및 $HTML_PATH에 저장되었습니다."
 
 echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
 
