@@ -26,7 +26,7 @@ def check_dev_directory_for_non_device_files():
 
     if non_device_files:
         results["진단 결과"] = "취약"
-        results["현황"] = non_device_files
+        results["현황"].append(" $non_device_files 장치가 존재합니다")
     else:
         results["진단 결과"] = "양호"
         results["현황"].append("/dev 디렉터리에 존재하지 않는 device 파일이 없습니다.")

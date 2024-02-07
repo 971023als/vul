@@ -52,33 +52,34 @@ fi
 echo "결과가 $RESULTS_PATH에 저장되었습니다."
 
 # JSON 파일 처리 및 HTML, CSV 파일 생성을 위한 Python 코드 실행
-# JSON 파일 처리 및 HTML, CSV 파일 생성을 위한 Python 코드 실행
 python3 - <<EOF
 import json
 import csv
+import os
 
-json_path = "$RESULTS_PATH"
-csv_path = "$CSV_PATH"
-html_path = "$HTML_PATH"
-csv_file_name = "results_${NOW}.csv" # CSV 파일의 웹 경로
+# 환경 변수에서 경로를 가져옴
+json_path = os.getenv('RESULTS_PATH')
+csv_path = os.getenv('CSV_PATH')
+html_path = os.getenv('HTML_PATH')
+csv_file_name = f"results_{os.getenv('NOW')}.csv" # CSV 파일의 웹 경로
 
 # JSON 데이터를 CSV로 변환하는 함수
 def json_to_csv(json_path, csv_path):
-    with open(json_path, 'r') as json_file:
+    with open(json_path, 'r', encoding='utf-8') as json_file:
         json_data = json.load(json_file)
     with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
         writer = csv.writer(csv_file)
         if json_data:
-            writer.writerow(json_data[0].keys())
+            writer.writerow(json_data[0].keys())  # column headers
             for item in json_data:
-                writer.writerow(item.values())
+                writer.writerow(item.values())  # row values
 
 # JSON 데이터를 HTML로 변환하는 함수 (다운로드 링크 포함)
 def json_to_html(json_path, html_path, csv_file_name):
-    with open(json_path, 'r') as json_file:
+    with open(json_path, 'r', encoding='utf-8') as json_file:
         json_data = json.load(json_file)
     with open(html_path, 'w', encoding='utf-8') as html_file:
-        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>Results</title>\n</head>\n<body>\n')
+        html_file.write('<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>Results</title>\n</head>\n<body>\n')
         html_file.write('<h1>Analysis Results</h1>\n')
         # CSV 다운로드 링크 추가
         html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
