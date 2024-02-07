@@ -24,20 +24,11 @@ else
     echo "이 스크립트는 리눅스에서만 지원됩니다."
 fi
 
-# python3-venv 설치 여부 확인
-if ! command -v python3-venv &> /dev/null; then
-    echo "python3-venv이 설치되어 있지 않습니다. 설치를 시작합니다."
-    
-    # 패키지 매니저 확인
-    if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-      echo "Debian/Ubuntu 시스템을 위한 python3-venv 패키지를 설치합니다."
-      sudo apt-get update
-      sudo apt-get install python3-venv -y
-    else
-        echo "이 스크립트는 Debian/Ubuntu 시스템과 apt-get 패키지 매니저를 사용하는 시스템에만 적용됩니다."
-    fi
-else
-    echo "python3-venv이 이미 설치되어 있습니다."
+# python3-venv 패키지 설치 (Debian/Ubuntu 전용)
+if [[ "$PKG_MANAGER" == "apt-get" ]]; then
+    echo "python3-venv 패키지를 설치합니다."
+    sudo apt-get update
+    sudo apt-get install python3-venv -y
 fi
 
 

@@ -9,6 +9,7 @@ def get_umask_values_from_file(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             if 'umask' in line and not line.strip().startswith('#'):
+                # Splitting by 'umask' to catch cases like "umask 022" and "umask=022"
                 parts = line.split('umask')
                 if len(parts) > 1:
                     value_part = parts[1].split()
@@ -36,22 +37,18 @@ def check_umask_settings():
     for file_path in files_to_check:
         if os.path.isfile(file_path):
             umask_values = get_umask_values_from_file(file_path)
-            if umask_values:  # Check if any umask values were found
-                for value in umask_values:
-                    if int(value, 8) < int('022', 8):
-                        results["진단 결과"] = "취약"
-                        results["현황"].append(f"{file_path} 파일에서 UMASK 값 ({value})이 022 이상으로 설정되지 않았습니다.")
-                    else:
-                        results["현황"].append(f"{file_path} 파일에서 UMASK 값 ({value})이 적절하게 설정되어 있습니다.")
-            else:  # If no umask values found, report the file was checked
-                results["현황"].append(f"{file_path} 파일에서 UMASK 값이 설정되지 않았거나 주석 처리되어 있습니다.")
+            for value in umask_values:
+                # Ensure the value is treated as octal for comparison
+                # and remove leading zeros for Python 3 compatibility
+                if int(value, 8) < int('022', 8):
+                    results["진단 결과"] = "취약"
+                    results["현황"].append(f"{file_path} 파일에서 UMASK 값 ({value})이 022 이상으로 설정되지 않았습니다.")
 
     return results
 
 def main():
     umask_settings_check_results = check_umask_settings()
     print(json.dumps(umask_settings_check_results, ensure_ascii=False, indent=4))
-
 
 if __name__ == "__main__":
     main()

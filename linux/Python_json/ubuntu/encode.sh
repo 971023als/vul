@@ -1,6 +1,8 @@
 #!/bin/bash
 
+echo "결과가 $RESULTS_PATH에 저장되었습니다"
 [ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
+echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다"
 
 # 원하는 기본 인코딩 코드 설정
 encoding_code="utf-8"
@@ -26,18 +28,9 @@ replace_string="AddDefaultCharset UTF-8"
 # 주석 처리된 부분을 해제하고 파일을 수정
 sed -i "s/$search_string/$replace_string/" "$apache_config_file"
 
-# CentOS Apache 설정 파일 경로
-apache_config="/etc/httpd/conf/httpd.conf"
-
-# 주석 처리를 해제할 문자열
-search="#AddDefaultCharset UTF-8"
-replace="AddDefaultCharset UTF-8"
-
-# 주석 처리된 부분을 해제하고 파일을 수정
-sed -i "s/$search/$replace/" "$apache_config"
 
 # 복사할 파일 목록
-FILES=("index.html")
+FILES=("index.php")
 
 # /var/www/html로 파일 복사
 for file in "${FILES[@]}"; do
@@ -49,8 +42,20 @@ for file in "${FILES[@]}"; do
   fi
 done
 
+echo "파일 복사가 완료되었습니다."
 
-# Apache 서비스 재시작 로직 개선
-APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
-if [ ! -z "$APACHE_SERVICE_NAME" ]; then
-    sudo systemctl restart "$APACHE_SERVICE_NAME" && echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다." || echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."
+# Apache 서비스 재시작
+sudo systemctl restart apache2
+
+# CentOS Apache 설정 파일 경로
+apache_config="/etc/httpd/conf/httpd.conf"
+
+# 주석 처리를 해제할 문자열
+search="#AddDefaultCharset UTF-8"
+replace="AddDefaultCharset UTF-8"
+
+# 주석 처리된 부분을 해제하고 파일을 수정
+sed -i "s/$search/$replace/" "$apache_config"
+
+# Apache 서비스 재시작
+sudo systemctl restart httpd
