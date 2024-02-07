@@ -15,8 +15,6 @@ def check_admin_group_accounts():
 
     # Considered unnecessary unless needed for specific services
     unnecessary_accounts = [
-        # System accounts commonly included in admin groups are not listed here
-        # Add or remove accounts based on system requirements
         "bin", "sys", "adm", "listen", "nobody4", "noaccess", "diag",
         "operator", "gopher", "games", "ftp", "apache", "httpd", "www-data",
         "mysql", "mariadb", "postgres", "mail", "postfix", "news", "lp",

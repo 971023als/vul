@@ -80,9 +80,16 @@ def json_to_html(json_path, html_path, csv_file_name):
     with open(json_path, 'r') as json_file:
         json_data = json.load(json_file)
     with open(html_path, 'w', encoding='utf-8') as html_file:
-        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>Results</title>\n</head>\n<body>\n')
-        html_file.write('<h1>Analysis Results</h1>\n')
-        # CSV 다운로드 링크 추가
+        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>취약점 진단 보고서</title>\n')
+        # CSS 추가
+        html_file.write('<style>\n')
+        html_file.write('.wide-column { width: 150px; }\n')  # 특정 열의 가로 크기 조절
+        html_file.write('.good { background-color: #90ee90; }\n')  # 양호 - 초록색
+        html_file.write('.vulnerable { background-color: #ff726f; }\n')  # 취약 - 빨간색
+        html_file.write('.na { background-color: #d3d3d3; }\n')  # N/A - 회색
+        html_file.write('</style>\n')
+        html_file.write('</head>\n<body>\n')
+        html_file.write('<h1>취약점 진단</h1>\n')
         html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
         html_file.write('<table border="1">\n<tr>\n')
         if json_data:
@@ -91,11 +98,20 @@ def json_to_html(json_path, html_path, csv_file_name):
             html_file.write('</tr>\n')
             for item in json_data:
                 html_file.write('<tr>\n')
-                for value in item.values():
-                    html_file.write(f'<td>{value}</td>\n')
+                for key, value in item.items():
+                    # 진단 결과에 따른 셀 배경색 설정
+                    if key == "진단 결과":
+                        if value == "양호":
+                            cell_class = "good"
+                        elif value == "취약":
+                            cell_class = "vulnerable"
+                        elif value == "N/A":
+                            cell_class = "na"
+                        html_file.write(f'<td class="{cell_class}">{value}</td>\n')
+                    else:
+                        html_file.write(f'<td>{value}</td>\n')
                 html_file.write('</tr>\n')
         html_file.write('</table>\n</body>\n</html>')
-
 json_to_csv(json_path, csv_path)
 json_to_html(json_path, html_path, csv_file_name)
 EOF
