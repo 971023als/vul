@@ -19,14 +19,16 @@ do
     SCRIPT_PATH="U-$i.py"
     if [ -f "$SCRIPT_PATH" ]; then
         # Python 스크립트 실행하고 변수에 결과 저장
-        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
+        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH") # Python3으로 변경
         if [ $? -eq 0 ]; then
             # 첫 번째 항목이 아니라면, 배열 항목 구분을 위한 쉼표 추가
-            if [ -s "$RESULTS_PATH" ]; then
-                echo -n "," >> "$RESULTS_PATH"
+            if [ "$first_entry" = true ]; then
+                first_entry=false
+            else
+                echo "," >> "$RESULTS_PATH"
             fi
             # 결과 출력
-            echo -n "$RESULT" >> "$RESULTS_PATH"
+            echo "$RESULT" >> "$RESULTS_PATH"
         else
             errors+=("Error running $SCRIPT_PATH")
         fi
@@ -55,9 +57,6 @@ import csv
 import os
 from pathlib import Path
 
-json_path = "$RESULTS_PATH"
-csv_path = "$CSV_PATH"
-html_path = "$HTML_PATH"
 csv_file_name = "results_${NOW}.csv" # CSV 파일의 웹 경로
 
 # JSON 데이터를 CSV로 변환하는 함수
@@ -100,4 +99,8 @@ def json_to_html(json_path, html_path, csv_file_name):
 json_to_csv(json_path, csv_path)
 json_to_html(json_path, html_path, csv_file_name)
 EOF
+
+
+echo "결과가 $CSV_PATH 및 $HTML_PATH에 저장되었습니다."
+
 
