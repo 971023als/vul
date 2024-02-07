@@ -44,20 +44,40 @@ fi
 python3 - <<EOF
 import json
 import csv
+from pathlib import Path
 
-# Convert JSON to HTML
+# 파일 경로 설정
+json_path = Path('data.json') # JSON 파일 경로
+csv_path = Path('data.csv') # CSV 파일 경로
+html_path = Path('data.html') # HTML 파일 경로
+
+# JSON을 CSV로 변환
+def json_to_csv():
+    with json_path.open('r', encoding='utf-8') as json_file, \
+         csv_path.open('w', newline='', encoding='utf-8') as csv_file:
+        data = json.load(json_file)
+        if data:
+            headers = data[0].keys()
+            writer = csv.DictWriter(csv_file, fieldnames=headers)
+            writer.writeheader()
+            for item in data:
+                writer.writerow(item)
+
+# JSON을 HTML로 변환
 def json_to_html():
     with json_path.open('r', encoding='utf-8') as json_file, \
          html_path.open('w', encoding='utf-8') as html_file:
         data = json.load(json_file)
-        html_file.write(f'<!DOCTYPE html><html><head><title>Results</title></head><body><h1>Analysis Results</h1><a href="{csv_path.name}">Download CSV</a><table>')
-        headers = data[0].keys()
-        html_file.write(''.join(f'<th>{h}</th>' for h in headers))
-        for item in data:
-            row = ''.join(f'<td>{item[h]}</td>' for h in headers)
-            html_file.write(f'<tr>{row}</tr>')
+        html_file.write('<!DOCTYPE html><html><head><title>Results</title></head><body><h1>Analysis Results</h1><a href="{}">Download CSV</a><table border="1">'.format(csv_path.name))
+        if data:
+            headers = data[0].keys()
+            html_file.write('<tr>' + ''.join(f'<th>{h}</th>' for h in headers) + '</tr>')
+            for item in data:
+                row = ''.join(f'<td>{item[h]}</td>' for h in headers)
+                html_file.write(f'<tr>{row}</tr>')
         html_file.write('</table></body></html>')
 
+# 변환 실행
 json_to_csv()
 json_to_html()
 EOF
