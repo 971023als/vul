@@ -32,7 +32,7 @@ def check_nfs_config_permissions():
             if permissions > 0o644:
                 results["현황"] += " /etc/exports 파일의 권한이 644보다 큽니다." if results["현황"] else "/etc/exports 파일의 권한이 644보다 큽니다."
     else:
-        results["진단 결과"] = "N/A"
+        results["진단 결과"] = "양호"
         results["현황"] = "/etc/exports 파일이 없습니다."
 
     return results

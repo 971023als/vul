@@ -13,7 +13,6 @@ def check_admin_group_accounts():
         "대응방안": "관리자 그룹(root)에 불필요한 계정이 등록되지 않도록 관리"
     }
 
-    # Considered unnecessary unless needed for specific services
     unnecessary_accounts = [
         "bin", "sys", "adm", "listen", "nobody4", "noaccess", "diag",
         "operator", "gopher", "games", "ftp", "apache", "httpd", "www-data",
@@ -24,10 +23,8 @@ def check_admin_group_accounts():
         "help", "admin", "guest", "user", "ubuntu"
     ]
 
-    # Customizable exclusion list for service accounts that are intentionally included
     exclusion_list = ["apache", "httpd", "mysql", "postgres"]
 
-    # Filter out the excluded accounts
     accounts_to_check = [acc for acc in unnecessary_accounts if acc not in exclusion_list]
 
     root_group_found = False
@@ -43,6 +40,8 @@ def check_admin_group_accounts():
                     if found_accounts:
                         results["진단 결과"] = "취약"
                         results["현황"].append("관리자 그룹(root)에 불필요한 계정이 등록되어 있습니다: " + ", ".join(found_accounts))
+                    else:
+                        results["현황"].append("관리자 그룹(root)에 불필요한 계정이 등록되지 않았습니다.")
                     break
     else:
         results["진단 결과"] = "취약"

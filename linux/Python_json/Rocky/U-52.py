@@ -14,10 +14,9 @@ def check_duplicate_uids():
         "대응방안": "동일한 UID로 설정된 사용자 계정을 제거하거나 수정"
     }
 
-    # 최소 UID 설정
     min_regular_user_uid = 1000
+    duplicate_found = False  # 중복 UID 발견 여부를 추적
 
-    # /etc/passwd 파일 확인
     if os.path.isfile("/etc/passwd"):
         uid_to_users = defaultdict(list)
         with open("/etc/passwd", 'r') as file:
@@ -27,13 +26,16 @@ def check_duplicate_uids():
                     username, uid = parts[0], parts[2]
                     if int(uid) >= min_regular_user_uid:
                         uid_to_users[uid].append(username)
-            
-            # 중복 UID 확인
-            for uid, users in uid_to_users.items():
-                if len(users) > 1:
-                    results["진단 결과"] = "취약"
-                    results["현황"].append({"UID": uid, "사용자": users})
-                    
+
+        for uid, users in uid_to_users.items():
+            if len(users) > 1:
+                results["진단 결과"] = "취약"
+                results["현황"].append({"UID": uid, "사용자": users})
+                duplicate_found = True  # 중복 UID 발견
+
+        if not duplicate_found:
+            # 중복 UID가 발견되지 않았다면 "현황"에 양호 메시지 추가
+            results["현황"].append("모든 사용자 계정이 고유한 UID를 가지고 있습니다.")
     else:
         results["진단 결과"] = "취약"
         results["현황"].append({"오류": "/etc/passwd 파일이 없습니다."})
