@@ -58,16 +58,20 @@ echo "결과가 $RESULTS_PATH에 저장되었습니다."
 . json.sh
 
 
-echo "결과가 $CSV_PATH 및 $HTML_PATH에 저장되었습니다."
-
-echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
-
-# Apache 서비스 재시작 로직 개선
+# Apache 서비스 이름 확인
 APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
+
+# Apache 서비스 재시작
 if [ ! -z "$APACHE_SERVICE_NAME" ]; then
-    sudo systemctl restart "$APACHE_SERVICE_NAME" && echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다." || echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."
+    echo "재시작할 Apache 서비스를 찾았습니다: $APACHE_SERVICE_NAME"
+    sudo systemctl restart "$APACHE_SERVICE_NAME"
+    if [ $? -eq 0 ]; then
+        echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다."
+    else
+        echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."
+    fi
 else
-    echo "Apache/Httpd 서비스를 찾을 수 없습니다."
+    echo "활성 상태인 Apache 또는 Httpd 서비스를 찾을 수 없습니다."
 fi
 
 . encode.sh

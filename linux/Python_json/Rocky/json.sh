@@ -27,48 +27,40 @@ def json_to_csv(json_path, csv_path):
 def json_to_html(json_path, html_path, csv_file_name):
     with open(json_path, 'r') as json_file:
         json_data = json.load(json_file)
+
     with open(html_path, 'w', encoding='utf-8') as html_file:
-        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>취약점 진단 보고서</title>\n')
+        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>취약점 진단 보고서</title>\n')
         # CSS 추가
         html_file.write('<style>\n')
-        html_file.write('.wide-column { width: 300px; }\n')  # 특정 열의 가로 크기 조절
-        html_file.write('.good { background-color: #90ee90; }\n')  # 양호 - 초록색
-        html_file.write('.vulnerable { background-color: #ff726f; }\n')  # 취약 - 빨간색
-        html_file.write('.na { background-color: #d3d3d3; }\n')  # 오류 - 회색
-        html_file.write('.high { background-color: #ff726f; }\n')  # 위험도 상 - 빨간색
-        html_file.write('.medium { background-color: #ffdf70; }\n')  # 위험도 중 - 노란색
-        html_file.write('.low { background-color: #90ee90; }\n')  # 위험도 하 - 초록색
+        html_file.write('table, th, td { border: 1px solid #bcbcbc; border-collapse: collapse; }\n')
+        html_file.write('th, td { padding: 10px; }\n')
+        html_file.write('table { width: 100%; margin-bottom: 20px; }\n')
+        html_file.write('.good { background-color: #90ee90; }\n')
+        html_file.write('.vulnerable { background-color: #ff726f; }\n')
+        html_file.write('.na { background-color: #d3d3d3; }\n')
+        html_file.write('.high { background-color: #ff726f; }\n')
+        html_file.write('.medium { background-color: #ffdf70; }\n')
+        html_file.write('.low { background-color: #90ee90; }\n')
         html_file.write('</style>\n')
         html_file.write('</head>\n<body>\n')
-        html_file.write('<h1>취약점 진단</h1>\n')
+        html_file.write('<h1>취약점 진단 보고서</h1>\n')
         html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
-        html_file.write('<table border="1">\n<tr>\n')
+        html_file.write('<table>\n<tr>\n')
+        # 테이블 헤더 생성
         if json_data:
             for key in json_data[0].keys():
                 html_file.write(f'<th>{key}</th>\n')
             html_file.write('</tr>\n')
+            # 테이블 데이터 로우 생성
             for item in json_data:
                 html_file.write('<tr>\n')
                 for key, value in item.items():
-                    cell_class = ""
+                    cell_class = ''
                     if key == "진단 결과":
-                        if value == "양호":
-                            cell_class = "good"
-                        elif value == "취약":
-                            cell_class = "vulnerable"
-                        elif value == "오류":
-                            cell_class = "na"
+                        cell_class = 'good' if value == "양호" else 'vulnerable' if value == "취약" else 'na'
                     elif key == "위험도":
-                        if value == "상":
-                            cell_class = "high"
-                        elif value == "중":
-                            cell_class = "medium"
-                        elif value == "하":
-                            cell_class = "low"
-                    if cell_class:
-                        html_file.write(f'<td class="{cell_class}">{value}</td>\n')
-                    else:
-                        html_file.write(f'<td>{value}</td>\n')
+                        cell_class = 'high' if value == "상" else 'medium' if value == "중" else 'low'
+                    html_file.write(f'<td class="{cell_class}">{value}</td>\n')
                 html_file.write('</tr>\n')
         html_file.write('</table>\n</body>\n</html>')
 json_to_csv(json_path, csv_path)
