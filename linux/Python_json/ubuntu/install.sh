@@ -24,11 +24,11 @@ else
     echo "이 스크립트는 리눅스에서만 지원됩니다."
 fi
 
-# python3-venv 패키지 설치 (Debian/Ubuntu 전용)
+# python3 패키지 설치 (Debian/Ubuntu 전용)
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-    echo "python3-venv 패키지를 설치합니다."
+    echo "python3 패키지를 설치합니다."
     sudo apt-get update
-    sudo apt-get install python3-venv -y
+    sudo apt-get install python3 -y
 fi
 
 
