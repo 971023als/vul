@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# 파일 경로 설정
+# 파일 경로 및 기타 변수 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
+VENV_PATH="/root/vul/linux/Python_json/ubuntu/venv"
 
 # 가상 환경 경로 설정
 VENV_PATH="/root/vul/linux/Python_json/ubuntu/venv"
