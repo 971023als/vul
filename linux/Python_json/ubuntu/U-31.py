@@ -31,8 +31,8 @@ def check_spam_mail_relay_restrictions():
                     results["현황"].append(f"{file_path} 파일에 릴레이 제한 설정이 없습니다.")
                     break
     else:
-        results["진단 결과"] = "오류"
-        results["현황"].append("sendmail.cf 파일을 찾을 수 없습니다.")
+        results["진단 결과"] = "양호"
+        results["현황"].append("sendmail.cf 파일이 없습니다.")
 
     return results
 
