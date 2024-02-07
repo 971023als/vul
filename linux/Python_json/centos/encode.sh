@@ -30,7 +30,7 @@ sed -i "s/$search_string/$replace_string/" "$apache_config_file"
 
 
 # 복사할 파일 목록
-FILES=("index.php")
+FILES=("index.html")
 
 # /var/www/html로 파일 복사
 for file in "${FILES[@]}"; do

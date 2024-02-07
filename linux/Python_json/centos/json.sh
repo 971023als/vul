@@ -5,7 +5,7 @@ NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
 CSV_PATH="/var/www/html/results_${NOW}.csv"
-HTML_PATH="/root//vul/linux/Python_json/ubuntu/index.html"
+HTML_PATH="/root/vul/linux/Python_json/ubuntu/index.html"
 
 # Initialize result file and error array
 echo "[" > "$RESULTS_PATH"
