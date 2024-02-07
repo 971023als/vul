@@ -2,37 +2,38 @@
 
 # 파일 경로 설정
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"  # 최종 JSON 파일 경로
+RESULTS_PATH="/var/www/html/results_${NOW}.json"
 ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-CSV_PATH="/var/www/html/results_${NOW}.csv"  # CSV 파일 경로도 이것으로 통일
+CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
-# CSV_WEB_PATH 변수는 제거하고 CSV_PATH를 사용
 
-errors=()
+declare -a errors
 
-# U-01.py부터 U-72.py까지 실행하며 JSON 파일 생성
-for i in $(seq -w 1 72); do
-    script_name="U-${i}.py"
-    start_time=$(date +%s.%N)
-    output=$(python3 "$script_name" 2>&1)
-    end_time=$(date +%s.%N)
-    execution_time=$(echo "$end_time - $start_time" | bc)
-
-    # output 값의 줄바꿈과 따옴표를 JSON 안전하게 이스케이프 처리
-    output_escaped=$(echo "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
-
-    # JSON 구조에 output 값을 포함시키기
-    echo "\"U-${i}\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
-
+execute_script() {
+    local script_name=$1
+    local start_time=$(date +%s.%N)
+    local output=$(python3 "$script_name" 2>&1)
+    local end_time=$(date +%s.%N)
+    local execution_time=$(echo "$end_time - $start_time" | bc)
+    local output_escaped=$(echo "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+    echo "\"$script_name\": {\"output\": $output_escaped, \"execution_time\": \"$execution_time\"}," >> "$RESULTS_PATH"
     if [[ $output == *ERROR* ]]; then
         errors+=("$script_name: $output")
     fi
+}
+
+# JSON 파일 생성 시작
+echo "{" > "$RESULTS_PATH"
+
+# U-01.py부터 U-72.py까지 실행
+for i in $(seq -w 1 72); do
+    execute_script "U-${i}.py"
 done
 
 # 파일 마지막에 JSON 닫기
 sed -i '$ s/,$/\n}/' "$RESULTS_PATH"
 
-# 오류가 있으면 로그 파일에 기록
+# 오류 로그 기록
 if [ ${#errors[@]} -gt 0 ]; then
     printf "%s\n" "${errors[@]}" > "$ERRORS_PATH"
     echo "오류가 $ERRORS_PATH에 기록되었습니다."
@@ -80,11 +81,10 @@ with open(results_path, 'w') as json_file:
 echo "작업이 완료되었습니다. 결과가 CSV 파일로 저장되었으며, HTML 페이지가 생성되었습니다."
 
 # Apache 서비스 재시작
-sudo systemctl restart apache2 || sudo systemctl restart httpd
-
-# 오류 발생시 처리
-if [ $? -ne 0 ]; then
-    echo "Apache 서비스 재시작에 실패했습니다. 서비스 상태를 확인하세요."
+if systemctl is-active --quiet apache2; then
+    sudo systemctl restart apache2 && echo "Apache 서비스가 성공적으로 재시작되었습니다." || echo "Apache 서비스 재시작에 실패했습니다."
+elif systemctl is-active --quiet httpd; then
+    sudo systemctl restart httpd && echo "Httpd 서비스가 성공적으로 재시작되었습니다." || echo "Httpd 서비스 재시작에 실패했습니다."
 else
-    echo "Apache 서비스가 성공적으로 재시작되었습니다."
+    echo "Apache/Httpd 서비스를 찾을 수 없습니다."
 fi
