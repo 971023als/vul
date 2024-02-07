@@ -62,7 +62,7 @@ csv_file_name = "results_${NOW}.csv" # CSV 파일의 웹 경로
 
 # JSON 데이터를 CSV로 변환하는 함수
 def json_to_csv(json_path, csv_path):
-      try:
+    try:
         with open(json_path, 'r') as json_file:
             json_data = json.load(json_file)
     except json.JSONDecodeError as e:
@@ -74,6 +74,7 @@ def json_to_csv(json_path, csv_path):
             writer.writerow(json_data[0].keys())
             for item in json_data:
                 writer.writerow(item.values())
+
 
 # JSON 데이터를 HTML로 변환하는 함수 (다운로드 링크 포함)
 def json_to_html(json_path, html_path, csv_file_name):
