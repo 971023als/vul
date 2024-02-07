@@ -40,18 +40,23 @@ else
     echo "Python3이 이미 설치되어 있습니다."
 fi
 
-# 아파치 및 mod_wsgi 재설치
+# 아파치 및 mod_wsgi 설치 여부 확인 및 설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-    echo "아파치 및 mod_wsgi (Python 3용)를 재설치합니다."
-    sudo apt-get update
-    sudo apt-get install --reinstall apache2 -y
-    sudo apt-get install --reinstall libapache2-mod-wsgi-py3 -y  # Python 3용
+    if ! apache2 -v &> /dev/null; then
+        echo "아파치가 설치되어 있지 않습니다. 아파치를 설치합니다."
+        sudo apt-get update && sudo apt-get install apache2 -y
+        sudo apt-get install libapache2-mod-wsgi-py3 -y  # Python 3용
+    else
+        echo "아파치가 이미 설치되어 있습니다."
+    fi
 elif [[ "$PKG_MANAGER" == "dnf" ]] || [[ "$PKG_MANAGER" == "yum" ]]; then
-    echo "아파치 및 mod_wsgi (Python 3용)를 재설치합니다."
-    sudo $PKG_MANAGER reinstall httpd -y
-    sudo $PKG_MANAGER install mod_wsgi -y  # Python 3용, 패키지 이름 확인 필요
-else
-    echo "지원되지 않는 패키지 매니저입니다."
+    if ! httpd -v &> /dev/null; then
+        echo "아파치가 설치되어 있지 않습니다. 아파치를 설치합니다."
+        sudo $PKG_MANAGER install httpd -y
+        sudo $PKG_MANAGER install mod_wsgi -y  # Python 3용, 필요에 따라 패키지 이름 확인
+    else
+        echo "아파치가 이미 설치되어 있습니다."
+    fi
 fi
 
 
