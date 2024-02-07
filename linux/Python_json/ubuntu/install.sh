@@ -24,32 +24,36 @@ else
     echo "이 스크립트는 리눅스에서만 지원됩니다."
 fi
 
-# python3 패키지 설치 (Debian/Ubuntu 전용)
+# Python3 설치 여부 확인
+if ! command -v python3 &> /dev/null; then
+    echo "Python3이 설치되어 있지 않습니다. 설치를 시작합니다."
+    
+    # 패키지 매니저 확인
+    if [[ "$PKG_MANAGER" == "apt-get" ]]; then
+        echo "Debian/Ubuntu 시스템을 위한 python3 패키지를 설치합니다."
+        sudo apt-get update
+        sudo apt-get install python3 -y
+    else
+        echo "이 스크립트는 Debian/Ubuntu 시스템과 apt-get 패키지 매니저를 사용하는 시스템에만 적용됩니다."
+    fi
+else
+    echo "Python3이 이미 설치되어 있습니다."
+fi
+
+# 아파치 및 mod_wsgi 재설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-    echo "python3 패키지를 설치합니다."
+    echo "아파치 및 mod_wsgi (Python 3용)를 재설치합니다."
     sudo apt-get update
-    sudo apt-get install python3 -y
-fi
-
-
-# 아파치 및 mod_wsgi 설치 여부 확인 및 설치
-if [[ "$PKG_MANAGER" == "apt-get" ]]; then
-    if ! apache2 -v &> /dev/null; then
-        echo "아파치가 설치되어 있지 않습니다. 아파치를 설치합니다."
-        sudo apt-get update && sudo apt-get install apache2 -y
-        sudo apt-get install libapache2-mod-wsgi-py3 -y  # Python 3용
-    else
-        echo "아파치가 이미 설치되어 있습니다."
-    fi
+    sudo apt-get install --reinstall apache2 -y
+    sudo apt-get install --reinstall libapache2-mod-wsgi-py3 -y  # Python 3용
 elif [[ "$PKG_MANAGER" == "dnf" ]] || [[ "$PKG_MANAGER" == "yum" ]]; then
-    if ! httpd -v &> /dev/null; then
-        echo "아파치가 설치되어 있지 않습니다. 아파치를 설치합니다."
-        sudo $PKG_MANAGER install httpd -y
-        sudo $PKG_MANAGER install mod_wsgi -y  # Python 3용, 필요에 따라 패키지 이름 확인
-    else
-        echo "아파치가 이미 설치되어 있습니다."
-    fi
+    echo "아파치 및 mod_wsgi (Python 3용)를 재설치합니다."
+    sudo $PKG_MANAGER reinstall httpd -y
+    sudo $PKG_MANAGER install mod_wsgi -y  # Python 3용, 패키지 이름 확인 필요
+else
+    echo "지원되지 않는 패키지 매니저입니다."
 fi
+
 
 # 현재 사용자의 crontab 설정
 CRON_JOB="/usr/bin/python3 /root/vul/linux/Python_json/ubuntu/vul.sh"
