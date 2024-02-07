@@ -13,8 +13,10 @@ def check_admin_group_accounts():
         "대응방안": "관리자 그룹(root)에 불필요한 계정이 등록되지 않도록 관리"
     }
 
+    # Considered unnecessary unless needed for specific services
     unnecessary_accounts = [
-        # Removed 'nobody', 'daemon' as they are typically system accounts
+        # System accounts commonly included in admin groups are not listed here
+        # Add or remove accounts based on system requirements
         "bin", "sys", "adm", "listen", "nobody4", "noaccess", "diag",
         "operator", "gopher", "games", "ftp", "apache", "httpd", "www-data",
         "mysql", "mariadb", "postgres", "mail", "postfix", "news", "lp",
@@ -24,17 +26,22 @@ def check_admin_group_accounts():
         "help", "admin", "guest", "user", "ubuntu"
     ]
 
+    # Customizable exclusion list for service accounts that are intentionally included
+    exclusion_list = ["apache", "httpd", "mysql", "postgres"]
+
+    # Filter out the excluded accounts
+    accounts_to_check = [acc for acc in unnecessary_accounts if acc not in exclusion_list]
+
     root_group_found = False
 
     if os.path.isfile("/etc/group"):
         with open("/etc/group", 'r') as file:
             for group_line in file:
                 group_info = group_line.strip().split(":")
-                # Ensure the line has the correct format
                 if len(group_info) >= 4 and group_info[0] == "root":
                     root_group_found = True
                     root_members = group_info[3].split(',')
-                    found_accounts = [acc for acc in root_members if acc in unnecessary_accounts]
+                    found_accounts = [acc for acc in root_members if acc in accounts_to_check]
                     if found_accounts:
                         results["진단 결과"] = "취약"
                         results["현황"].append("관리자 그룹(root)에 불필요한 계정이 등록되어 있습니다: " + ", ".join(found_accounts))

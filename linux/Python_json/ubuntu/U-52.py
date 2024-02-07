@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import os
 import json
-from collections import Counter
+from collections import defaultdict
 
 def check_duplicate_uids():
     results = {
@@ -18,34 +18,28 @@ def check_duplicate_uids():
     min_regular_user_uid = 1000
 
     if os.path.isfile("/etc/passwd"):
+        uid_to_users = defaultdict(list)
         with open("/etc/passwd", 'r') as file:
-            # Filter out system accounts and extract UIDs for regular users
-            uids = [
-                line.split(":")[2] for line in file 
-                if line.strip() and not line.startswith("#") 
-                and int(line.split(":")[2]) >= min_regular_user_uid
-            ]
+            for line in file:
+                if line.strip() and not line.startswith("#"):
+                    parts = line.split(":")
+                    username, uid = parts[0], parts[2]
+                    if int(uid) >= min_regular_user_uid:
+                        uid_to_users[uid].append(username)
             
-            # Count occurrences of each UID
-            uid_counts = Counter(uids)
-            
-            # Find UIDs that occur more than once
-            duplicate_uids = {uid: count for uid, count in uid_counts.items() if count > 1}
-
-            # If duplicates are found, mark the result as "vulnerable"
-            if duplicate_uids:
-                results["진단 결과"] = "취약"
-                duplicates_formatted = ", ".join([f"UID {uid} ({count}x)" for uid, count in duplicate_uids.items()])
-                results["현황"].append(f"동일한 UID로 설정된 사용자 계정이 존재합니다: {duplicates_formatted}")
+            # Check for duplicate UIDs
+            for uid, users in uid_to_users.items():
+                if len(users) > 1:
+                    results["진단 결과"] = "취약"
+                    results["현황"].append(f"UID {uid} is shared by users: {', '.join(users)}")
+                    
     else:
-        # If the /etc/passwd file is missing, mark the result as "vulnerable"
         results["진단 결과"] = "취약"
         results["현황"].append("/etc/passwd 파일이 없습니다.")
 
     return results
 
 def main():
-    # Run the UID check and print results in JSON format
     duplicate_uids_check_results = check_duplicate_uids()
     print(json.dumps(duplicate_uids_check_results, ensure_ascii=False, indent=4))
 
