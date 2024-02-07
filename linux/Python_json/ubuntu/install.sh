@@ -31,15 +31,6 @@ if [[ "$PKG_MANAGER" == "apt-get" ]]; then
     sudo apt-get install python3-venv -y
 fi
 
-# 가상 환경 생성 및 활성화
-if [ ! -d "$VENV_PATH" ]; then
-    echo "가상 환경이 없습니다. 가상 환경을 생성합니다."
-    python3 -m venv "$VENV_PATH"
-fi
-source "$VENV_PATH/bin/activate"
-
-# 필요한 패키지 설치
-pip3 install pandas pyarrow
 
 # 아파치 및 mod_wsgi 설치 여부 확인 및 설치
 if [[ "$PKG_MANAGER" == "apt-get" ]]; then
