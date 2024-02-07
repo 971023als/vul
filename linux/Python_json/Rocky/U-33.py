@@ -17,11 +17,17 @@ def check_command_exists(command):
 
 def get_bind_version_rpm():
     """Get BIND version using rpm."""
-    return subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True).strip()
+    try:
+        return subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True).strip()
+    except subprocess.CalledProcessError:
+        return ""
 
 def get_bind_version_dpkg():
     """Get BIND version using dpkg."""
-    return subprocess.check_output("dpkg -l | grep '^ii' | grep 'bind9'", shell=True, text=True).strip()
+    try:
+        return subprocess.check_output("dpkg -l | grep '^ii' | grep 'bind9'", shell=True, text=True).strip()
+    except subprocess.CalledProcessError:
+        return ""
 
 def check_dns_security_patch():
     results = {
@@ -35,32 +41,27 @@ def check_dns_security_patch():
     }
 
     minimum_version = "9.18.7"
-    bind_version_output = ""
 
-    try:
-        if check_command_exists("rpm"):
-            bind_version_output = get_bind_version_rpm()
-        elif check_command_exists("dpkg"):
-            bind_version_output = get_bind_version_dpkg()
+    if check_command_exists("rpm"):
+        bind_version_output = get_bind_version_rpm()
+    elif check_command_exists("dpkg"):
+        bind_version_output = get_bind_version_dpkg()
 
-        if bind_version_output:
-            version_match = re.search(r'bind(?:9)?-(\d+\.\d+\.\d+)', bind_version_output)
-            if version_match:
-                current_version = version_match.group(1)
-                if parse_version(current_version) < parse_version(minimum_version):
-                    results["진단 결과"] = "취약"
-                    results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다: {current_version}")
-                else:
-                    results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {current_version}")
+    if bind_version_output:
+        version_match = re.search(r'bind(?:9)?-(\d+\.\d+\.\d+)', bind_version_output)
+        if version_match:
+            current_version = version_match.group(1)
+            if parse_version(current_version) < parse_version(minimum_version):
+                results["진단 결과"] = "취약"
+                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다: {current_version}")
             else:
-                results["진단 결과"] = "오류"
-                results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
+                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {current_version}")
         else:
-            results["현황"].append("DNS 서비스(BIND)가 설치되어 있지 않습니다.")
-
-    except subprocess.CalledProcessError as e:
+            results["진단 결과"] = "오류"
+            results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
+    else:
         results["진단 결과"] = "오류"
-        results["현황"].append(f"BIND 버전 확인 중 오류 발생: {e.stderr if e.stderr else '명령어 실행 실패'}")
+        results["현황"].append("BIND가 설치되어 있지 않거나 rpm/dpkg 명령어 실행 실패")
 
     return results
 
