@@ -8,8 +8,7 @@ CSV_PATH="/var/www/html/results_${NOW}.csv"
 HTML_PATH="/var/www/html/index.html"
 
 # 결과 파일 초기화 및 시작 배열 마크업 작성
-echo "[" > "$RESULTS_PATH"
-first_entry=true
+echo -n "[" > "$RESULTS_PATH"
 
 # 오류 저장 배열 초기화
 declare -a errors
@@ -20,16 +19,14 @@ do
     SCRIPT_PATH="U-$i.py"
     if [ -f "$SCRIPT_PATH" ]; then
         # Python 스크립트 실행하고 변수에 결과 저장
-        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH") # Python3으로 변경
+        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
         if [ $? -eq 0 ]; then
             # 첫 번째 항목이 아니라면, 배열 항목 구분을 위한 쉼표 추가
-            if [ "$first_entry" = true ]; then
-                first_entry=false
-            else
-                echo "," >> "$RESULTS_PATH"
+            if [ -s "$RESULTS_PATH" ]; then
+                echo -n "," >> "$RESULTS_PATH"
             fi
             # 결과 출력
-            echo "$RESULT" >> "$RESULTS_PATH"
+            echo -n "$RESULT" >> "$RESULTS_PATH"
         else
             errors+=("Error running $SCRIPT_PATH")
         fi
@@ -65,8 +62,13 @@ csv_file_name = "results_${NOW}.csv" # CSV 파일의 웹 경로
 
 # JSON 데이터를 CSV로 변환하는 함수
 def json_to_csv(json_path, csv_path):
-    with open(json_path, 'r') as json_file:
-        json_data = json.load(json_file)
+    try:
+        with open(json_path, 'r') as json_file:
+            json_data = json.load(json_file)
+    except json.JSONDecodeError as e:
+        print(f"JSON 파일 처리 중 오류 발생: {e}")
+        return
+
     with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
         writer = csv.writer(csv_file)
         if json_data:
@@ -76,22 +78,36 @@ def json_to_csv(json_path, csv_path):
 
 # JSON 데이터를 HTML로 변환하는 함수 (다운로드 링크 포함)
 def json_to_html(json_path, html_path, csv_file_name):
-    with open(json_path, 'r') as json_file:
-        json_data = json.load(json_file)
+    try:
+        with open(json_path, 'r') as json_file:
+            json_data = json.load(json_file)
+    except json.JSONDecodeError as e:
+        print(f"JSON 파일 처리 중 오류 발생: {e}")
+        return
+
     with open(html_path, 'w', encoding='utf-8') as html_file:
-        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<title>Results</title>\n</head>\n<body>\n')
-        html_file.write('<h1>Analysis Results</h1>\n')
-        # CSV 다운로드 링크 추가
+        # HTML 파일 작성 시작
+        html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>Security Check Results</title>\n')
+        html_file.write('<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid black; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }</style>\n')
+        html_file.write('</head>\n<body>\n')
+        html_file.write('<h2>Security Check Results</h2>\n')
         html_file.write(f'<p><a href="{csv_file_name}">Download CSV</a></p>\n')
-        html_file.write('<table border="1">\n<tr>\n')
+        html_file.write('<table>\n<tr>\n')
+
+        # 테이블 헤더 생성
         if json_data:
             for key in json_data[0].keys():
                 html_file.write(f'<th>{key}</th>\n')
             html_file.write('</tr>\n')
+
+            # 테이블 내용 생성
             for item in json_data:
                 html_file.write('<tr>\n')
                 for value in item.values():
-                    html_file.write(f'<td>{value}</td>\n')
+                    if isinstance(value, list):
+                        html_file.write('<td>' + ', '.join(value) + '</td>\n')
+                    else:
+                        html_file.write(f'<td>{value}</td>\n')
                 html_file.write('</tr>\n')
         html_file.write('</table>\n</body>\n</html>')
 
