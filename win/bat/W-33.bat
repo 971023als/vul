@@ -1,16 +1,15 @@
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한이 필요합니다...
+    echo 관리자 권한을 요청합니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
-
 :UACPrompt
     echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-    del "getadmin.vbs"
+	del "getadmin.vbs"
     exit /B
 
 :gotAdmin
@@ -24,55 +23,84 @@ mkdir C:\Window_%COMPUTERNAME%_raw
 mkdir C:\Window_%COMPUTERNAME%_result
 del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
 secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
+fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
+for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
 echo ------------------------------------------IIS Setting-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
 for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-    set "line=!line!%%a"
+set "line=!line!%%a" 
 )
 echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
 for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
+	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
 )
 for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
+	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
 )
 for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
+	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
 )
 for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
+	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
 )
 for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
+	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
-REM 이하 부분은 이전에 제공된 코드에 이어지는 가상의 예시입니다.
-
-echo ------------------------------------------W-32 Security Check------------------------------------------
+echo ------------------------------------------W-33------------------------------------------
 net start | find "World Wide Web Publishing Service" >nul
 IF NOT ERRORLEVEL 1 (
-    FOR /F "tokens=1 delims=#" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
-        cd %%a
-        echo Checking permissions in directory: %%a>> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-        cacls %%a /T | findstr /I "Everyone"
-        IF NOT ERRORLEVEL 1 (
-            cacls %%a /T >> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-        ) ELSE (
-            ECHO No 'Everyone' permissions found.>> C:\Window_%COMPUTERNAME%_raw\W-32.txt
-        )
-    )
+	type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr /L ".htr .idc .stm .shtm .shtml .printer .htw .ida .idq" >> C:\Window_%COMPUTERNAME%_raw\W-33.txt
+	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-33.txt
+	IF NOT ERRORLEVEL 1 (
+		echo W-33,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 ".htr .idc .stm .shtm .shtml .printer .htw .ida .idq" 파일 확장자가 존재하지 않는 상태 보안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 종료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 파일 확장자를 제거 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 ".htr .idc .stm .shtm .shtml .printer .htw .ida .idq" 파일 확장자가 존재하여 보안임 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	) ELSE (
+		echo W-33,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 ".htr .idc .stm .shtm .shtml .printer .htw .ida .idq" 파일 확장자가 존재하지 않는 상태 보안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 종료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 파일 확장자 발견 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		type C:\Window_%COMPUTERNAME%_raw\W-33.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 지원되지 않는 ".htr .idc .stm .shtm .shtml .printer .htw .ida .idq" 파일 확장자로 인해 보안이 위협됨 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	)
 ) ELSE (
-    echo World Wide Web Publishing Service is not running. Skipping web directories security checks.>> C:\Window_%COMPUTERNAME%_raw\W-32.txt
+	echo W-33,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS 서비스가 필요하지 않아 사용되지 않는 상태 보안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo 테스트 종료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS 서비스가 활성화 되었음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo 테스트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo IIS 서비스가 활성화 되었으나 필요하지 않으므로 보안임 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
+echo -------------------------------------------end------------------------------------------
+echo ------------------------------------------결과 요약------------------------------------------
+:: 결과 요약 보고
+type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
 
-echo ------------------------------------------Comparison and Reporting------------------------------------------
-REM 비교 로직 및 보고서 생성 부분 (상세 구현은 생략됨)
+:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
+:: sendmail -to admin@example.com -subject "Security Audit Summary" -body C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
 
-echo -------------------------------------------End of Script------------------------------------------
+echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt 에 저장되었습니다.
+
+:: 정리 작업
+echo 정리 작업을 수행합니다...
+del C:\Window_%COMPUTERNAME%_raw\*.txt
+del C:\Window_%COMPUTERNAME%_raw\*.vbs
+
+echo 스크립트를 종료합니다.
+exit
