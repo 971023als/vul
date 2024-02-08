@@ -95,7 +95,6 @@ execute_security_checks() {
     fi
 }
 
-# 결과 변환 함수
 convert_results() {
     python3 -c "
 import json
@@ -107,7 +106,7 @@ csv_path = Path('$CSV_PATH')
 html_path = Path('$HTML_PATH')
 
 def json_to_csv():
-    with json_path.open('r', encoding='utf-8') as json_file, csv_path.open('w', newline='', encoding='utf-8') as csv_file:
+    with json_path.open('r', encoding='utf-8') as json_file, csv_path.open('w', newline='', encoding='utf-8-sig') as csv_file:
         data = json.load(json_file)
         if data:
             writer = csv.DictWriter(csv_file, fieldnames=data[0].keys())
@@ -133,6 +132,7 @@ json_to_html()
 "
     echo "결과가 CSV와 HTML 형식으로 변환되었습니다."
 }
+
 
 # Apache 서비스 재시작
 restart_apache() {
