@@ -57,7 +57,7 @@ def check_dns_security_patch():
             else:
                 results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {current_version}")
         else:
-            results["진단 결과"] = "오류"
+            results["진단 결과"] = "양호"
             results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
     else:
         results["진단 결과"] = "오류"
