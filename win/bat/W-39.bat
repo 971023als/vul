@@ -2,7 +2,7 @@ rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo ������ ������ ��û�մϴ�...
+    echo 관리자 권한을 요청합니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -64,14 +64,11 @@ IF NOT ERRORLEVEL 1 (
 	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\w-39.txt
 	IF NOT ERRORLEVEL 1 (
 		REM ����
-		echo W-39,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP ���񽺸� ������� �ʰų�, ���͸� ���� ��롱�� üũ���� ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "�͸� ���� ���" �� üũ���� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo "�͸� ���� ���" �� üũ���� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo W-39,OK,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo FTP 서비스가 활성화되어 있으나, 익명 인증이 비활성화되어 있어 안전합니다 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo "익명 인증 비활성화" 상태를 유지하십시오 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
 		REM �ٸ�  
 		echo W-39,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
