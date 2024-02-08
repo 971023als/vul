@@ -21,14 +21,12 @@ HTML_PATH="$WEB_DIRECTORY/index_${NOW}.html"
 setup_environment() {
     if [ ! -f /etc/os-release ]; then
         echo "/etc/os-release 파일을 찾을 수 없습니다. 리눅스 배포판을 확인할 수 없습니다."
-        exit 1
     fi
 
     source /etc/os-release
     PKG_MANAGER=${OS_PACKAGE_MANAGER[$ID]}
     if [ -z "$PKG_MANAGER" ]; then
         echo "지원되지 않는 리눅스 배포판입니다."
-        exit 1
     fi
 
     # CentOS/RHEL 8 이상에서 dnf 사용
