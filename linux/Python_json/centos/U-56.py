@@ -9,7 +9,6 @@ def get_umask_values_from_file(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             if 'umask' in line and not line.strip().startswith('#'):
-                # Splitting by 'umask' to catch cases like "umask 022" and "umask=022"
                 parts = line.split('umask')
                 if len(parts) > 1:
                     value_part = parts[1].split()
@@ -23,7 +22,7 @@ def check_umask_settings():
         "코드": "U-56",
         "위험도": "중",
         "진단 항목": "UMASK 설정 관리",
-        "진단 결과": "양호",  # Initially assume "Good"
+        "진단 결과": "양호",
         "현황": [],
         "대응방안": "UMASK 값이 022 이상으로 설정"
     }
@@ -34,15 +33,20 @@ def check_umask_settings():
         *glob.glob("/home/*/.cshrc"), *glob.glob("/home/*/.login")
     ]
 
+    checked_files = 0
     for file_path in files_to_check:
         if os.path.isfile(file_path):
+            checked_files += 1
             umask_values = get_umask_values_from_file(file_path)
             for value in umask_values:
-                # Ensure the value is treated as octal for comparison
-                # and remove leading zeros for Python 3 compatibility
                 if int(value, 8) < int('022', 8):
                     results["진단 결과"] = "취약"
                     results["현황"].append(f"{file_path} 파일에서 UMASK 값 ({value})이 022 이상으로 설정되지 않았습니다.")
+    if results["진단 결과"] == "양호" and checked_files > 0:
+        results["현황"].append("모든 검사된 파일에서 UMASK 값이 022 이상으로 적절히 설정되었습니다.")
+
+    if checked_files == 0:
+        results["현황"].append("검사할 파일이 없습니다.")
 
     return results
 
