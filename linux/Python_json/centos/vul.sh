@@ -40,7 +40,7 @@ setup_environment() {
 install_packages() {
     echo "필요한 패키지를 설치합니다."
     sudo $PKG_MANAGER update
-    sudo $PKG_MANAGER install $PACKAGES -y || { echo "패키지 설치 실패"; exit 1; }
+    sudo $PKG_MANAGER install $PACKAGES -y || { echo "패키지 설치 실패"; }
     setup_cron_job
 }
 
@@ -54,55 +54,38 @@ setup_cron_job() {
     fi
 }
 
-# Apache 서비스 재시작
-restart_apache() {
-    local service_name=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
-    if [ -n "$service_name" ]; then
-        sudo systemctl restart "$service_name" && echo "$service_name 서비스가 성공적으로 재시작되었습니다." || echo "$service_name 서비스 재시작에 실패했습니다."
-    else
-        echo "Apache/Httpd 서비스를 찾을 수 없습니다."
-    fi
-}
-
 # 보안 점검 스크립트 실행 및 결과 처리
 execute_security_checks() {
-    echo "[" > "$RESULTS_PATH"
-    declare -a errors
-    first_entry=true
+# Initialize result file and error array
+echo "[" > "$RESULTS_PATH"
+declare -a errors
+first_entry=true
 
-    # Run security check scripts
-    for script in /path/to/security/scripts/*.py; do
-        if [ -f "$script" ]; then
-            RESULT=$(python3 "$script" 2>>"$ERRORS_PATH")
-            if [ $? -eq 0 ]; then
-                [ "$first_entry" = false ] && echo "," >> "$RESULTS_PATH"
-                first_entry=false
-                echo "$RESULT" >> "$RESULTS_PATH"
-            else
-                errors+=("Error running $script")
-            fi
+# Run security check scripts
+for i in $(seq -f "%02g" 1 72); do
+    SCRIPT_PATH="U-$i.py"
+    if [ -f "$SCRIPT_PATH" ]; then
+        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
+        if [ $? -eq 0 ]; then
+            [ "$first_entry" = false ] && echo "," >> "$RESULTS_PATH"
+            first_entry=false
+            echo "$RESULT" >> "$RESULTS_PATH"
         else
-            errors+=("$script not found")
+            errors+=("Error running $SCRIPT_PATH")
         fi
-    done
-    echo "]" >> "$RESULTS_PATH"
-
-    # 에러 로깅 및 결과 변환
-    handle_output
-}
-
-# 결과 및 에러 처리
-handle_output() {
-    if [ ${#errors[@]} -gt 0 ]; then
-        printf "%s\n" "${errors[@]}" >> "$ERRORS_PATH"
-        echo "에러가 존재함 -> $ERRORS_PATH"
     else
-        echo "에러 없음."
+        errors+=("$SCRIPT_PATH not found")
     fi
+done
+echo "]" >> "$RESULTS_PATH"
 
-    # JSON 결과를 CSV와 HTML로 변환
-    convert_results
-}
+# Log errors if any
+if [ ${#errors[@]} -gt 0 ]; then
+    printf "%s\n" "${errors[@]}" >> "$ERRORS_PATH"
+    echo "에러가 존재함 -> $ERRORS_PATH"
+else
+    echo "에러 없음."
+fi
 
 # 결과 변환 함수
 convert_results() {
@@ -143,63 +126,23 @@ json_to_html()
     echo "결과가 CSV와 HTML 형식으로 변환되었습니다."
 }
 
+# Apache 서비스 재시작
+restart_apache() {
+    local service_name=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
+    if [ -n "$service_name" ]; then
+        sudo systemctl restart "$service_name" && echo "$service_name 서비스가 성공적으로 재시작되었습니다." || echo "$service_name 서비스 재시작에 실패했습니다."
+    else
+        echo "Apache/Httpd 서비스를 찾을 수 없습니다."
+    fi
+}
+
 # 메인 로직 실행
 main() {
     setup_environment
-    restart_apache
     execute_security_checks
+    convert_result
+    restart_apache
 }
 
 main
-
-
-# Variables for file paths, ensure these are set before running the script
-NOW=$(date +'%Y-%m-%d_%H-%M-%S')
-RESULTS_PATH="/var/www/html/results_${NOW}.json"
-ERRORS_PATH="/var/www/html/errors_${NOW}.log"
-CSV_PATH="/var/www/html/results_${NOW}.csv"
-HTML_PATH="/var/www/html/index_${NOW}.html"
-
-# Initialize result file and error array
-echo "[" > "$RESULTS_PATH"
-declare -a errors
-first_entry=true
-
-# Run security check scripts
-for i in $(seq -f "%02g" 1 72); do
-    SCRIPT_PATH="U-$i.py"
-    if [ -f "$SCRIPT_PATH" ]; then
-        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
-        if [ $? -eq 0 ]; then
-            [ "$first_entry" = false ] && echo "," >> "$RESULTS_PATH"
-            first_entry=false
-            echo "$RESULT" >> "$RESULTS_PATH"
-        else
-            errors+=("Error running $SCRIPT_PATH")
-        fi
-    else
-        errors+=("$SCRIPT_PATH not found")
-    fi
-done
-echo "]" >> "$RESULTS_PATH"
-
-# Log errors if any
-if [ ${#errors[@]} -gt 0 ]; then
-    printf "%s\n" "${errors[@]}" >> "$ERRORS_PATH"
-    echo "에러가 존재함 -> $ERRORS_PATH"
-else
-    echo "에러 없음."
-fi
-
-# Apache 서비스 재시작 로직 개선
-APACHE_SERVICE_NAME=$(systemctl list-units --type=service --state=active | grep -E 'apache2|httpd' | awk '{print $1}')
-if [[ -n "$APACHE_SERVICE_NAME" ]]; then
-    sudo systemctl restart "$APACHE_SERVICE_NAME" && echo "$APACHE_SERVICE_NAME 서비스가 성공적으로 재시작되었습니다." || echo "$APACHE_SERVICE_NAME 서비스 재시작에 실패했습니다."
-else
-    echo "Apache/Httpd 서비스를 찾을 수 없습니다."
-fi
-
-echo "결과가 $RESULTS_PATH에 저장되었습니다"
-[ ${#errors[@]} -ne 0 ] && echo "오류가 $ERRORS_PATH에 기록되었습니다"
-echo "HTML 결과 페이지가 $HTML_PATH에 생성되었습니다"
 
