@@ -22,36 +22,46 @@ HTML_PATH="$WEB_DIRECTORY/index_${NOW}.html"
 setup_environment() {
     if [ ! -f /etc/os-release ]; then
         echo "/etc/os-release 파일을 찾을 수 없습니다. 리눅스 배포판을 확인할 수 없습니다."
+        exit 1
     fi
 
     source /etc/os-release
     PKG_MANAGER=${OS_PACKAGE_MANAGER[$ID]}
     if [ -z "$PKG_MANAGER" ]; then
         echo "지원되지 않는 리눅스 배포판입니다."
+        exit 1
     fi
 
-    # CentOS/RHEL 8 이상에서 dnf 사용
     [ "$ID" == "centos" ] || [ "$ID" == "rhel" ] && [ "${VERSION_ID%%.*}" -ge 8 ] && PKG_MANAGER="dnf"
 
     install_packages
 }
 
-# 필요 패키지 설치
+# 필요 패키지 설치 전 sudo 권한 확인
+check_sudo() {
+    if ! sudo -v; then
+        echo "이 스크립트를 실행하기 위해서는 sudo 권한이 필요합니다."
+        exit 1
+    fi
+}
+
 install_packages() {
+    check_sudo
     echo "필요한 패키지를 설치합니다."
     sudo $PKG_MANAGER update
-    sudo $PKG_MANAGER install $PACKAGES -y || { echo "패키지 설치 실패"; }
+    sudo $PKG_MANAGER install $PACKAGES -y || { echo "패키지 설치 실패"; exit 1; }
     setup_cron_job
 }
 
 # Cron 작업 설정
 setup_cron_job() {
-    if crontab -l | grep -Fq "$CRON_JOB"; then
-        echo "Cron job이 이미 존재합니다."
-    else
-        (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # 매일 스크립트 실행") | crontab -
-        echo "Cron job을 추가했습니다."
-    fi
+    (crontab -l 2>/dev/null | grep -Fq "$CRON_JOB") && echo "Cron job이 이미 존재합니다." || {
+        (crontab -l 2>/dev/null; echo "0 0 * * * $CRON_JOB # 매일 스크립트 실행") | crontab - &&
+        echo "Cron job을 추가했습니다." || {
+            echo "Cron job 추가에 실패했습니다. crontab이 설정되어 있는지 확인해주세요."
+            exit 1
+        }
+    }
 }
 
 # 보안 점검 스크립트 실행 및 결과 처리
