@@ -8,7 +8,8 @@ declare -A OS_PACKAGE_MANAGER=(
     [rhel]="yum"
     [fedora]="dnf"
 )
-PACKAGES="apache2 libapache2-mod-wsgi-py3 python3-venv httpd mod_wsgi"
+PACKAGES="apache2 libapache2-mod-wsgi-py3 python3-venv"
+
 CRON_JOB="/usr/bin/python3 /path/to/your/script.sh"
 NOW=$(date +'%Y-%m-%d_%H-%M-%S')
 WEB_DIRECTORY="/var/www/html"
