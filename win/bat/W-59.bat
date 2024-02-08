@@ -53,3 +53,43 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------W-59------------------------------------------
+net start | find /I "Remote Registry" >nul
+IF NOT ERRORLEVEL 1 (
+    REM 경고
+    echo W-59,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 정책 설정 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 활성화되어 있는 경우 위험 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 주의 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 활성화되어 있으면 위험 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 참고 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 활성화되어 있으면 비활성화 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+) ELSE (
+    REM 안전
+    echo W-59,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 정책 설정 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 비활성화되어 있는 경우 안전 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 주의 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 비활성화되어 있으면 안전 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 참고 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo Remote Registry Service가 비활성화되어 있으면 추가 조치 필요 없음 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+)
+echo -------------------------------------------end------------------------------------------
+echo ------------------------------------------결과 요약------------------------------------------
+:: 결과 요약 보고
+type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
+:: sendmail -to admin@example.com -subject "Security Audit Summary" -body C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt 에 저장되었습니다.
+
+:: 정리 작업
+echo 정리 작업을 수행합니다...
+del C:\Window_%COMPUTERNAME%_raw\*.txt
+del C:\Window_%COMPUTERNAME%_raw\*.vbs
+
+echo 스크립트를 종료합니다.
+exit
