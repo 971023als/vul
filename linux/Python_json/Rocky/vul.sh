@@ -148,7 +148,7 @@ restart_apache() {
 main() {
     setup_environment
     execute_security_checks
-    convert_result
+    convert_results  # 이 부분을 수정했습니다.
     restart_apache
 }
 
