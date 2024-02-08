@@ -116,22 +116,57 @@ def json_to_csv():
 def json_to_html():
     with json_path.open('r', encoding='utf-8') as json_file, html_path.open('w', encoding='utf-8') as html_file:
         data = json.load(json_file)
-        html_file.write('<!DOCTYPE html><html><head><title>Security Check Results</title></head><body><h1>Security Check Results</h1>')
+        html_file.write('''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Check Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Security Check Results</h1>
+    <a href=\"''' + csv_path.name + '''\">Download CSV</a><br>
+    <table>''')
         if data:
-            html_file.write('<a href=\"' + csv_path.name + '\">Download CSV</a><br><table border=\"1\">')
             headers = data[0].keys()
             html_file.write('<tr>' + ''.join(f'<th>{h}</th>' for h in headers) + '</tr>')
             for item in data:
                 row = '<tr>' + ''.join(f'<td>{item[h]}</td>' for h in headers) + '</tr>'
                 html_file.write(row)
-            html_file.write('</table>')
-        html_file.write('</body></html>')
+        html_file.write('</table></body></html>')
 
 json_to_csv()
 json_to_html()
 "
     echo "결과가 CSV와 HTML 형식으로 변환되었습니다."
 }
+
 
 
 # Apache 서비스 재시작
