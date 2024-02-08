@@ -53,3 +53,45 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------W-55------------------------------------------
+type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" | find /i "3214628" > NUL
+IF NOT ERRORLEVEL 1 (
+    REM 취약
+    echo W-55,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent가 설치되어 있는 경우 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent를 설치하여 업데이트 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" | find /i "3214628" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent를 설치하여 업데이트하여 취약점을 제거 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+) ELSE (
+    REM 안전
+    echo W-55,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent가 설치되어 있는 경우 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent가 설치되어 있는지 확인 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 최신 Hotfix 또는 PMS Agent가 설치되어 있는지 확인 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+)
+echo -------------------------------------------end------------------------------------------
+echo ------------------------------------------결과 요약------------------------------------------
+:: 결과 요약 보고
+type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
+:: sendmail -to admin@example.com -subject "Security Audit Summary" -body C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
+
+echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt 에 저장되었습니다.
+
+:: 정리 작업
+echo 정리 작업을 수행합니다...
+del C:\Window_%COMPUTERNAME%_raw\*.txt
+del C:\Window_%COMPUTERNAME%_raw\*.vbs
+
+echo 스크립트를 종료합니다.
+exit

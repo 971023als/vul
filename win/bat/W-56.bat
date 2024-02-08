@@ -58,27 +58,27 @@ reg query "HKLM\SOFTWARE\ESTsoft" /S >> C:\Window_%COMPUTERNAME%_raw\W-56.txt
 reg query "HKLM\SOFTWARE\AhnLab" /S >> C:\Window_%COMPUTERNAME%_raw\W-56.txt 
 TYPE C:\Window_%COMPUTERNAME%_raw\W-56.txt | Findstr /I "AhnLab ESTsoft" >nul
 IF NOT ERRORLEVEL 1 (
-	REM ���
-	echo W-56,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���̷��� ��� ���α׷��� �ֽ� ���� ������Ʈ�� ��ġ�Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���̷��� ��� ���α׷� ��ġ �Ǿ������� ���ͺ並 ���� �ֽ� ���� ������Ʈ Ȯ���ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	TYPE C:\Window_%COMPUTERNAME%_raw\W-56.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���̷��� ��� ���α׷� ��ġ �Ǿ������� ���ͺ並 ���� �ֽ� ���� ������Ʈ Ȯ���ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM 취약
+    echo W-56,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 보안 프로그램 또는 필수 업데이트가 최신 버전으로 설치되어 있는 경우 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 보안 프로그램 설치 확인 및 필수 업데이트를 진행하여 최신 상태로 유지 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    TYPE C:\Window_%COMPUTERNAME%_raw\W-56.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 보안 프로그램 설치 확인 및 필수 업데이트를 진행하여 최신 상태로 유지 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
-	REM ��ȣ 
-	echo W-56,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���̷��� ��� ���α׷��� �ֽ� ���� ������Ʈ�� ��ġ�Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �ش� �׸��� ��ũ��Ʈ���� ������α׷� Ȯ���� ������� �����Ƿ� ���ͺ並 ���� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	TYPE C:\Window_%COMPUTERNAME%_raw\W-56.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �ش� �׸��� ��ũ��Ʈ���� ������α׷� Ȯ���� ������� �����Ƿ� ���ͺ並 ���� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM 안전
+    echo W-56,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 보안 프로그램 또는 필수 업데이트가 최신 버전으로 설치되어 있는 경우 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 해당 스크립트에서 보안 프로그램 확인 및 업데이트를 진행할 필요가 있으므로 모니터링을 통해 최신 상태를 확인 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    TYPE C:\Window_%COMPUTERNAME%_raw\W-56.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 해당 스크립트에서 보안 프로그램 확인 및 업데이트를 진행할 필요가 있으므로 모니터링을 통해 최신 상태를 확인 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
 echo ------------------------------------------결과 요약------------------------------------------
