@@ -16,7 +16,7 @@ WEB_DIRECTORY="/var/www/html"
 RESULTS_PATH="$WEB_DIRECTORY/results_${NOW}.json"
 ERRORS_PATH="$WEB_DIRECTORY/errors_${NOW}.log"
 CSV_PATH="$WEB_DIRECTORY/results_${NOW}.csv"
-HTML_PATH="$WEB_DIRECTORY/index_${NOW}.html"
+HTML_PATH="$WEB_DIRECTORY/index.html"
 
 # 운영체제 확인 및 패키지 관리자 설정
 setup_environment() {
