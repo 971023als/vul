@@ -53,29 +53,29 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-54------------------------------------------
-at | FIND /V /L "There are no entries in the list" >> C:\Window_%COMPUTERNAME%_raw\W-54.txt
-ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-54.txt
+echo ------------------------------------------W-55------------------------------------------
+type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" | find /i "3214628" > NUL
 IF NOT ERRORLEVEL 1 (
 	REM ���
-	echo W-54,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo W-55,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ����� �۾��� �����Ͽ� ���ʿ��� ���ɾ ������ �ִ��� Ȯ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ����� �۾��� ���ʿ��� ���ɾ ������ �������� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" | find /i "3214628" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ����� �۾��� ���ʿ��� ���ɾ ������ �������� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
-	REM ����
-	echo W-54,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	REM ��ȣ 
+	echo W-55,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ����� �۾��� �����Ͽ� ���ʿ��� ���ɾ ������ �ִ��� Ȯ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���ʿ��� �۾��� �����ϹǷ� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	at >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� �ִ��� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	type C:\Window_%COMPUTERNAME%_raw\systeminfo.txt | findstr /i "Hotfix KB" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ���ʿ��� �۾��� ������ �� �����Ƿ� ���ͺ並 ���� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo �ֽ� Hotfix �Ǵ� PMS Agent�� ��ġ�Ǿ� �ִ��� Ȯ�� �ʿ� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
 echo -------------------------------------------end------------------------------------------
