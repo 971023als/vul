@@ -66,36 +66,34 @@ setup_cron_job() {
 
 # 보안 점검 스크립트 실행 및 결과 처리
 execute_security_checks() {
-# Initialize result file and error array
-echo "[" > "$RESULTS_PATH"
-declare -a errors
-first_entry=true
+    echo "[" > "$RESULTS_PATH"
+    declare -a errors
+    first_entry=true
 
-# Run security check scripts
-for i in $(seq -f "%02g" 1 72); do
-    SCRIPT_PATH="U-$i.py"
-    if [ -f "$SCRIPT_PATH" ]; then
-        RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
-        if [ $? -eq 0 ]; then
-            [ "$first_entry" = false ] && echo "," >> "$RESULTS_PATH"
-            first_entry=false
-            echo "$RESULT" >> "$RESULTS_PATH"
+    for i in $(seq -f "%02g" 1 72); do
+        SCRIPT_PATH="U-$i.py"
+        if [ -f "$SCRIPT_PATH" ]; then
+            RESULT=$(python3 "$SCRIPT_PATH" 2>>"$ERRORS_PATH")
+            if [ $? -eq 0 ]; then
+                [ "$first_entry" = false ] && echo "," >> "$RESULTS_PATH"
+                first_entry=false
+                echo "$RESULT" >> "$RESULTS_PATH"
+            else
+                errors+=("Error running $SCRIPT_PATH")
+            fi
         else
-            errors+=("Error running $SCRIPT_PATH")
+            errors+=("$SCRIPT_PATH not found")
         fi
-    else
-        errors+=("$SCRIPT_PATH not found")
-    fi
-done
-echo "]" >> "$RESULTS_PATH"
+    done
+    echo "]" >> "$RESULTS_PATH"
 
-# Log errors if any
-if [ ${#errors[@]} -gt 0 ]; then
-    printf "%s\n" "${errors[@]}" >> "$ERRORS_PATH"
-    echo "에러가 존재함 -> $ERRORS_PATH"
-else
-    echo "에러 없음."
-fi
+    if [ ${#errors[@]} -gt 0 ]; then
+        printf "%s\n" "${errors[@]}" >> "$ERRORS_PATH"
+        echo "에러가 존재함 -> $ERRORS_PATH"
+    else
+        echo "에러 없음."
+    fi
+}
 
 # 결과 변환 함수
 convert_results() {
