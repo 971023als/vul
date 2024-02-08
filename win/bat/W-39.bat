@@ -53,43 +53,41 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-38------------------------------------------
+echo ------------------------------------------W-39------------------------------------------
 cd "C:\Window_%COMPUTERNAME%_raw\"
 dir | find /I "ftp_path.txt" >nul
 REM ���
 IF NOT ERRORLEVEL 1 (
-	REM ���
-	FOR /F "tokens=1 delims=/" %%a in ('type C:\Window_%COMPUTERNAME%_raw\FTP_PATH.txt') DO (
-		cacls %%a >> C:\Window_%COMPUTERNAME%_raw\w-38-1.txt
-		cacls %%a | findstr /I "Everyone" >> C:\Window_%COMPUTERNAME%_raw\w-38.txt
-	)
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\w-38.txt
-	REM ���
+	REM ��� 
+	TYPE C:\Window_%COMPUTERNAME%_raw\ftp_config.txt | find /i "anonymousAuthentication enabled=""true"""  >> C:\Window_%COMPUTERNAME%_raw\w-39.txt
+	REM ��� 
+	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\w-39.txt
 	IF NOT ERRORLEVEL 1 (
-		REM ����  
-		echo W-38,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		REM ����
+		echo W-39,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo FTP ���񽺸� ������� �ʰų�, ���͸� ���� ��롱�� üũ���� ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ �������� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo "�͸� ���� ���" �� üũ���� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ �������� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo "�͸� ���� ���" �� üũ���� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	) ELSE (
-		REM �ٸ�
-		echo W-38,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		REM �ٸ�  
+		echo W-39,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo FTP ���񽺸� ������� �ʰų�, ���͸� ���� ��롱�� üũ���� ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ ������ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		TYPE C:\Window_%COMPUTERNAME%_raw\w-38.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		type C:\Window_%COMPUTERNAME%_raw\w-39.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		TYPE C:\WINDOWS\system32\inetsrv\MetaBase.xml | findstr /i "IIsFtpService IIsFtpServer AllowAnonymous="  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo ���� ���� ���� ��� default�� �͸� ���� ����� �����Ǿ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo FTP Ȩ ���͸��� EVERYONE ������ �����ϹǷ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+		echo "�͸� ���� ���" �� üũ�Ǿ� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	)
 ) ELSE (
 	REM ��ȣ   
-	echo W-38,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+	echo W-39,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo Microsoft FTP Service ���񽺸� ������� ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
