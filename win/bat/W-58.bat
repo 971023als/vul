@@ -53,6 +53,16 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------W-58------------------------------------------
+echo W-58,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 정책 설정 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 로그온 이벤트 및 관련 보안 로깅, 감사, 리포트 작성 및 보안 로그 위치를 관리하는데 필요한 정책 설정 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 주의 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 로그 저장 정책 및 감사를 통해 리포트를 작성하고 보안 로그를 관리하는데 필요한 정책을 검토 및 설정 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 참고 사항 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 로그 저장 정책 및 감사를 통해 리포트를 작성하고 보안 로그를 관리하는데 필요한 정책을 검토 및 설정 필요 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo -------------------------------------------end------------------------------------------
 
 
 echo ------------------------------------------결과 요약------------------------------------------
