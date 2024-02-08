@@ -2,7 +2,7 @@ rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo ������ ������ ��û�մϴ�...
+    echo "관리자 권한을 요청합니다..."
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -55,12 +55,12 @@ type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\ii
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-50------------------------------------------
 echo W-50,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo HTTP, FTP, SMTP ���� �� ��� ������ ������ �ʴ� ��� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo ������ 2000�� �ش�� ����� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo ������ 2000�� �ش������ Windows server 2012�� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo HTTP, FTP, SMTP 서비스가 필요 없는 경우 비활성화 권장 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 조치 방안 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 필요하지 않은 서비스는 비활성화 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 상태 확인 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+echo 필요하지 않은 서비스를 비활성화하여 Windows Server 2012 이상에서 안전함 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 echo -------------------------------------------end------------------------------------------
 echo ------------------------------------------결과 요약------------------------------------------

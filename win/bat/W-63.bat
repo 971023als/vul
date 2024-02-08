@@ -2,7 +2,7 @@ rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo ������ ������ ��û�մϴ�...
+    echo "관리자 권한을 요청합니다..."
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
