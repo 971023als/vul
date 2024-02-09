@@ -1,152 +1,57 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo "관리자 권한을 요청합니다..."
+    echo 관리자 권한 요청 중...
     goto UACPrompt
 ) else ( goto gotAdmin )
+
 :UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
+    echo Set UAC = CreateObject("Shell.Application") > "%temp%\getadmin.vbs"
+    echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %*", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-set "line="
-for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-set "line=!line!%%a" 
-)
-echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
-for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
-)
-for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
-)
-for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
-)
-for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
-)
-for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
-)
-type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-64------------------------------------------
-reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" | findstr /I "1" >> C:\Window_%COMPUTERNAME%_raw\W-64-1.txt
-reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" | findstr /I "1" >> C:\Window_%COMPUTERNAME%_raw\W-64-2.txt
+echo ------------------------------------------ 설정 ---------------------------------------
+rd /S /Q C:\Windows_Security_Audit\%COMPUTERNAME%_raw
+rd /S /Q C:\Windows_Security_Audit\%COMPUTERNAME%_result
+mkdir C:\Windows_Security_Audit\%COMPUTERNAME%_raw
+mkdir C:\Windows_Security_Audit\%COMPUTERNAME%_result
+
+echo ------------------------------------------ W-64 스크린 세이버 정책 확인 ------------------------------------------
+reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" | findstr /I "1" >> C:\Windows_Security_Audit\%COMPUTERNAME%_raw\W-64-1.txt
+reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" | findstr /I "1" >> C:\Windows_Security_Audit\%COMPUTERNAME%_raw\W-64-2.txt
+
 for /f "tokens=3" %%a in ('reg query "HKCU\Control Panel\Desktop" ^| find "ScreenSaveTimeOut"') do set ScreenSaveTimeOut=%%a
-REM ��ȣ
-type C:\Window_%COMPUTERNAME%_raw\W-64-1.txt | find "1" > nul
-IF NOT ERRORLEVEL 1 (
-	type C:\Window_%COMPUTERNAME%_raw\W-64-2.txt | find "1" > nul
-	IF NOT ERRORLEVEL 1 (
-		if "%ScreenSaveTimeOut%" LSS "601" (
-			REM ���
-			echo W-64,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ �����ϰ� ��� �ð��� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�ϰ� ��� �ð�[ScreenSaveTimeOut]�� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]�� ����ϰ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ����[ScreenSaveActive] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]���� ���� ��쿡 �̼��� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ��� �ð�[ScreenSaveTimeOut] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveTimeOut" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ �����ϰ� ��� �ð��� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϰ� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		) ELSE (
-			REM ��ȣ 
-			echo W-64,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ �����ϰ� ��� �ð��� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�ϰ� ��� �ð�[ScreenSaveTimeOut]�� 10�� ������ ������ �����Ǿ� ���� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ����[ScreenSaveActive] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]���� ���� ��쿡 �̼��� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ��� �ð�[ScreenSaveTimeOut] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveTimeOut" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�ϰ� ��� �ð�[ScreenSaveTimeOut]�� 10�� ������ ������ �����Ǿ� ���� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-			echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		)
-	) ELSE (
-		REM ��ȣ 
-		echo W-64,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�⸦ �����ϰ� ��� �ð��� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�Ǿ��ְ� ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]�� ����ϰ� ���� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�� ����[ScreenSaveActive] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]���� ���� ��쿡 �̼��� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��� �ð�[ScreenSaveTimeOut] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveTimeOut" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ȭ�� ��ȣ�⸦ �����ϰ� ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϰ� ���� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
-) ELSE (
-	REM ��ȣ 
-	echo W-64,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�⸦ �����ϰ� ��� �ð��� 10�� ������ ������ �����Ǿ� ������, ȭ�� ��ȣ�� ������ ���� ��ȣ�� ����ϴ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�� ����ϰ� ���� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�� ����[ScreenSaveActive] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveActive" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKCU\Control Panel\Desktop" | find "ScreenSaverIsSecure" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�� ������ ���� ��ȣ[ScreenSaverIsSecure]���� ���� ��쿡 �̼��� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ��� �ð�[ScreenSaveTimeOut] >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKCU\Control Panel\Desktop" | find "ScreenSaveTimeOut" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ȭ�� ��ȣ�⸦ ����[ScreenSaveActive]�� ����ϰ� ���� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+
+:: 스크린 세이버 활성화 및 안전한 로그온 확인
+type C:\Windows_Security_Audit\%COMPUTERNAME%_raw\W-64-1.txt | find "1" > nul
+if NOT ERRORLEVEL 1 (
+    type C:\Windows_Security_Audit\%COMPUTERNAME%_raw\W-64-2.txt | find "1" > nul
+    if NOT ERRORLEVEL 1 (
+        if "%ScreenSaveTimeOut%" LSS "601" (
+            echo W-64,O,^|>> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+            echo 스크린 세이버 정책 설정이 취약합니다. >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+            echo - 스크린 세이버 활성화[ScreenSaveActive]: 1 >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+            echo - 안전한 로그온 요구[ScreenSaverIsSecure]: 1 >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+            echo - 설정된 대기 시간[ScreenSaveTimeOut]: %ScreenSaveTimeOut%초 >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        ) else (
+            echo W-64,X,^|>> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+            echo 스크린 세이버 정책 설정이 안전합니다. >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        )
+    ) else (
+        echo W-64,X,^|>> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 안전한 로그온이 요구되지 않습니다. 취약할 수 있습니다. >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    )
+) else (
+    echo W-64,X,^|>> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 스크린 세이버가 비활성화되어 있습니다. 취약할 수 있습니다. >> C:\Windows_Security_Audit\%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
-echo ------------------------------------------결과 요약------------------------------------------
-:: 결과 요약 보고
-type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
 
-:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
-:: sendmail -to admin@example.com -subject "Security Audit Summary" -body C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
-
-echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt 에 저장되었습니다.
-
-:: 정리 작업
-echo 정리 작업을 수행합니다...
-del C:\Window_%COMPUTERNAME%_raw\*.txt
-del C:\Window_%COMPUTERNAME%_raw\*.vbs
-
+echo 결과가 C:\Windows_Security_Audit\%COMPUTERNAME%_result 폴더에 저장되었습니다.
 echo 스크립트를 종료합니다.
 exit
