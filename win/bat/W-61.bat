@@ -54,32 +54,17 @@ for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt')
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 echo ------------------------------------------end-------------------------------------------
 echo ------------------------------------------W-61------------------------------------------
-cacls %systemroot%\system32\logfiles | FINDSTR /I "Everyone">> C:\Window_%COMPUTERNAME%_raw\W-61.txt
-cacls %systemroot%\system32\config | FINDSTR /I "Everyone">> C:\Window_%COMPUTERNAME%_raw\W-61.txt
-ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-61.txt
-IF NOT ERRORLEVEL 1 (
-	REM ���
-	echo W-61,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �α� ���͸��� ���ѿ� Everyone ������ ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �α� ���͸��� ���ѿ� Everyone ������ ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO �α� ���͸��� ���ѿ� Everyone ������ �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-) ELSE (
-	REM ��ȣ 
-	echo W-61,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �α� ���͸��� ���ѿ� Everyone ������ ���� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �α� ���͸��� ���ѿ� Everyone ������ ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	TYPE C:\Window_%COMPUTERNAME%_raw\W-61.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO �α� ���͸��� ���ѿ� Everyone ������ �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+> C:\Window_%COMPUTERNAME%_raw\W-61.txt (
+    icacls "%systemroot%\system32\logfiles"
+    icacls "%systemroot%\system32\config"
 )
-echo -------------------------------------------end------------------------------------------
+type C:\Window_%COMPUTERNAME%_raw\W-61.txt | FINDSTR /I "Everyone" >nul && (
+    echo W-61,O,^| 취약: Everyone 그룹 권한이 발견되었습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+) || (
+    echo W-61,X,^| 안전: Everyone 그룹 권한이 발견되지 않았습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+)
+echo ---------------------------------------------------------------- >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+
 echo ------------------------------------------결과 요약------------------------------------------
 :: 결과 요약 보고
 type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
