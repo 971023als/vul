@@ -1,4 +1,3 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
@@ -10,14 +9,14 @@ if '%errorlevel%' NEQ '0' (
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------설정 시작---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS 설정 수집-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -37,49 +36,46 @@ set "line=!line!%%a"
 )
 echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
 for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
 )
 for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
 )
 for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
 )
 for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
 )
 for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-69------------------------------------------
+echo ------------------------------------------설정 종료-------------------------------------------
+
+echo ------------------------------------------W-69 검사 시작------------------------------------------
 reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" | FIND /I "AutoAdminLogon" | findstr "1"
 IF NOT ERRORLEVEL 1 (
-	REM ���
-	echo W-69,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo AutoAdminLogon ���� ���ų� 0���� �����Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo AutoAdminLogon ���� ���ų� 0���� �����Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" | FIND /I "AutoAdminLogon" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO AutoAdminLogon ���� ���ų� 0���� �����Ǿ� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM 실패
+    echo W-69,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 미완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo AutoAdminLogon 설정이 활성화되어 있어 보안에 취약합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" | FIND /I "AutoAdminLogon" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 상세 정보 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    ECHO AutoAdminLogon 설정이 활성화되어 있어 보안 강화가 필요합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 ) ELSE (
-	REM ��ȣ
-	echo W-69,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo AutoAdminLogon ���� ���ų� 0���� �����Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo AutoAdminLogon ���� ���ų� 0���� �����Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" | FIND /I "AutoAdminLogon" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ������� ������ ���� ��� ���� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	ECHO AutoAdminLogon ���� ���ų� 0���� �����Ǿ� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    REM 성공
+    echo W-69,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo AutoAdminLogon 설정이 비활성화되어 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" | FIND /I "AutoAdminLogon" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 확인 완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    ECHO AutoAdminLogon 설정이 비활성화되어 있어 보안 상태가 양호합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo ------------------------------------------검사 종료------------------------------------------
+
 echo ------------------------------------------결과 요약------------------------------------------
 :: 결과 요약 보고
 type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
