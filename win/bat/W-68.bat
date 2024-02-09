@@ -1,8 +1,7 @@
-rem windows server script edit 2020
 @echo off
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo "관리자 권한을 요청합니다..."
+    echo 관리자 권한을 요청합니다...
     goto UACPrompt
 ) else ( goto gotAdmin )
 :UACPrompt
@@ -10,14 +9,14 @@ if '%errorlevel%' NEQ '0' (
     set params = %*:"=""
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
     "getadmin.vbs"
-	del "getadmin.vbs"
+    del "getadmin.vbs"
     exit /B
 
 :gotAdmin
 chcp 437
 color 02
 setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
+echo ------------------------------------------설정---------------------------------------
 rd /S /Q C:\Window_%COMPUTERNAME%_raw
 rd /S /Q C:\Window_%COMPUTERNAME%_result
 mkdir C:\Window_%COMPUTERNAME%_raw
@@ -28,7 +27,7 @@ fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
 cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
 for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
 systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
+echo ------------------------------------------IIS 설정-----------------------------------
 type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
 type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
 set "line="
@@ -37,62 +36,52 @@ set "line=!line!%%a"
 )
 echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
 for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
 )
 for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
 )
 for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
 )
 for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
 )
 for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
+    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
 )
 type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
+echo ------------------------------------------종료-------------------------------------------
+
 echo ------------------------------------------W-68------------------------------------------
-reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" | FINDSTR /V /I "SAM" | findstr "1" 
+reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" | FINDSTR /V /I "SAM" | findstr "1"
 IF NOT ERRORLEVEL 1 (
-	REM ���
-	reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "RestrictAnonymousSAM" | findstr "1" 
-	IF NOT ERRORLEVEL 1 (
-		REM ���
-		echo W-68,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ��SAM ������ �͸� ���� ��� �� �ԡ��� ����롱���� �Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ�[restrictanonymous]�� ��SAM ������ �͸� ���� ��� �� �ԡ�[restrictanonymoussam]�� ����롱[1]���� �Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ��SAM ������ �͸� ���� ��� �� �ԡ��� ����롱���� �Ǿ� �����Ƿ� ��ȣ�� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		REM ��ȣ
-		echo W-68,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ��SAM ������ �͸� ���� ��� �� �ԡ��� ����롱���� �Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ�[restrictanonymous]�� ����롱[1]���� ��SAM ������ �͸� ���� ��� �� �ԡ�[restrictanonymoussam]�� ����� �� �ԡ�[0]���� �Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ����롱���� ��SAM ������ �͸� ���� ��� �� �ԡ��� ����� �� �ԡ����� �Ǿ� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
+    REM 성공
+    reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "RestrictAnonymousSAM" | findstr "1"
+    IF NOT ERRORLEVEL 1 (
+        REM 성공
+        echo W-68,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 설정 완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 익명 SAM 계정 접근을 제한하는 설정이 적절히 구성되었습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 설정 상세 정보 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    ) ELSE (
+        REM 실패
+        echo W-68,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 설정 미완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 익명 SAM 계정 접근을 제한하는 설정이 적절히 구성되지 않았습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+        echo 설정 상세 정보 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    )
 ) ELSE (
-	echo W-68,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ��SAM ������ �͸� ���� ��� �� �ԡ��� ����롱���� �Ǿ� �ִ� ��� ��ȣ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ��Ȳ >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ�[restrictanonymous]�� ����� �� �ԡ�[0]���� �Ǿ� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" | FINDSTR /V /I "SAM" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo �� ���� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ��SAM ������ ������ �͸� ���� ��� �� �ԡ��� ����� �� �ԡ����� �Ǿ� �����Ƿ� ����� >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo W-68,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 미완료 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 익명 계정 접근을 제한하는 설정이 적절히 구성되지 않았습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    reg query "HKLM\SYSTEM\CurrentControlSet\Control\LSA" | find /I "restrictanonymous" | FINDSTR /V /I "SAM" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
+    echo 설정 상세 정보 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
 )
-echo -------------------------------------------end------------------------------------------
+echo -------------------------------------------종료-------------------------------------------
+
 echo ------------------------------------------결과 요약------------------------------------------
 :: 결과 요약 보고
 type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
