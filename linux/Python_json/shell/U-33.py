@@ -1,73 +1,71 @@
-#!/usr/bin/python3
-import subprocess
-import json
-import re
+#!/bin/bash
 
-def parse_version(version_string):
-    """Parse version string to a tuple of integers."""
-    return tuple(map(int, re.findall(r'\d+', version_string)))
+# 변수 설정
+분류="서비스 관리"
+코드="U-33"
+위험도="상"
+진단_항목="DNS 보안 버전 패치"
+대응방안="DNS 서비스 주기적 패치 관리"
+minimum_version="9.18.7"
+현황=()
 
-def check_command_exists(command):
-    """Check if a command exists on the system."""
-    try:
-        subprocess.check_output(["which", command], stderr=subprocess.PIPE)
-        return True
-    except subprocess.CalledProcessError:
-        return False
+# 버전 비교 함수
+compare_versions() {
+    if [[ "$1" == "$2" ]]; then
+        return 0 # equal
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++)); do
+        if [[ -z ${ver2[i]} ]]; then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]})); then
+            return 1 # less than
+        elif ((10#${ver1[i]} > 10#${ver2[i]})); then
+            return 2 # greater than
+        fi
+    done
+    return 0 # equal
+}
 
-def get_bind_version_rpm():
-    """Get BIND version using rpm."""
-    try:
-        return subprocess.check_output("rpm -qa | grep '^bind'", shell=True, text=True).strip()
-    except subprocess.CalledProcessError:
-        return ""
+# BIND 버전 확인
+if command -v rpm &> /dev/null; then
+    bind_version_output=$(rpm -qa | grep '^bind' | grep -oP 'bind(?:9)?-\K(\d+\.\d+\.\d+)')
+elif command -v dpkg &> /dev/null; then
+    bind_version_output=$(dpkg -l | grep '^ii' | grep 'bind9' | grep -oP 'bind9\s+\K(\d+\.\d+\.\d+)')
+fi
 
-def get_bind_version_dpkg():
-    """Get BIND version using dpkg."""
-    try:
-        return subprocess.check_output("dpkg -l | grep '^ii' | grep 'bind9'", shell=True, text=True).strip()
-    except subprocess.CalledProcessError:
-        return ""
+# 버전 비교 및 결과 설정
+if [[ $bind_version_output ]]; then
+    compare_versions $bind_version_output $minimum_version
+    case $? in
+        1) # less than
+            진단_결과="취약"
+            현황+=("BIND 버전이 최신 버전(${minimum_version}) 이상이 아닙니다: ${bind_version_output}")
+            ;;
+        *) # equal or greater than
+            진단_결과="양호"
+            현황+=("BIND 버전이 최신 버전(${minimum_version}) 이상입니다: ${bind_version_output}")
+            ;;
+    esac
+else
+    진단_결과="오류"
+    현황+=("BIND가 설치되어 있지 않거나 버전을 확인할 수 없습니다.")
+fi
 
-def check_dns_security_patch():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-33",
-        "위험도": "상",
-        "진단 항목": "DNS 보안 버전 패치",
-        "진단 결과": "양호",  # Default state
-        "현황": [],
-        "대응방안": "DNS 서비스 주기적 패치 관리"
-    }
-
-    minimum_version = "9.18.7"
-
-    if check_command_exists("rpm"):
-        bind_version_output = get_bind_version_rpm()
-    elif check_command_exists("dpkg"):
-        bind_version_output = get_bind_version_dpkg()
-
-    if bind_version_output:
-        version_match = re.search(r'bind(?:9)?-(\d+\.\d+\.\d+)', bind_version_output)
-        if version_match:
-            current_version = version_match.group(1)
-            if parse_version(current_version) < parse_version(minimum_version):
-                results["진단 결과"] = "취약"
-                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상이 아닙니다: {current_version}")
-            else:
-                results["현황"].append(f"BIND 버전이 최신 버전({minimum_version}) 이상입니다: {current_version}")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("BIND 버전 확인 중 오류 발생 (버전 정보 없음)")
-    else:
-        results["진단 결과"] = "오류"
-        results["현황"].append("BIND가 설치되어 있지 않거나 rpm/dpkg 명령어 실행 실패")
-
-    return results
-
-def main():
-    results = check_dns_security_patch()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done
