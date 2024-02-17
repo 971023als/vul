@@ -1,29 +1,16 @@
 #!/bin/bash
 
-# 변수 설정
-분류="시스템 설정"
-코드="U-20"
-위험도="상"
-진단_항목="Anonymous FTP 비활성화"
-대응방안="[양호]: Anonymous FTP (익명 ftp) 접속을 차단한 경우\n[취약]: Anonymous FTP (익명 ftp) 접속을 차단하지 않은 경우"
-현황=()
-
-# /etc/passwd에서 ftp 사용자 확인
+# FTP 사용자 계정 비활성화
 if grep -q "^ftp:" /etc/passwd; then
-    진단_결과="취약"
-    현황+=("FTP 계정이 /etc/passwd 파일에 있습니다.")
+    # FTP 사용자의 로그인 쉘을 /sbin/nologin으로 설정하여 로그인을 차단
+    usermod -s /sbin/nologin ftp
+    echo "FTP 사용자 계정의 로그인이 차단되었습니다."
+
+    # 필요에 따라 FTP 사용자 계정을 시스템에서 삭제
+    # userdel ftp
+    # echo "FTP 사용자 계정이 삭제되었습니다."
 else
-    진단_결과="양호"
-    현황+=("FTP 계정이 /etc/passwd 파일에 없습니다.")
+    echo "FTP 사용자 계정이 이미 존재하지 않습니다."
 fi
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단_항목"
-echo "대응방안: $대응방안"
-echo "진단 결과: $진단_결과"
-for item in "${현황[@]}"; do
-    echo "$item"
-done
+echo "Anonymous FTP 접속 차단 조치가 완료되었습니다."
