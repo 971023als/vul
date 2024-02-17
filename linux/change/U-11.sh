@@ -1,50 +1,27 @@
 #!/bin/bash
 
-# 변수 설정
-분류="파일 및 디렉터리 관리"
-코드="U-11"
-위험도="상"
-진단_항목="/etc/syslog.conf 파일 소유자 및 권한 설정"
-대응방안="/etc/syslog.conf 파일의 소유자가 root(또는 bin, sys)이고, 권한이 640 이하인 경우"
-현황=()
-진단_결과="파일 없음"
-
+# syslog 관련 파일들 설정
 syslog_conf_files=("/etc/rsyslog.conf" "/etc/syslog.conf" "/etc/syslog-ng.conf")
-file_exists_count=0
-compliant_files_count=0
 
-for file_path in "${syslog_conf_files[@]}"; do
+# 파일 소유자 및 권한 설정 함수
+set_file_ownership_and_permissions() {
+    local file_path=$1
     if [ -f "$file_path" ]; then
-        ((file_exists_count++))
-        mode=$(stat -c "%a" "$file_path")
-        owner_name=$(stat -c "%U" "$file_path")
+        # 소유자를 root로 설정
+        chown root "$file_path"
 
-        if [[ "$owner_name" == "root" || "$owner_name" == "bin" || "$owner_name" == "sys" ]] && [ "$mode" -le 640 ]; then
-            ((compliant_files_count++))
-            현황+=("$file_path 파일의 소유자가 $owner_name이고, 권한이 $mode입니다.")
-        else
-            현황+=("$file_path 파일의 소유자나 권한이 기준에 부합하지 않습니다.")
-        fi
-    fi
-done
+        # 권한을 640으로 설정
+        chmod 640 "$file_path"
 
-if [ "$file_exists_count" -gt 0 ]; then
-    if [ "$compliant_files_count" -eq "$file_exists_count" ]; then
-        진단_결과="양호"
+        echo "$file_path 파일의 소유자와 권한이 적절히 설정되었습니다."
     else
-        진단_결과="취약"
+        echo "$file_path 파일이 존재하지 않습니다."
     fi
-else
-    진단_결과="파일 없음"
-fi
+}
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단_항목"
-echo "대응방안: $대응방안"
-echo "진단 결과: $진단_결과"
-for item in "${현황[@]}"; do
-    echo "현황: $item"
+# 각 파일에 대해 소유자 및 권한 설정 적용
+for file_path in "${syslog_conf_files[@]}"; do
+    set_file_ownership_and_permissions "$file_path"
 done
+
+echo "모든 지정된 syslog 관련 파일의 소유자와 권한이 업데이트 되었습니다."
