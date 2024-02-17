@@ -13,24 +13,22 @@ echo '{
 }' > $results_file
 
 # 로그 파일 목록
-declare -A log_files=(
-    ["UTMP"]="/var/log/utmp"
-    ["WTMP"]="/var/log/wtmp"
-    ["BTMP"]="/var/log/btmp"
-    ["SULOG"]="/var/log/sulog"
-    ["XFERLOG"]="/var/log/xferlog"
+log_files=(
+    "/var/log/auth.log"
+    "/var/log/syslog"
+    "/var/log/kern.log"
+    "/var/log/dmesg"
+    "/var/log/faillog"
 )
 
-# 로그 파일 존재 여부 확인
-for log_name in "${!log_files[@]}"; do
-    log_path="${log_files[$log_name]}"
-    if [ -f "$log_path" ]; then
-        result="존재함"
+# 로그 파일 존재 여부 및 최근 업데이트 시간 확인
+for log_file in "${log_files[@]}"; do
+    if [ -f "$log_file" ]; then
+        last_modified=$(date -r "$log_file" +"%Y-%m-%d %H:%M:%S")
+        jq --arg lf "$log_file" --arg lm "$last_modified" '.현황 += [{"파일명": $lf, "최근 수정 시간": $lm, "결과": "존재함"}]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
     else
-        result="존재하지 않음"
+        jq --arg lf "$log_file" '.현황 += [{"파일명": $lf, "결과": "존재하지 않음"}]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
     fi
-    # JSON 형식으로 결과 추가
-    jq --arg ln "$log_name" --arg res "$result" '.현황 += [{"파일명": $ln, "결과": $res}]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 done
 
 # 결과 출력
