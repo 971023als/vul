@@ -1,32 +1,28 @@
-#!/usr/bin/python3
-import subprocess
-import json
+#!/bin/bash
 
-def check_snmp_service_usage():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-66",
-        "위험도": "중",
-        "진단 항목": "SNMP 서비스 구동 점검",
-        "진단 결과": "",  # 초기 값 설정하지 않음
-        "현황": "",
-        "대응방안": "SNMP 서비스 사용을 필요로 하지 않는 경우, 서비스를 비활성화"
-    }
+# 초기 진단 결과 및 현황 설정
+category="서비스 관리"
+code="U-66"
+severity="중"
+check_item="SNMP 서비스 구동 점검"
+result=""
+status=""
+recommendation="SNMP 서비스 사용을 필요로 하지 않는 경우, 서비스를 비활성화"
 
-    # Execute a system command to check for SNMP service
-    process = subprocess.run(['ps', '-ef'], stdout=subprocess.PIPE, text=True)
-    if 'snmp' in process.stdout.lower():
-        results["진단 결과"] = "취약"
-        results["현황"] = "SNMP 서비스를 사용하고 있습니다."
-    else:
-        results["진단 결과"] = "양호"
-        results["현황"] = "SNMP 서비스를 사용하지 않고 있습니다."
+# SNMP 서비스 실행 여부 확인
+if ps -ef | grep -i "snmp" | grep -v "grep" > /dev/null; then
+    result="취약"
+    status="SNMP 서비스를 사용하고 있습니다."
+else
+    result="양호"
+    status="SNMP 서비스를 사용하지 않고 있습니다."
+fi
 
-    return results
-
-def main():
-    snmp_service_check_results = check_snmp_service_usage()
-    print(json.dumps(snmp_service_check_results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황: $status"
+echo "대응방안: $recommendation"

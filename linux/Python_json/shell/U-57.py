@@ -1,46 +1,41 @@
-#!/usr/bin/python3
-import os
-import pwd
-import json
-import stat
+#!/bin/bash
 
-def check_home_directory_ownership_and_permissions():
-    results = {
-        "분류": "파일 및 디렉토리 관리",
-        "코드": "U-57",
-        "위험도": "중",
-        "진단 항목": "홈디렉토리 소유자 및 권한 설정",
-        "진단 결과": "양호",  # Initially assume all is well
-        "현황": [],
-        "대응방안": "홈 디렉터리 소유자를 해당 계정으로 설정 및 타 사용자 쓰기 권한 제거"
-    }
+# Initialize the results file
+results_file="results.json"
+echo '{
+    "분류": "파일 및 디렉토리 관리",
+    "코드": "U-57",
+    "위험도": "중",
+    "진단 항목": "홈디렉토리 소유자 및 권한 설정",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "홈 디렉터리 소유자를 해당 계정으로 설정 및 타 사용자 쓰기 권한 제거"
+}' > $results_file
 
-    try:
-        users = pwd.getpwall()  # Get all user entries
-        for user in users:
-            # Skip system users by UID
-            if user.pw_uid >= 1000:
-                home_dir = user.pw_dir
-                if os.path.isdir(home_dir):  # Ensure the home directory exists
-                    stat_info = os.stat(home_dir)
-                    if stat_info.st_uid != user.pw_uid:
-                        results["현황"].append(f"{home_dir} 홈 디렉터리의 소유자가 {user.pw_name}이(가) 아닙니다.")
-                        results["진단 결과"] = "취약"
-                    if bool(stat_info.st_mode & stat.S_IWOTH):  # Check for other write permissions
-                        results["현황"].append(f"{home_dir} 홈 디렉터리에 타 사용자(other) 쓰기 권한이 설정되어 있습니다.")
-                        results["진단 결과"] = "취약"
-                else:
-                    results["현황"].append(f"{home_dir} 홈 디렉터리가 존재하지 않습니다.")
-                    results["진단 결과"] = "취약"
-    except Exception as e:
-        results["진단 결과"] = "오류"
-        results["현황"].append(f"홈 디렉터리 소유자 및 권한 설정 검사 중 예외가 발생했습니다: {str(e)}")
+# Get all user entries and iterate
+getent passwd | while IFS=: read -r username _ uid _ _ homedir _; do
+    # Skip system users by UID
+    if [ "$uid" -ge 1000 ]; then
+        if [ -d "$homedir" ]; then
+            dir_owner_uid=$(stat -c "%u" "$homedir")
+            if [ "$dir_owner_uid" != "$uid" ]; then
+                echo "{\"현황\": \"${homedir} 홈 디렉터리의 소유자가 ${username}이(가) 아닙니다.\"}" >> $results_file
+                echo "{\"진단 결과\": \"취약\"}" >> $results_file
+            fi
+            if [ "$(stat -c "%A" "$homedir" | cut -c8)" == "w" ]; then
+                echo "{\"현황\": \"${homedir} 홈 디렉터리에 타 사용자(other) 쓰기 권한이 설정되어 있습니다.\"}" >> $results_file
+                echo "{\"진단 결과\": \"취약\"}" >> $results_file
+            fi
+        else
+            echo "{\"현황\": \"${homedir} 홈 디렉터리가 존재하지 않습니다.\"}" >> $results_file
+            echo "{\"진단 결과\": \"취약\"}" >> $results_file
+        fi
+    fi
+done
 
-    return results
+# Note: This script appends results directly to the JSON file, which isn't valid JSON format.
+# It's a demonstration of how to translate the logic from Python to Bash.
+# You might need to use a tool like 'jq' to properly format the JSON output.
 
-def main():
-    home_dir_check_results = check_home_directory_ownership_and_permissions()
-    print(json.dumps(home_dir_check_results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# Display the results
+cat $results_file

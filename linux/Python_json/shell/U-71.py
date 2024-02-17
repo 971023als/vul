@@ -1,51 +1,49 @@
-#!/usr/bin/python3
-import subprocess
-import re
-import json
+#!/bin/bash
 
-def check_apache_info_hiding():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-71",
-        "위험도": "중",
-        "진단 항목": "Apache 웹 서비스 정보 숨김",
-        "진단 결과": "",  # 초기 진단 결과 설정하지 않음
-        "현황": "",
-        "대응방안": "ServerTokens Prod, ServerSignature Off로 설정"
-    }
+# Initialize diagnostic results and current status
+category="서비스 관리"
+code="U-71"
+severity="중"
+check_item="Apache 웹 서비스 정보 숨김"
+result=""
+status=""
+recommendation="ServerTokens Prod, ServerSignature Off로 설정"
 
-    webconf_files = [".htaccess", "httpd.conf", "apache2.conf"]
-    configuration_set_correctly = False
-    
-    for conf_file in webconf_files:
-        find_command = ['find', '/', '-name', conf_file, '-type', 'f']
-        find_result = subprocess.run(find_command, stdout=subprocess.PIPE, text=True, stderr=subprocess.DEVNULL)
-        conf_paths = find_result.stdout.strip().split('\n')
-        
-        for path in conf_paths:
-            if path:
-                with open(path, 'r') as file:
-                    content = file.read()
-                    server_tokens = re.search(r'^\s*ServerTokens\s+Prod', content, re.MULTILINE | re.IGNORECASE)
-                    server_signature = re.search(r'^\s*ServerSignature\s+Off', content, re.MULTILINE | re.IGNORECASE)
-                    if server_tokens and server_signature:
-                        configuration_set_correctly = True
-                        break  # Found at least one config set correctly, no need to mark as vulnerable yet
+# Web configuration files to search for
+webconf_files=(".htaccess" "httpd.conf" "apache2.conf")
+configuration_set_correctly=false
 
-    if configuration_set_correctly:
-        results["진단 결과"] = "양호"
-        results["현황"] = "Apache 설정이 적절히 설정되어 있습니다."
-    else:
-        ps_apache_count = subprocess.run(['pgrep', '-f', 'apache2|httpd'], stdout=subprocess.PIPE, text=True).stdout
-        if ps_apache_count:
-            results["진단 결과"] = "취약"
-            results["현황"] = "Apache 서비스를 사용하고 있으나, ServerTokens Prod, ServerSignature Off 설정이 적절히 구성되어 있지 않습니다."
+# Search and check configurations
+for conf_file in "${webconf_files[@]}"; do
+    while IFS= read -r -d '' file_path; do
+        if [[ -f "$file_path" ]]; then
+            if grep -Eiq '^\s*ServerTokens\s+Prod' "$file_path" && grep -Eiq '^\s*ServerSignature\s+Off' "$file_path"; then
+                configuration_set_correctly=true
+                break 2 # Exit both loop and if condition as soon as one file is correctly configured
+            fi
+        fi
+    done < <(find / -type f -name "$conf_file" -print0 2>/dev/null)
+done
 
-    return results
+# Determine the diagnostic result
+if $configuration_set_correctly; then
+    result="양호"
+    status="Apache 설정이 적절히 설정되어 있습니다."
+else
+    if pgrep -f 'apache2|httpd' > /dev/null; then
+        result="취약"
+        status="Apache 서비스를 사용하고 있으나, ServerTokens Prod, ServerSignature Off 설정이 적절히 구성되어 있지 않습니다."
+    else
+        result="양호"
+        status="Apache 서비스 미사용."
+    fi
+fi
 
-def main():
-    apache_info_hiding_check_results = check_apache_info_hiding()
-    print(json.dumps(apache_info_hiding_check_results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# Print the results
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황: $status"
+echo "대응방안: $recommendation"
