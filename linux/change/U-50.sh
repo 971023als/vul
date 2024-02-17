@@ -31,12 +31,9 @@ if [ -f "/etc/group" ]; then
             IFS=',' read -ra members_array <<< "$members"
             found_accounts=()
             for account in "${members_array[@]}"; do
-                for unnecessary_account in "${unnecessary_accounts[@]}"; do
-                    if [ "$account" == "$unnecessary_account" ]; then
-                        found_accounts+=("$account")
-                        break
-                    fi
-                done
+                if [[ " ${unnecessary_accounts[@]} " =~ " ${account} " ]]; then
+                    found_accounts+=("$account")
+                fi
             done
 
             if [ ${#found_accounts[@]} -gt 0 ]; then
