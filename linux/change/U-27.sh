@@ -1,56 +1,32 @@
 #!/bin/bash
 
-# 변수 설정
-분류="서비스 관리"
-코드="U-27"
-위험도="상"
-진단_항목="RPC 서비스 확인"
-대응방안="불필요한 RPC 서비스 비활성화"
-현황=()
+# RPC 서비스 비활성화 함수
+disable_rpc_service() {
+    local service_name=$1
+    local service_path="$2/$service_name"
+    if [ -f "$service_path" ]; then
+        sed -i 's/disable\s*=\s*no/disable = yes/' "$service_path"
+        echo "$service_name 서비스가 $service_path 파일에서 비활성화되었습니다."
+    fi
+}
 
 rpc_services=("rpc.cmsd" "rpc.ttdbserverd" "sadmind" "rusersd" "walld" "sprayd" "rstatd" "rpc.nisd" "rexd" "rpc.pcnfsd" "rpc.statd" "rpc.ypupdated" "rpc.rquotad" "kcms_server" "cachefsd")
 xinetd_dir="/etc/xinetd.d"
 inetd_conf="/etc/inetd.conf"
-service_found=false
 
-# /etc/xinetd.d 아래 서비스 검사
-if [ -d "$xinetd_dir" ]; then
-    for service in "${rpc_services[@]}"; do
-        service_path="$xinetd_dir/$service"
-        if [ -f "$service_path" ]; then
-            if ! grep -q 'disable\s*=\s*yes' "$service_path"; then
-                현황+=("불필요한 RPC 서비스가 /etc/xinetd.d 디렉터리 내 서비스 파일에서 실행 중입니다: $service")
-                service_found=true
-            fi
-        fi
-    done
-fi
+# /etc/xinetd.d 디렉터리 내의 RPC 서비스 비활성화
+for service in "${rpc_services[@]}"; do
+    disable_rpc_service "$service" "$xinetd_dir"
+done
 
-# /etc/inetd.conf 파일 내 서비스 검사
+# /etc/inetd.conf 파일 내의 RPC 서비스 주석 처리
 if [ -f "$inetd_conf" ]; then
     for service in "${rpc_services[@]}"; do
         if grep -q "$service" "$inetd_conf"; then
-            현황+=("불필요한 RPC 서비스가 /etc/inetd.conf 파일에서 실행 중입니다: $service")
-            service_found=true
+            sed -i "/$service/s/^/#/" "$inetd_conf"
+            echo "$service 서비스가 $inetd_conf 파일에서 비활성화되었습니다."
         fi
     done
 fi
 
-# 진단 결과 결정
-if $service_found; then
-    진단_결과="취약"
-else
-    진단_결과="양호"
-    현황+=("모든 불필요한 RPC 서비스가 비활성화되어 있습니다.")
-fi
-
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단_항목"
-echo "대응방안: $대응방안"
-echo "진단 결과: $진단_결과"
-for item in "${현황[@]}"; do
-    echo "$item"
-done
+echo "모든 불필요한 RPC 서비스가 비활성화되었습니다."
