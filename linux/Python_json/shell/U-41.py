@@ -1,55 +1,46 @@
-#!/usr/bin/python3
-import subprocess
-import os
-import json
+#!/bin/bash
 
-def check_web_service_area_separation():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-41",
-        "위험도": "상",
-        "진단 항목": "웹서비스 영역의 분리",
-        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
-        "현황": [],
-        "대응방안": "DocumentRoot 별도 디렉터리 지정"
-    }
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "서비스 관리",
+    "코드": "U-41",
+    "위험도": "상",
+    "진단 항목": "웹서비스 영역의 분리",
+    "진단 결과": null,
+    "현황": [],
+    "대응방안": "DocumentRoot 별도 디렉터리 지정"
+}' > $results_file
 
-    webconf_files = [".htaccess", "httpd.conf", "apache2.conf"]
-    document_root_set = False
-    vulnerable = False
+webconf_files=(".htaccess" "httpd.conf" "apache2.conf")
+document_root_set=false
+vulnerable=false
 
-    for conf_file in webconf_files:
-        find_command = f"find / -name {conf_file} -type f 2>/dev/null"
-        try:
-            find_output = subprocess.check_output(find_command, shell=True, text=True).strip().split('\n')
-            for file_path in find_output:
-                if file_path:
-                    with open(file_path, 'r') as file:
-                        for line in file:
-                            if 'DocumentRoot' in line and not line.strip().startswith('#'):
-                                document_root_set = True
-                                path = line.split()[1].strip('"')
-                                if path in ['/usr/local/apache/htdocs', '/usr/local/apache2/htdocs', '/var/www/html']:
-                                    vulnerable = True
-                                    break
-        except subprocess.CalledProcessError:
-            continue  # find 명령어 실행 중 오류가 발생하면 다음 파일로 넘어감
+for conf_file in "${webconf_files[@]}"; do
+    find_output=$(find / -name $conf_file -type f 2>/dev/null)
+    for file_path in $find_output; do
+        if [[ -n "$file_path" ]]; then
+            while IFS= read -r line; do
+                if [[ "$line" == DocumentRoot* ]] && [[ ! "$line" =~ ^# ]]; then
+                    document_root_set=true
+                    path=$(echo $line | awk '{print $2}' | tr -d '"')
+                    if [[ "$path" == "/usr/local/apache/htdocs" ]] || [[ "$path" == "/usr/local/apache2/htdocs" ]] || [[ "$path" == "/var/www/html" ]]; then
+                        vulnerable=true
+                        break 2
+                    fi
+                fi
+            done < "$file_path"
+        fi
+    done
+done
 
-    if not document_root_set:
-        results["진단 결과"] = "취약"
-        results["현황"].append("Apache DocumentRoot가 설정되지 않았습니다.")
-    elif vulnerable:
-        results["진단 결과"] = "취약"
-        results["현황"].append("Apache DocumentRoot를 기본 디렉터리로 설정했습니다.")
-    else:
-        results["진단 결과"] = "양호"
-        results["현황"].append("Apache DocumentRoot가 별도의 디렉터리로 적절히 설정되어 있습니다.")
+if [ "$document_root_set" = false ]; then
+    jq '.진단 결과 = "취약" | .현황 += ["Apache DocumentRoot가 설정되지 않았습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+elif [ "$vulnerable" = true ]; then
+    jq '.진단 결과 = "취약" | .현황 += ["Apache DocumentRoot를 기본 디렉터리로 설정했습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+else
+    jq '.진단 결과 = "양호" | .현황 += ["Apache DocumentRoot가 별도의 디렉터리로 적절히 설정되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+fi
 
-    return results
-
-def main():
-    results = check_web_service_area_separation()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+cat $results_file
