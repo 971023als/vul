@@ -1,35 +1,31 @@
 #!/bin/bash
 
- 
-. function.sh
- 
-TMP1=`SCRIPTNAME`.log
+# 변수 설정
+분류="서비스 관리"
+코드="U-26"
+위험도="상"
+진단_항목="automountd 제거"
+대응방안="automountd 서비스 비활성화"
+현황=()
 
-> $TMP1  
- 
-BAR
-
-CODE [U-26] automountd 제거 '확인 필요'
-
-cat << EOF >> $result
-
-[양호]: automountd 서비스가 비활성화 되어있는 경우
-
-[취약]: automountd 서비스가 활성화 되어있는 경우
-
-EOF
-
-BAR
-
-status=$(ps -ef | grep automount | awk '{print $1}')
-
-if [ "$status" = "online" ]; then
-  WARN "Automount 서비스가 실행 중입니다"
+# automountd 또는 autofs 서비스 실행 상태 확인
+if ps -ef | grep -iE '[a]utomount|[a]utofs' &> /dev/null; then
+    # automountd 또는 autofs 서비스가 실행 중임
+    진단_결과="취약"
+    현황+=("automountd 서비스가 실행 중입니다.")
 else
-  OK "Automount 서비스가 실행되고 있지 않습니다."
+    # automountd 또는 autofs 서비스가 실행 중이지 않음
+    진단_결과="양호"
+    현황+=("automountd 서비스가 비활성화되어 있습니다.")
 fi
- 
 
-cat $result
-
-echo ; echo
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

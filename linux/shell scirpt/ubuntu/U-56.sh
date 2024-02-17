@@ -1,44 +1,51 @@
 #!/bin/bash
 
-. function.sh
+# Initialize results JSON
+results_file="results.json"
+echo '{
+    "분류": "파일 및 디렉토리 관리",
+    "코드": "U-56",
+    "위험도": "중",
+    "진단 항목": "UMASK 설정 관리",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "UMASK 값이 022 이상으로 설정"
+}' > $results_file
 
-TMP1=`SCRIPTNAME`.log
+# Define files to check
+files_to_check=(
+    "/etc/profile"
+    "/etc/bash.bashrc"
+    "/etc/csh.login"
+    "/etc/csh.cshrc"
+    $(glob /home/*/.profile)
+    $(glob /home/*/.bashrc)
+    $(glob /home/*/.cshrc)
+    $(glob /home/*/.login)
+)
 
-> $TMP1 
- 
+checked_files=0
 
-BAR
+# Check umask values in each file
+for file_path in "${files_to_check[@]}"; do
+    if [ -f "$file_path" ]; then
+        checked_files=$((checked_files + 1))
+        if grep -q "umask" "$file_path" && ! grep -E "^#" "$file_path" | grep -q "umask"; then
+            umask_values=$(grep "umask" "$file_path" | awk '{print $2}' | tr -d '`')
+            for value in $umask_values; do
+                if [ $(("$value")) -lt 022 ]; then
+                    jq --arg file_path "$file_path" --arg value "$value" '.진단 결과 = "취약" | .현황 += [$file_path + " 파일에서 UMASK 값 (" + $value + ")이 022 이상으로 설정되지 않았습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+                fi
+            done
+        fi
+    fi
+done
 
-CODE [U-56] UMASK 설정 관리 
-
-cat << EOF >> $result
-
-[양호]: UMASK 값이 022 이하로 설정된 경우
-
-[취약]: UMASK 값이 022 이하로 설정되지 않은 경우 
-
-EOF
-
-BAR
-
-# /etc/profile에서 UMASK가 022로 설정되어 있는지 확인합니다
-if grep -q "umask 022" /etc/profile; then
-  OK "umask가 /etc/profile에서 022로 설정됨"
-else
-  WARN "umask가 /etc/profile에서 022로 설정되지 않음"
+if [ "$checked_files" -eq 0 ]; then
+    jq '.현황 += ["검사할 파일이 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+elif [ $(jq '.진단 결과' $results_file) == "\"양호\"" ]; then
+    jq '.현황 += ["모든 검사된 파일에서 UMASK 값이 022 이상으로 적절히 설정되었습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
-# /etc/profile에서  export umask 로 설정되어 있는지 확인합니다
-if grep -q "export umask" /etc/profile; then
-  OK "/etc/profile에서 export umask로 설정됨"
-else
-  WARN "/etc/profile에서 export umask로 설정되지 않음"
-fi
-
-
-
-cat $result
-
-echo ; echo 
-
- 
+# Display the results
+cat $results_file

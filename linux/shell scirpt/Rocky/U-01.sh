@@ -1,55 +1,40 @@
-#!/usr/bin/python3
-import json
-import subprocess
-import re
+#!/bin/bash
 
-def check_remote_root_access_restriction():
-    results = {
-        "분류": "계정관리",
-        "코드": "U-01",
-        "위험도": "상",
-        "진단 항목": "root 계정 원격접속 제한",
-        "진단 결과": "",
-        "현황": [],
-        "대응방안": "원격 터미널 서비스 사용 시 root 직접 접속을 차단"
-    }
+# 결과를 저장할 JSON 형태의 문자열 초기화
+results='{
+    "분류": "계정관리",
+    "코드": "U-01",
+    "위험도": "상",
+    "진단 항목": "root 계정 원격접속 제한",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "원격 터미널 서비스 사용 시 root 직접 접속을 차단"
+}'
 
-    # Telnet 서비스 검사
-    try:
-        telnet_status = subprocess.run(["grep", "-vE", "^#|^\\s#", "/etc/services"], capture_output=True, text=True)
-        telnet_ports = re.findall(r'telnet\s+(\d+)/tcp', telnet_status.stdout, re.I)
-        if telnet_ports:
-            results["현황"].append("Telnet 서비스 포트가 활성화되어 있습니다.")
-            results["진단 결과"] = "취약"
-    except Exception as e:
-        results["현황"].append(f"Telnet 서비스 검사 중 오류 발생: {e}")
+# Telnet 서비스 검사
+telnet_status=$(grep -E "telnet\s+\d+/tcp" /etc/services)
+if [[ $telnet_status ]]; then
+    # JSON 형태의 문자열 업데이트
+    results=$(jq '.현황 += ["Telnet 서비스 포트가 활성화되어 있습니다."] | .진단 결과 = "취약"' <<< "$results")
+fi
 
-    # SSH 서비스 검사
-    sshd_configs = subprocess.getoutput("find / -name 'sshd_config' -type f 2>/dev/null").splitlines()
-    permit_root_login = False
-    for sshd_config in sshd_configs:
-        try:
-            with open(sshd_config, 'r') as file:
-                for line in file:
-                    if re.match(r'^PermitRootLogin\s+no', line, re.I):
-                        permit_root_login = True
-                        break
-        except Exception as e:
-            results["현황"].append(f"{sshd_config} 파일 읽기 중 오류 발생: {e}")
+# SSH 서비스 검사
+root_login_restricted=true
+sshd_configs=$(find /etc/ssh -name 'sshd_config')
 
-    if not permit_root_login and sshd_configs:
-        results["현황"].append("SSH 서비스에서 root 계정의 원격 접속이 허용되고 있습니다.")
-        results["진단 결과"] = "취약"
-    elif sshd_configs:
-        results["현황"].append("SSH 서비스에서 root 계정의 원격 접속이 제한되어 있습니다.")
-        results["진단 결과"] = "양호"
+for sshd_config in $sshd_configs; do
+    if grep -Eq 'PermitRootLogin\s+(yes|without-password)' "$sshd_config" && ! grep -Eq 'PermitRootLogin\s+(no|prohibit-password|forced-commands-only)' "$sshd_config"; then
+        root_login_restricted=false
+        break
+    fi
+done
 
-    return results
+if [[ $root_login_restricted == false ]]; then
+    results=$(jq '.현황 += ["SSH 서비스에서 root 계정의 원격 접속이 허용되고 있습니다."] | .진단 결과 = "취약"' <<< "$results")
+else
+    results=$(jq '.현황 += ["SSH 서비스에서 root 계정의 원격 접속이 제한되어 있습니다."]' <<< "$results")
+fi
 
-def main():
-    results = check_remote_root_access_restriction()
-    # 결과를 JSON 형식으로 출력합니다.
-    print(json.dumps(results, ensure_ascii=False, indent=4))
+# 결과 출력
+echo $results | jq .
 
-if __name__ == "__main__":
-    main()

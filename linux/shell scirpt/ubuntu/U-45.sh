@@ -1,64 +1,40 @@
 #!/bin/bash
 
-. function.sh
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "계정관리",
+    "코드": "U-45",
+    "위험도": "하",
+    "진단 항목": "root 계정 su 제한",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "su 명령어 사용 특정 그룹 제한"
+}' > $results_file
 
+pam_su_path="/etc/pam.d/su"
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
-BAR
-
-CODE [U-45] root 계정 su 제한
-
-cat << EOF >> $result
-
-[양호]: su 명령어를 특정 그룹에 속한 사용자만 사용하도록 제한되어 있는 경우
-
-[취약]: su 명령어를 모든 사용자가 사용하도록 설정되어 있는 경우
-
-EOF
-
-BAR
-
-
-# 휠 그룹이 존재하는지 점검하십시오
-if ! grep -q "^wheel:" /etc/group; then
-  WARN "휠 그룹이 존재하지 않습니다."
+if [ -f "$pam_su_path" ]; then
+    pam_contents=$(cat "$pam_su_path")
+    if echo "$pam_contents" | grep -q "pam_rootok.so"; then
+        if ! echo "$pam_contents" | grep -q "pam_wheel.so" || ! echo "$pam_contents" | grep -q "auth required pam_wheel.so use_uid"; then
+            result="취약"
+            status="/etc/pam.d/su 파일에 pam_wheel.so 모듈 설정이 적절히 구성되지 않았습니다."
+        fi
+    else
+        result="취약"
+        status="/etc/pam.d/su 파일에서 pam_rootok.so 모듈이 누락되었습니다."
+    fi
 else
-  OK "휠 그룹이 존재합니다."
+    result="취약"
+    status="/etc/pam.d/su 파일이 존재하지 않습니다."
 fi
 
-# su 명령이 휠 그룹에 의해 소유되는지 점검하십시오
-if ! [ $(stat -c %G /bin/su) == "wheel" ]; then
-  WARN "su 명령은 휠 그룹이 소유하지 않습니다."
+if [ "$result" = "취약" ]; then
+    jq --arg status "$status" '.진단 결과 = "취약" | .현황 += [$status]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 else
-  OK "su 명령은 휠 그룹이 소유합니다."
+    jq '.현황 += ["/etc/pam.d/su 파일에 대한 설정이 적절하게 구성되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
-# su 명령에 권한 4750이 있는지 확인하십시오
-if ! [ $(stat -c %a /bin/su) == "4750" ]; then
-  WARN "su 명령에 올바른 권한이 없습니다."
-else
-  OK "su 명령에 올바른 권한이 있습니다."
-fi
-
-# 휠 그룹에 su 명령을 사용할 수 있는 계정이 있는지 확인하십시오
-found=false
-for user in $(grep "^wheel:" /etc/group | cut -d ":" -f4 | tr "," "\n"); do
-  if id -nG "$user" | grep -qw "wheel"; then
-    found=true
-    break
-  fi
-done
-
-if ! $found; then
-  WARN "휠 그룹의 어떤 계정도 su 명령을 사용할 수 없습니다."
-else
-  OK "휠 그룹의 어떤 계정도 su 명령을 사용할 수 있습니다."
-fi
- 
-
-cat $result
-
-echo ; echo
+# 결과 출력
+cat $results_file

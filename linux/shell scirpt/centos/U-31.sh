@@ -1,41 +1,46 @@
 #!/bin/bash
 
- 
+# 변수 설정
+분류="서비스 관리"
+코드="U-31"
+위험도="상"
+진단_항목="스팸 메일 릴레이 제한"
+대응방안="SMTP 서비스 릴레이 제한 설정"
+현황=()
+search_directory='/etc/mail/'
+vulnerable_found=false
 
-. function.sh
+# sendmail.cf 파일 검색 및 내용 분석
+find "$search_directory" -name 'sendmail.cf' -type f | while read -r file_path; do
+    if [ -f "$file_path" ]; then
+        if grep -qE 'R\$\*' "$file_path" || grep -qEi 'Relaying denied' "$file_path"; then
+            현황+=("$file_path 파일에 릴레이 제한이 적절히 설정되어 있습니다.")
+        else
+            vulnerable_found=true
+            현황+=("$file_path 파일에 릴레이 제한 설정이 없습니다.")
+        fi
+    fi
+done
 
- 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1
- 
-
-BAR
-
-CODE [U-31] 스팸 메일 릴레이 제한
-
-cat << EOF >> $result
-
-[양호]: SMTP 서비스를 사용하지 않거나 릴레이 제한이 설정되어 있는 경우
-
-[취약]: SMTP 서비스를 사용하며 릴레이 제한이 설정되어 있지 않은 경우
-
-EOF
-
-BAR
-
-
-# Sendmail 서비스가 실행 중인지 확인합니다
-sendmail_status=$(ps -ef | grep sendmail | grep -v "grep")
-
-if [ "$sendmail_status" == "active" ]; then
-  WARN "Sendmail 서비스가 실행 중입니다."
+# 진단 결과 결정
+if $vulnerable_found; then
+    진단_결과="취약"
 else
-  OK "Sendmail 서비스가 실행되고 있지 않습니다."
+    if [ ${#현황[@]} -eq 0 ]; then
+        진단_결과="양호"
+        현황+=("sendmail.cf 파일을 찾을 수 없거나 접근할 수 없습니다.")
+    else
+        진단_결과="양호"
+    fi
 fi
 
-
-cat $result
-
-echo ; echo
- 
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

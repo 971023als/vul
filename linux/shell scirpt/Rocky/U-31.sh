@@ -1,53 +1,46 @@
-#!/usr/bin/python3
-import subprocess
-import os
-import re
-import json
+#!/bin/bash
 
-def check_spam_mail_relay_restrictions():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-31",
-        "위험도": "상",
-        "진단 항목": "스팸 메일 릴레이 제한",
-        "진단 결과": None,  # 기본적으로 오류로 설정
-        "현황": [],
-        "대응방안": "SMTP 서비스 릴레이 제한 설정"
-    }
+# 변수 설정
+분류="서비스 관리"
+코드="U-31"
+위험도="상"
+진단_항목="스팸 메일 릴레이 제한"
+대응방안="SMTP 서비스 릴레이 제한 설정"
+현황=()
+search_directory='/etc/mail/'
+vulnerable_found=false
 
-    try:
-        # Specify the directory where sendmail.cf might be located
-        search_directory = '/etc/mail/'
+# sendmail.cf 파일 검색 및 내용 분석
+find "$search_directory" -name 'sendmail.cf' -type f | while read -r file_path; do
+    if [ -f "$file_path" ]; then
+        if grep -qE 'R\$\*' "$file_path" || grep -qEi 'Relaying denied' "$file_path"; then
+            현황+=("$file_path 파일에 릴레이 제한이 적절히 설정되어 있습니다.")
+        else
+            vulnerable_found=true
+            현황+=("$file_path 파일에 릴레이 제한 설정이 없습니다.")
+        fi
+    fi
+done
 
-        # Search for sendmail.cf file in the specified directory
-        sendmail_cf_files = subprocess.check_output(f"find {search_directory} -name 'sendmail.cf' -type f 2>/dev/null", shell=True, text=True).strip().split('\n')
+# 진단 결과 결정
+if $vulnerable_found; then
+    진단_결과="취약"
+else
+    if [ ${#현황[@]} -eq 0 ]; then
+        진단_결과="양호"
+        현황+=("sendmail.cf 파일을 찾을 수 없거나 접근할 수 없습니다.")
+    else
+        진단_결과="양호"
+    fi
+fi
 
-        if not sendmail_cf_files:
-            raise FileNotFoundError("sendmail.cf 파일을 찾을 수 없습니다.")
-
-        for file_path in sendmail_cf_files:
-            with open(file_path, 'r') as file:
-                content = file.read()
-                if re.search(r'R\$\*', content) or re.search(r'Relaying denied', content, re.IGNORECASE):
-                    results["진단 결과"] = "양호"
-                    results["현황"].append(f"{file_path} 파일에 릴레이 제한이 적절히 설정되어 있습니다.")
-                else:
-                    results["진단 결과"] = "취약"
-                    results["현황"].append(f"{file_path} 파일에 릴레이 제한 설정이 없습니다.")
-                    break
-
-    except FileNotFoundError as e:
-        results["진단 결과"] = "오류"
-        results["현황"].append(str(e))
-    except Exception as e:
-        results["진단 결과"] = "오류"
-        results["현황"].append(f"예상치 못한 오류 발생: {e}")
-
-    return results
-
-def main():
-    results = check_spam_mail_relay_restrictions()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

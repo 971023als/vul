@@ -1,41 +1,26 @@
 #!/bin/bash
 
-. function.sh
- 
-TMP1=`SCRIPTNAME`.log
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "패치 관리",
+    "코드": "U-42",
+    "위험도": "상",
+    "진단 항목": "최신 보안패치 및 벤더 권고사항 적용",
+    "진단 결과": null,
+    "현황": [],
+    "대응방안": "패치 적용 정책 수립 및 주기적인 패치 관리"
+}' > $results_file
 
-> $TMP1 
- 
-BAR
+# Ubuntu 시스템에서 보안 패치를 확인하는 명령어 실행
+output=$(sudo unattended-upgrades --dry-run --debug 2>&1)
 
-CODE [U-42] 최신 보안패치 및 벤더 권고사항 적용
-
-cat << EOF >> $result
-
-[양호]: 패치 적용 정책을 수립하여 주기적으로 패치를 관리하고 있는 경우
-
-[취약]: 패치 적용 정책을 수립하지 않고 주기적으로 패치관리를 하지 않는 경우
-
-EOF
-
-BAR
-
-# 현재 날짜 가져오기
-current_date=$(date +%Y-%m-%d)
-
-# /var/log/patch.log에 "$current_date에 설치된 패치" 행이 있는지 확인합니다
-grep "Patches installed on $current_date" /var/log/patch.log > /dev/null 2>&1
-
-# If the exit status of grep is 0, the line exists in the file
-if [ $? -eq 0 ]; then
-  OK "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 있습니다."
+# 출력 내용에서 보안 패치 여부를 확인
+if [[ $output == *"All upgrades installed"* ]]; then
+    jq '.진단 결과 = "양호" | .현황 = "시스템은 최신 보안 패치를 보유하고 있습니다."' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 else
-  WARN "'$current_date 에 설치된 패치' 행이 /var/log/patch.log에 없습니다."
+    jq '.진단 결과 = "취약" | .현황 = "시스템에 보안 패치가 필요합니다."' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
-
-cat $result
-
-echo ; echo 
-
- 
+# 결과 출력
+cat $results_file

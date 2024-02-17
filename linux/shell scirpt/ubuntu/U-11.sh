@@ -1,56 +1,50 @@
 #!/bin/bash
 
- 
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-11"
+위험도="상"
+진단_항목="/etc/syslog.conf 파일 소유자 및 권한 설정"
+대응방안="/etc/syslog.conf 파일의 소유자가 root(또는 bin, sys)이고, 권한이 640 이하인 경우"
+현황=()
+진단_결과="파일 없음"
 
-. function.sh
+syslog_conf_files=("/etc/rsyslog.conf" "/etc/syslog.conf" "/etc/syslog-ng.conf")
+file_exists_count=0
+compliant_files_count=0
 
-TMP1=`SCRIPTNAME`.log
+for file_path in "${syslog_conf_files[@]}"; do
+    if [ -f "$file_path" ]; then
+        ((file_exists_count++))
+        mode=$(stat -c "%a" "$file_path")
+        owner_name=$(stat -c "%U" "$file_path")
 
->$TMP1 
+        if [[ "$owner_name" == "root" || "$owner_name" == "bin" || "$owner_name" == "sys" ]] && [ "$mode" -le 640 ]; then
+            ((compliant_files_count++))
+            현황+=("$file_path 파일의 소유자가 $owner_name이고, 권한이 $mode입니다.")
+        else
+            현황+=("$file_path 파일의 소유자나 권한이 기준에 부합하지 않습니다.")
+        fi
+    fi
+done
 
-
-BAR
-
-CODE [U-11] /etc/rsyslog.conf 파일 소유자 및 권한 설정 
-
-cat << EOF >> $result 
-
-[양호]: /etc/rsyslog.conf 파일의 소유자가 root(또는 bin, sys)이고, 권한이 640 이하인 경우
-
-[취약]: /etc/rsyslog.conf 파일의 소유자가 root(또는 bin, sys)가 아니거나, 권한이  640 이하가 아닌 경우
-
-EOF
-
-BAR
-
-# 파일 소유권 확인
-if [ -e "/etc/rsyslog.conf" ]; then
-  file_owner=$(stat -c %U /etc/rsyslog.conf)
-if [[ "$file_owner" != "root" && "$file_owner" != "bin" && "$file_owner" != "sys" ]]; then
-  WARN " /etc/rsyslog.conf가 루트(또는 bin, sys)에 의해 소유되지 않습니다."
-fi
-
-# 파일 권한 확인
-file_perms=$(stat -c %a /etc/rsyslog.conf)
-dec_perms=$(printf "%d" $file_perms)
-
-if [ $dec_perms -lt 640 ]; then
-      WARN "/etc/rsyslog.conf에 대한 사용 권한은 안전하지 않습니다"
-  else
-      OK "/etc/rsyslog.conf에 대한 사용 권한은 안전합니다"
-  fi
-
+if [ "$file_exists_count" -gt 0 ]; then
+    if [ "$compliant_files_count" -eq "$file_exists_count" ]; then
+        진단_결과="양호"
+    else
+        진단_결과="취약"
+    fi
 else
-  OK "/etc/rsyslog.conf 존재하지 않음"
+    진단_결과="파일 없음"
 fi
 
-
-cat $result
-
-echo ; echo
-
- 
-
-
-
- 
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "현황: $item"
+done

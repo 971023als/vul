@@ -1,40 +1,29 @@
-#!/usr/bin/python3
-import subprocess
-import json
+#!/bin/bash
 
-def check_nfs_services_disabled():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-24",
-        "위험도": "상",
-        "진단 항목": "NFS 서비스 비활성화",
-        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
-        "현황": [],
-        "대응방안": "불필요한 NFS 서비스 관련 데몬 비활성화"
-    }
+# 변수 설정
+분류="서비스 관리"
+코드="U-24"
+위험도="상"
+진단_항목="NFS 서비스 비활성화"
+대응방안="불필요한 NFS 서비스 관련 데몬 비활성화"
+현황=()
 
-    try:
-        # NFS 관련 프로세스 확인을 위한 명령어 실행
-        cmd = "ps -ef | grep -iE 'nfs|rpc.statd|statd|rpc.lockd|lockd' | grep -ivE 'grep|kblockd|rstatd|'"
-        nfs_processes = subprocess.check_output(cmd, shell=True, text=True)
-        
-        # 명령어 실행 결과가 비어 있지 않다면 NFS 서비스가 실행 중으로 간주
-        if nfs_processes.strip():
-            results["진단 결과"] = "취약"
-            results["현황"].append("불필요한 NFS 서비스 관련 데몬이 실행 중입니다.")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("NFS 서비스 관련 데몬이 비활성화되어 있습니다.")
-    except subprocess.CalledProcessError as e:
-        # subprocess 실행 중 오류 처리
-        results["진단 결과"] = "오류"
-        results["현황"].append(f"서비스 확인 중 오류 발생: {e}")
+# NFS 관련 프로세스 확인
+if ps -ef | grep -iE 'nfs|rpc.statd|statd|rpc.lockd|lockd' | grep -ivE 'grep|kblockd|rstatd|'; then
+    진단_결과="취약"
+    현황+=("불필요한 NFS 서비스 관련 데몬이 실행 중입니다.")
+else
+    진단_결과="양호"
+    현황+=("NFS 서비스 관련 데몬이 비활성화되어 있습니다.")
+fi
 
-    return results
-
-def main():
-    results = check_nfs_services_disabled()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

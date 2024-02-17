@@ -1,49 +1,51 @@
-#!/usr/bin/python3
-import os
-import pwd
-import stat
-import json
+#!/bin/bash
 
-def check_user_system_start_files():
-    results = {
-        "분류": "파일 및 디렉터리 관리",
-        "코드": "U-14",
-        "위험도": "상",
-        "진단 항목": "사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정",
-        "진단 결과": "",  # 초기 진단 결과 설정하지 않음
-        "현황": [],
-        "대응방안": "홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고, 쓰기 권한이 부여된 경우"
-    }
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-14"
+위험도="상"
+진단_항목="사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정"
+대응방안="홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고, 쓰기 권한이 부여된 경우"
+현황=()
+진단_결과=""
 
-    start_files = [".profile", ".cshrc", ".login", ".kshrc", ".bash_profile", ".bashrc", ".bash_login"]
-    vulnerable_files = []
+start_files=(".profile" ".cshrc" ".login" ".kshrc" ".bash_profile" ".bashrc" ".bash_login")
+vulnerable_files=()
 
-    # 모든 사용자 홈 디렉터리 가져오기
-    user_homes = [user.pw_dir for user in pwd.getpwall() if os.path.isdir(user.pw_dir)]
-
-    for home in user_homes:
-        for start_file in start_files:
-            file_path = os.path.join(home, start_file)
-            if os.path.isfile(file_path):
-                file_stat = os.stat(file_path)
-                mode = file_stat.st_mode
+# 모든 사용자 홈 디렉터리 순회
+while IFS=: read -r user _ uid _ _ home _; do
+    if [ -d "$home" ]; then
+        for start_file in "${start_files[@]}"; do
+            file_path="$home/$start_file"
+            if [ -f "$file_path" ]; then
+                file_uid=$(stat -c "%u" "$file_path")
+                permissions=$(stat -c "%A" "$file_path")
 
                 # 파일 소유자가 root 또는 해당 사용자가 아니거나, 다른 사용자에게 쓰기 권한이 있을 경우
-                if not (file_stat.st_uid == 0 or file_stat.st_uid == pwd.getpwnam(os.path.basename(home)).pw_uid) or (mode & stat.S_IWOTH):
-                    vulnerable_files.append(file_path)
+                if [ "$file_uid" -ne 0 ] && [ "$file_uid" -ne "$uid" ] || [[ $permissions == *w*o ]]; then
+                    vulnerable_files+=("$file_path")
+                fi
+            fi
+        done
+    fi
+done < /etc/passwd
 
-    if vulnerable_files:
-        results["진단 결과"] = "취약"
-        results["현황"] = vulnerable_files
-    else:
-        results["진단 결과"] = "양호"
-        results["현황"].append("모든 홈 디렉터리 내 시작파일 및 환경파일이 적절한 소유자와 권한 설정을 가지고 있습니다.")
+if [ ${#vulnerable_files[@]} -gt 0 ]; then
+    진단_결과="취약"
+    현황=("${vulnerable_files[@]}")
+else
+    진단_결과="양호"
+    현황+=("모든 홈 디렉터리 내 시작파일 및 환경파일이 적절한 소유자와 권한 설정을 가지고 있습니다.")
+fi
 
-    return results
-
-def main():
-    user_system_start_files_check_results = check_user_system_start_files()
-    print(json.dumps(user_system_start_files_check_results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+echo "현황:"
+for item in "${현황[@]}"; do
+    echo "- $item"
+done

@@ -1,51 +1,53 @@
 #!/bin/bash
 
- 
+# 변수 초기화
+분류="계정 관리"
+코드="U-04"
+위험도="상"
+진단_항목="패스워드 파일 보호"
+대응방안="쉐도우 패스워드 사용 또는 패스워드 암호화 저장"
+현황=()
+진단_결과=""
 
- 
+passwd_file="/etc/passwd"
+shadow_file="/etc/shadow"
+shadow_used=true  # 가정: 쉐도우 패스워드 사용
 
-. function.sh
-
- 
- TMP1=`SCRIPTNAME`.log
-
-> $TMP1
-
-BAR
-
-CODE [U-04] 패스워드 파일 보호
-
-cat << EOF >> $result
-
-[양호]: 쉐도우 패스워드를 사용하거나, 패스워드를 암호화하여 저장하는 경우
-
-[취약]: 쉐도우 패스워드를 사용하지 않고, 패스워드를 암호화하여 저장하지 않는 경우
-
-EOF
-
-BAR
-
-
-FILENAME1=/etc/shadow
-FILENAME2=/etc/passwd
-
-
-if [ -f $FILENAME ] ; then
-	OK "쉐도우 파일이 존재합니다."
-	CHECK=$(cat $FILENAME2 | awk -F: '{print $2}' | grep -v 'x')
-	if [ -z $CHECK ] ; then
-		OK "쉐도우 패스워드를 사용하거나, 패스워드를 암호화하여 저장하는 경우"
-	else
-		WARN "쉐도우 패스워드를 사용하지 않고, 패스워드를 암호화하여 저장하지 않는 경우"
-	fi
-else
-	INFO "쉐도우 파일이 존재하지 않습니다."
+# /etc/passwd 파일에서 쉐도우 패스워드 사용 여부 확인
+if [ -f "$passwd_file" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        IFS=':' read -r -a parts <<< "$line"
+        if [ "${#parts[@]}" -gt 1 ] && [ "${parts[1]}" != "x" ]; then
+            shadow_used=false
+            break
+        fi
+    done < "$passwd_file"
 fi
 
+# /etc/shadow 파일 존재 및 권한 검사
+if $shadow_used && [ -f "$shadow_file" ]; then
+    if [ ! -r "$shadow_file" ]; then  # /etc/shadow가 읽기 전용으로 설정되어 있는지 확인
+        현황+=("/etc/shadow 파일이 안전한 권한 설정을 갖고 있지 않습니다.")
+        shadow_used=false
+    fi
+fi
 
+if ! $shadow_used; then
+    현황+=("쉐도우 패스워드를 사용하고 있지 않거나 /etc/shadow 파일의 권한 설정이 적절하지 않습니다.")
+    진단_결과="취약"
+else
+    현황+=("쉐도우 패스워드를 사용하고 있으며 /etc/shadow 파일의 권한 설정이 적절합니다.")
+    진단_결과="양호"
+fi
 
- 
-
-cat $result
-
-echo ; echo
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+echo "현황:"
+for 사항 in "${현황[@]}"; do
+    echo "- $사항"
+done

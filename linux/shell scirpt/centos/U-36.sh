@@ -1,53 +1,54 @@
 #!/bin/bash
 
- 
+# 변수 설정
+분류="서비스 관리"
+코드="U-36"
+위험도="상"
+진단항목="웹서비스 웹 프로세스 권한 제한"
+진단결과=""
+현황=()
+대응방안="Apache 데몬 root 권한 구동 방지"
+found_vulnerability=0
 
-. function.sh
+# 웹 구성 파일 목록
+webconf_files=(".htaccess" "httpd.conf" "apache2.conf")
 
+# 웹 구성 파일 검사
+for conf_file in "${webconf_files[@]}"; do
+    while IFS= read -r file_path; do
+        if [ -f "$file_path" ]; then
+            while IFS= read -r line; do
+                if [[ "$line" =~ ^Group && ! "$line" =~ ^# ]]; then
+                    group_setting=($line) # 배열로 변환
+                    if [ "${#group_setting[@]}" -gt 1 ] && [ "${group_setting[1],,}" == "root" ]; then
+                        진단결과="취약"
+                        현황+=("$file_path 파일에서 Apache 데몬이 root 권한으로 구동되도록 설정되어 있습니다.")
+                        found_vulnerability=1
+                        break 2
+                    fi
+                fi
+            done < "$file_path"
+        fi
+    done < <(find / -name $conf_file -type f 2>/dev/null)
+    if [ $found_vulnerability -eq 1 ]; then
+        break
+    fi
+done
 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1  
-
- 
-
-BAR
-
-CODE [U-36] Apache 웹 프로세스 권한 제한 
-
-cat << EOF >> $result
-
-[양호]: Apache 데몬이 root 권한으로 구동되지 않는 경우
-
-[취약]: Apache 데몬이 root 권한으로 구동되는 경우
-
-EOF
-
-BAR
-
-# 아파치 데몬(httpd)이 실행확인
-if pgrep -x "httpd" > /dev/null
-then
-    INFO "아파치 데몬(httpd)이 실행 중입니다.."
-else
-    INFO "아파치 데몬(httpd)이 실행되고 있지 않습니다.."
+# 진단 결과 설정
+if [ $found_vulnerability -eq 0 ]; then
+    진단결과="양호"
+    현황+=("Apache 데몬이 root 권한으로 구동되도록 설정되어 있지 않습니다.")
 fi
 
-# httpd 프로세스의 사용자 및 그룹 가져오기
-httpd_user=$(ps -o user=-p $(pgrep -x "httpd"))
-httpd_group=$(ps -o group=-p $(pgrep -x "httpd"))
-
-# httpd 프로세스가 루트로 실행 중인지 확인
-if [[ $httpd_user == "root" || $httpd_group == "root" ]]
-then
-    WARN "Apache 데몬(httpd)이 루트 권한으로 실행되고 있습니다"
-else
-    OK "Apache 데몬(httpd)이 루트 권한으로 실행이 안되고 있습니다"
-fi
-
-
-cat $result
-
-echo ; echo
-
- 
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단항목"
+echo "진단 결과: $진단결과"
+echo "현황:"
+for 상태 in "${현황[@]}"; do
+    echo "- $상태"
+done
+echo "대응방안: $대응방안"

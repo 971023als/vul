@@ -1,54 +1,57 @@
 #!/bin/bash
 
- 
+# 초기 진단 결과 및 현황 설정
+category="서비스 관리"
+code="U-65"
+severity="중"
+check_item="at 서비스 권한 설정"
+result=""
+declare -a status
+recommendation="일반 사용자의 at 명령어 사용 금지 및 관련 파일 권한 640 이하 설정"
 
-. function.sh
+# at 명령어 실행 파일 권한 확인
+permission_issues_found=false
 
- 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
- 
-
-BAR
-
-CODE [U-65] at 파일 소유자 및 권한 설정
-
-cat << EOF >> $result
-
-[양호]: at 접근제어 파일의 소유자가 root이고, 권한이 640 이하인 경우
-
-[취약]: at 접근제어 파일의 소유자가 root가 아니거나, 권한이 640 이하가 아닌 경우
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-
-
-# at 명령을 사용할 수 있는지 확인하십시오
-if command -v at >/dev/null; then
-    INFO "at 명령을 사용할 수 있습니다."
-else
-    OK "at 명령을 사용할 수 없습니다."
-fi
-
-# at 관련 파일의 사용 권한을 확인하십시오
-at_dir="/etc/at.allow"
-if [ -f $at_dir ]; then
-    permission=$(stat -c %a $at_dir)
-    if [ $permission -ge 640 ]; then
-        WARN "관련 파일의 권한이 640 이상입니다."
-    else
-        OK "관련 파일의 권한이 640 미만입니다."
+# PATH 내 at 명령어 경로 확인 및 권한 검사
+for path in ${PATH//:/ }; do
+    if [[ -x "$path/at" ]]; then
+        permissions=$(stat -c "%a" "$path/at")
+        if [[ "$permissions" =~ .*[2-7]. ]]; then
+            result="취약"
+            permission_issues_found=true
+            status+=("$path/at 실행 파일이 다른 사용자(other)에 의해 실행이 가능합니다.")
+        fi
     fi
-else
-    OK "관련 파일이 존재하지 않습니다"
+done
+
+# /etc/at.allow 및 /etc/at.deny 파일 권한 확인
+at_access_control_files=("/etc/at.allow" "/etc/at.deny")
+for file in "${at_access_control_files[@]}"; do
+    if [[ -f "$file" ]]; then
+        permissions=$(stat -c "%a" "$file")
+        file_owner=$(stat -c "%U" "$file")
+        if [[ "$file_owner" != "root" ]] || [[ "$permissions" -gt 640 ]]; then
+            result="취약"
+            permission_issues_found=true
+            status+=("$file 파일의 소유자가 $file_owner이고, 권한이 ${permissions}입니다.")
+        fi
+    fi
+done
+
+# 진단 결과 결정
+if ! $permission_issues_found; then
+    result="양호"
+    status=("모든 at 관련 파일이 적절한 권한 설정을 가지고 있습니다.")
 fi
 
-cat $result
-
-echo ; echo 
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황:"
+for i in "${status[@]}"; do
+    echo "- $i"
+done
+echo "대응방안: $recommendation"

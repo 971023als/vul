@@ -1,40 +1,46 @@
 #!/bin/bash
 
- 
+# 변수 설정
+분류="서비스 관리"
+코드="U-34"
+위험도="상"
+진단_항목="DNS Zone Transfer 설정"
+대응방안="Zone Transfer를 허가된 사용자에게만 허용"
+현황=()
+named_conf_path="/etc/named.conf"
 
-. function.sh
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1   
-
- 
-
-BAR
-
-CODE [U-34] DNS Zone Transfer 설정
-
-cat << EOF >> $result
-
-[양호]: DNS 서비스 미사용 또는, Zone Transfer를 허가된 사용자에게만 허용한 경우
-
-[취약]: DNS 서비스를 사용하여 Zone Transfer를 모든 사용자에게 허용한 경우
-
-EOF
-
-BAR
-
-# DNS 프로세스가 지금 실행 중인지 확인합니다
-dns_process=$(ps -ef | grep named | grep -v grep)
-
-# DNS 프로세스가 계속 실행되면 오류 메시지를 인쇄합니다
-if [ -z "$dns_process" ]; then
-  OK "DNS 서비스 데몬이 실행되고 있지 않습니다."
+# DNS 서비스 실행 여부 확인
+if ps -ef | grep -i 'named' | grep -v 'grep' &> /dev/null; then
+    dns_service_running=true
 else
-  WARN "DNS 서비스 데몬이 실행 중입니다."
+    dns_service_running=false
 fi
 
+if $dns_service_running; then
+    if [ -f "$named_conf_path" ]; then
+        if grep -q "allow-transfer { any; }" "$named_conf_path"; then
+            진단_결과="취약"
+            현황+=("/etc/named.conf 파일에 allow-transfer { any; } 설정이 있습니다.")
+        else
+            진단_결과="양호"
+            현황+=("DNS Zone Transfer가 허가된 사용자에게만 허용되어 있습니다.")
+        fi
+    else
+        진단_결과="양호"
+        현황+=("/etc/named.conf 파일이 존재하지 않습니다. DNS 서비스 미사용 가능성.")
+    fi
+else
+    진단_결과="양호"
+    현황+=("DNS 서비스가 실행 중이지 않습니다.")
+fi
 
-cat $result
-
-echo ; echo
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

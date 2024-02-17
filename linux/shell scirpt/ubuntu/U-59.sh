@@ -1,58 +1,59 @@
 #!/bin/bash
 
- 
+# 변수 초기화
+results=""
+vulnerability_found=false
+category="파일 및 디렉토리 관리"
+code="U-59"
+severity="하"
+check_item="숨겨진 파일 및 디렉터리 검색 및 제거"
+declare -a hidden_files
+declare -a hidden_dirs
+recommendation="불필요하거나 의심스러운 숨겨진 파일 및 디렉터리 삭제"
 
-. function.sh
+# 시작 경로 설정, 예를 들어 사용자의 홈 디렉터리
+start_path="$HOME"
 
- 
+# 숨겨진 파일 및 디렉터리 검색
+while IFS= read -r -d '' file; do
+    if [[ -f "$file" ]]; then
+        hidden_files+=("$file")
+    elif [[ -d "$file" ]]; then
+        hidden_dirs+=("$file")
+    fi
+done < <(find "$start_path" -name ".*" -print0)
 
-TMP1=`SCRIPTNAME`.log
+# 진단 결과 업데이트
+if [ ${#hidden_files[@]} -eq 0 ] && [ ${#hidden_dirs[@]} -eq 0 ]; then
+    result="양호"
+    status=("숨겨진 파일이나 디렉터리가 없습니다.")
+else
+    vulnerability_found=true
+    result="취약"
+    status=("숨겨진 파일 및 디렉터리 발견:")
+fi
 
-> $TMP1  
-
- 
-
-BAR
-
-CODE [U-59] 숨겨진 파일 및 디렉터리 검색 및 제거
-
-cat << EOF >> $result
-
-[양호]: 디렉터리 내 숨겨진 파일을 확인하여, 불필요한 파일 삭제를 완료한 경우
-
-[취약]: 디렉터리 내 숨겨진 파일을 확인하지 않고, 불필요한 파일을 방치한 경우
-
-EOF
-
-BAR
-
-
-rootdir="/home/user/"
-
-# 숨겨진 모든 파일 및 디렉터리 나열
-hidden_files=$(find "$rootdir" -type f -name ".*" ! -name ".*.swp")
-hidden_dirs=$(find "$rootdir" -type d -name ".*" ! -name ".*.swp")
-
-# 원하지 않거나 의심스러운 파일 또는 디렉터리가 있는지 확인
-for file in $hidden_files; do
-  if [[ $(basename $file) =~ "unwanted-file" ]]; then
-    WARN "원하지 않는 파일: $file"
-  else
-    OK "정상적인 파일: $file"
-  fi
-done
-
-for dir in $hidden_dirs; do
-  if [[ $(basename $dir) =~ "suspicious-dir" ]]; then
-    WARN "의심스러운 디렉토리: $dir"
-  else
-    OK "정상적인 디렉터리: $dir"
-  fi
-done
-
-
-cat $result
-
-echo ; echo 
-
- 
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황:"
+if $vulnerability_found; then
+    if [ ${#hidden_files[@]} -gt 0 ]; then
+        echo "숨겨진 파일:"
+        for file in "${hidden_files[@]}"; do
+            echo "- $file"
+        done
+    fi
+    if [ ${#hidden_dirs[@]} -gt 0 ]; then
+        echo "숨겨진 디렉터리:"
+        for dir in "${hidden_dirs[@]}"; do
+            echo "- $dir"
+        done
+    fi
+else
+    echo "- ${status[@]}"
+fi
+echo "대응방안: $recommendation"

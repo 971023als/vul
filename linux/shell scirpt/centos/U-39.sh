@@ -1,46 +1,39 @@
 #!/bin/bash
 
- 
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "서비스 관리",
+    "코드": "U-39",
+    "위험도": "상",
+    "진단 항목": "웹서비스 링크 사용금지",
+    "진단 결과": null,
+    "현황": [],
+    "대응방안": "심볼릭 링크, aliases 사용 제한"
+}' > $results_file
 
-. function.sh
+webconf_files=(".htaccess" "httpd.conf" "apache2.conf" "userdir.conf")
+found_vulnerability=false
 
-TMP1=`SCRIPTNAME`.log
+for conf_file in "${webconf_files[@]}"; do
+    find_output=$(find / -name $conf_file -type f 2>/dev/null)
+    for file_path in $find_output; do
+        if [[ -n "$file_path" ]]; then
+            content=$(cat "$file_path")
+            if [[ "$content" == *"Options FollowSymLinks"* && "$content" != *"Options -FollowSymLinks"* ]]; then
+                found_vulnerability=true
+                jq --arg path "$file_path" '.현황 += [$path + " 파일에 심볼릭 링크 사용을 제한하지 않는 설정이 포함되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+                break 2
+            fi
+        fi
+    done
+done
 
-> $TMP1 
- 
-
-BAR
-
-CODE [U-39] Apache 링크 사용 금지 
-
-cat << EOF >> $result
-
-[양호]: 심볼릭 링크, aliases 사용을 제한한 경우
-
-[취약]: 심볼릭 링크, aliases 사용을 제한하지 않은 경우
-
-EOF
-
-BAR
-
-
-# Set the Apache2 configuration file path
-config_file="/etc/httpd/conf/httpd.conf"
-
-# Use grep to check if the FollowSymLinks and SymLinksIfOwnerMatch options are enabled in the configuration file
-symlink_result=$(grep -E "^[ \t]*Options[ \t]+FollowSymLinks" $config_file)
-alias_result=$(grep -E "^[ \t]*Options[ \t]+SymLinksIfOwnerMatch" $config_file)
-
-if [ -n "$symlink_result" ] && [ -n "$alias_result" ]; then
-    WARN "Apache2에서 심볼릭 링크 및 별칭이 허용됨"
+if [ "$found_vulnerability" = false ]; then
+    jq '.진단 결과 = "양호" | .현황 += ["웹서비스 설정 파일에서 심볼릭 링크 사용이 적절히 제한되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 else
-    OK "Apache2에서는 심볼릭 링크 및 별칭이 제한됩니다."
+    jq '.진단 결과 = "취약"' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
- 
-cat $result
-
-echo ; echo
-
-
- 
+# 결과 출력
+cat $results_file

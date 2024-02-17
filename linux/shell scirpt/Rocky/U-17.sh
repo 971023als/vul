@@ -1,80 +1,74 @@
-#!/usr/bin/python3
-import os
-import pwd
-import stat
-import json
+#!/bin/bash
 
-def is_permission_secure(path, owner_expected):
-    """파일의 권한과 소유자를 확인하고 '+' 문자의 존재 여부도 검사합니다."""
-    stat_info = os.stat(path)
-    mode = stat_info.st_mode
-    owner = pwd.getpwuid(stat_info.st_uid).pw_name
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-17"
+위험도="상"
+진단_항목="\$HOME/.rhosts, hosts.equiv 사용 금지"
+대응방안="login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 \$HOME/.rhosts 파일 소유자, 권한, 설정 검증"
+현황=()
+진단_결과="양호"
 
-    # 소유자 확인
-    if owner != owner_expected:
-        return False, f'{path}: 소유자가 {owner_expected}가 아님'
+# /etc/hosts.equiv 파일 검증
+check_file_security() {
+    local file=$1
+    local owner_expected=$2
 
-    # 권한 확인 (600 이하인지)
-    if mode & 0o777 > 0o600:
-        return False, f'{path}: 권한이 600보다 큼'
+    if [ ! -e "$file" ]; then
+        return 0 # 파일이 없으면 검사하지 않음
+    fi
 
-    # 그룹 또는 다른 사용자(other)의 권한이 없는지 확인
-    if mode & 0o077:
-        return False, f'{path}: 그룹 또는 다른 사용자에게 권한이 있음'
+    local owner=$(stat -c '%U' "$file")
+    local permissions=$(stat -c '%a' "$file")
 
-    # '+' 문자의 존재 확인
-    with open(path, 'r') as file:
-        content = file.read()
-        if '+' in content:
-            return False, f'{path}: 파일 내에 "+" 문자가 있음'
+    # 소유자 검사
+    if [ "$owner" != "$owner_expected" ]; then
+        현황+=("$file: 소유자가 $owner_expected가 아님")
+        return 1
+    fi
 
-    return True, ''
+    # 권한 검사 (600 이하인지)
+    if [ "$permissions" -gt 600 ]; then
+        현황+=("$file: 권한이 600보다 큼")
+        return 1
+    fi
 
-def get_user_homes():
-    """시스템 사용자의 홈 디렉터리 목록을 가져옵니다."""
-    homes = []
-    for user_info in pwd.getpwall():
-        if user_info.pw_shell not in ["/bin/false", "/sbin/nologin"] and user_info.pw_dir:
-            homes.append((user_info.pw_name, user_info.pw_dir))
-    return homes
+    # '+' 문자 검사
+    if grep -q '+' "$file"; then
+        현황+=("$file: 파일 내에 '+' 문자가 있음")
+        return 1
+    fi
 
-def check_hosts_and_rhosts_files():
-    results = {
-        "분류": "파일 및 디렉터리 관리",
-        "코드": "U-17",
-        "위험도": "상",
-        "진단 항목": "$HOME/.rhosts, hosts.equiv 사용 금지",
-        "진단 결과": "양호",  # 초기 값은 양호로 설정
-        "현황": [],
-        "대응방안": "login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 소유자, 권한, 설정 검증"
-    }
+    return 0
+}
 
-    # /etc/hosts.equiv 파일 검증
-    hosts_equiv_path = '/etc/hosts.equiv'
-    if os.path.exists(hosts_equiv_path):
-        secure, message = is_permission_secure(hosts_equiv_path, 'root')
-        if not secure:
-            results['현황'].append(message)
-            results["진단 결과"] = "취약"
+check_file_security "/etc/hosts.equiv" "root"
+hosts_equiv_result=$?
 
-    # 사용자별 .rhosts 파일 검증
-    for username, home_dir in get_user_homes():
-        rhosts_path = os.path.join(home_dir, '.rhosts')
-        if os.path.exists(rhosts_path):
-            secure, message = is_permission_secure(rhosts_path, username)
-            if not secure:
-                results['현황'].append(message)
-                results["진단 결과"] = "취약"
+# 사용자별 .rhosts 파일 검증
+while IFS=: read -r username _ _ _ _ homedir _; do
+    if [ -d "$homedir" ] && [ "$homedir" != "/sbin/nologin" ] && [ "$homedir" != "/bin/false" ]; then
+        rhosts_path="$homedir/.rhosts"
+        check_file_security "$rhosts_path" "$username"
+        rhosts_result=$?
+        if [ $rhosts_result -ne 0 ]; then
+            진단_결과="취약"
+        fi
+    fi
+done < /etc/passwd
 
-    # 현황 배열이 비어있으면 모든 검사가 통과한 것으로 간주
-    if not results['현황']:
-        results["현황"].append("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 $HOME/.rhosts 파일 문제 없음")
+# 결과 업데이트
+if [ ${#현황[@]} -eq 0 ]; then
+    현황+=("login, shell, exec 서비스 사용 시 /etc/hosts.equiv 및 \$HOME/.rhosts 파일 문제 없음")
+fi
 
-    return results
-
-def main():
-    results = check_hosts_and_rhosts_files()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

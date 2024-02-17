@@ -1,48 +1,34 @@
 #!/bin/bash
 
-. function.sh
- 
-TMP1=`SCRIPTNAME`.log
+# 초기 진단 결과 및 현황 설정
+category="서비스 관리"
+code="U-62"
+severity="중"
+check_item="ftp 계정 shell 제한"
+result=""
+status=""
+recommendation="ftp 계정에 /bin/false 쉘 부여"
 
-> $TMP1 
- 
-BAR
-
-CODE [U-62] ftp 계정 shell 제한
-
-cat << EOF >> $result
-
-[양호]: ftp 계정에 /bin/false 쉘이 부여되어 있는 경우
-
-[취약]: ftp 계정에 /bin/false 쉘이 부여되지 않는 경우
-
-EOF
-
-BAR
-
-# FTP 서비스의 상태를 확인합니다
-ftp_status=$(service ftp status 2>&1)
-
-# /etc/passwd에서 FTP 계정을 확인합니다
-ftp_entry=$(grep "^ftp:" /etc/passwd)
-
-# FTP 계정의 셸을 확인합니다
-ftp_shell=$(grep "^ftp:" /etc/passwd | awk -F: '{print $7}')
-
-# FTP 포트가 수신 중인지 확인합니다
-if ss -tnlp | grep -q ':21'; then
-  if [ "$ftp_shell" == "/bin/false" ]; then
-    OK "FTP 계정의 셸이 /bin/false로 설정되었습니다."
-  else
-    WARN "FTP 계정의 셸을 /bin/false로 설정할 수 없습니다."
-  fi
+# /etc/passwd에서 ftp 계정 확인
+if grep -q "^ftp:" /etc/passwd; then
+    ftp_shell=$(grep "^ftp:" /etc/passwd | cut -d':' -f7)
+    if [ "$ftp_shell" = "/bin/false" ]; then
+        result="양호"
+        status="ftp 계정에 /bin/false 쉘이 부여되어 있습니다."
+    else
+        result="취약"
+        status="ftp 계정에 /bin/false 쉘이 부여되어 있지 않습니다."
+    fi
 else
-  OK "FTP 포트(21)가 열려 있지 않습니다."
+    result="양호"
+    status="ftp 계정이 시스템에 존재하지 않습니다."
 fi
 
-
-cat $result
-
-echo ; echo 
-
- 
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황: $status"
+echo "대응방안: $recommendation"

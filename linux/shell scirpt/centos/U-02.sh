@@ -1,66 +1,70 @@
-#!/bin/bash 
+#!/bin/bash
 
-. function.sh
+# 결과를 저장할 변수 초기화
+declare -A results
+results[분류]="계정 관리"
+results[코드]="U-02"
+results[위험도]="상"
+results[진단 항목]="패스워드 복잡성 설정"
+results[대응방안]="패스워드 최소길이 8자리 이상, 영문·숫자·특수문자 최소 입력 기능 설정"
+results[진단 결과]=""
+현황=()
 
-TMP1=$(SCRIPTNAME).log
+min_length=8
+declare -A min_input_requirements=( [lcredit]=-1 [ucredit]=-1 [dcredit]=-1 [ocredit]=-1 )
+files_to_check=(
+    "/etc/login.defs"
+    "/etc/pam.d/system-auth"
+    "/etc/pam.d/password-auth"
+    "/etc/security/pwquality.conf"
+)
+password_settings_found=false
 
-> $TMP1
-
- 
-BAR
-
-CODE [U-02] 패스워드 복잡성 설정
-
-cat << EOF >> $result
-
-[양호]: 영문 숫자 특수문자가 혼합된 8 글자 이상의 패스워드가 설정된 경우.
-
-[취약]: 영문 숫자 특수문자 혼합되지 않은 8 글자 미만의 패스워드가 설정된 경우.
-
-EOF
-
-BAR
-
-# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
-LOGIN_DEFS_FILE="/etc/login.defs"
-PASS_MIN_LEN_OPTION="PASS_MIN_LEN"
-min=8
-
-# PASS_MIN_LEN 가장 높은 값
-highest_value=0
-while read line; do
-  if [[ $line =~ ^$PASS_MIN_LEN_OPTION[[:space:]]+([0-9]+) ]]; then
-    value=${BASH_REMATCH[1]}
-    if [ $value -gt $highest_value ]; then
-      highest_value=$value
+for file_path in "${files_to_check[@]}"; do
+    if [[ -f "$file_path" ]]; then
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            line=$(echo "$line" | xargs)
+            if [[ ! "$line" =~ ^# && ! -z "$line" ]]; then
+                if [[ "$line" =~ PASS_MIN_LEN || "$line" =~ minlen ]]; then
+                    password_settings_found=true
+                    value=$(echo "$line" | grep -o '[0-9]*')
+                    if (( value < min_length )); then
+                        현황+=("$file_path에서 설정된 패스워드 최소 길이가 ${min_length}자 미만입니다.")
+                    fi
+                fi
+                for key in "${!min_input_requirements[@]}"; do
+                    if [[ "$line" =~ $key ]]; then
+                        password_settings_found=true
+                        value=$(echo "$line" | sed -n "s/.*$key\s*\(-\?\d\+\).*/\1/p")
+                        if (( value < min_input_requirements[$key] )); then
+                            현황+=("$file_path에서 $key 설정이 ${min_input_requirements[$key]} 미만입니다.")
+                        fi
+                    fi
+                done
+            fi
+        done < "$file_path"
     fi
-  fi
-done < "$LOGIN_DEFS_FILE"
+done
 
-# PASS_MIN_LEN의 값이 지정된 범위 내에 있는지 확인합니다
-if [ "$highest_value" -ge "$min" ]; then
-   OK "8 글자 이상의 패스워드가 설정된 경우"
-else
-   WARN "8 글자 미만의 패스워드가 설정된 경우"
-fi
-
-
-
-PAM_FILE="/etc/pam.d/system-auth"
-EXPECTED_OPTIONS="password requisite pam_cracklib.so try_first_pass restry=3 minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 ocredit=-1"
-
-
-if [ -f "$PAM_FILE" ]; then
-    if grep -q "$EXPECTED_OPTIONS" "$PAM_FILE" ; then
-        OK " $PAM_FILE 에 $EXPECTED_OPTIONS 있음  "
+if $password_settings_found; then
+    if [ ${#현황[@]} -eq 0 ]; then
+        results[진단 결과]="양호"
     else
-        WARN " $PAM_FILE 에 $EXPECTED_OPTIONS 없음  "
+        results[진단 결과]="취약"
     fi
 else
-    INFO " $PAM_FILE 못 찾음"
+    results[진단 결과]="취약"
+    현황+=("패스워드 복잡성 설정이 없습니다.")
 fi
 
-
-cat $result
-
-echo ; echo
+# 결과 출력
+echo "분류: ${results[분류]}"
+echo "코드: ${results[코드]}"
+echo "위험도: ${results[위험도]}"
+echo "진단 항목: ${results[진단 항목]}"
+echo "진단 결과: ${results[진단 결과]}"
+echo "대응방안: ${results[대응방안]}"
+echo "현황:"
+for 사항 in "${현황[@]}"; do
+    echo "- $사항"
+done

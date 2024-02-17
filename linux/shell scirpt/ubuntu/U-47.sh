@@ -1,55 +1,32 @@
 #!/bin/bash
 
- 
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "계정관리",
+    "코드": "U-47",
+    "위험도": "중",
+    "진단 항목": "패스워드 최대 사용기간 설정",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "패스워드 최대 사용기간 90일 이하로 설정"
+}' > $results_file
 
-. function.sh
+login_defs_path="/etc/login.defs"
 
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1  
-
-BAR
-
-CODE [U-47] 패스워드 최대 사용기간 설정
-
-cat << EOF >> $result
-
-[양호]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있는 경우
-
-[취약]: 패스워드 최대 사용기간이 90일(12주) 이하로 설정되어 있지 않은 경우
-
-EOF
-
-BAR
-
-# login.defs 파일에서 PASS_MAX_DAYS 값을 가져옵니다
-pass_max_days=$(grep -E "^PASS_MAX_DAYS" /etc/login.defs | awk '{print $2}')
-
-max=90
-
-# PASS_MAX_DAYS 값이 주석 처리되었는지 확인합니다
-if grep -q "^#PASS_MAX_DAYS" /etc/login.defs; then
-  INFO "PASS_MAX_DAYS가 주석 처리되었습니다."
+if [ -f "$login_defs_path" ]; then
+    while IFS= read -r line; do
+        if echo "$line" | grep -q "PASS_MAX_DAYS" && ! echo "$line" | grep -q "^#"; then
+            max_days=$(echo "$line" | awk '{print $2}')
+            if [ "$max_days" -gt 90 ]; then
+                jq --arg max_days "$max_days" '.진단 결과 = "취약" | .현황 += ["/etc/login.defs 파일에 패스워드 최대 사용 기간이 90일을 초과하여 " + $max_days + "일로 설정되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+            fi
+            break
+        fi
+    done < "$login_defs_path"
 else
-  # PASS_MAX_DAYS 값이 올바른 정수인지 확인하십시오
-  if [ "$pass_max_days" -eq "$pass_max_days" ] 2>/dev/null; then
-    # PASS_MAX_DAYS의 값이 지정된 범위 내에 있는지 확인합니다
-    if [ "$pass_max_days" -ge 0 ] && [ "$pass_max_days" -le 99999999 ]; then
-      if [ "$pass_max_days" -le "$max" ]; then
-        OK "PASS_MAX_DAYS가 $max 보다 작거나 같은 $pass_max_days 로 설정되었습니다."
-      else
-        WARN "PASS_MAX_DAYS가 $max 보다 큰 $pass_max_days 로 설정되었습니다."
-      fi
-    else
-      INFO "PASS_MAX_DAYS 값이 범위를 벗어났습니다."
-    fi
-  else
-    INFO "PASS_MAX_DAYS 값이 올바른 정수가 아닙니다."
-  fi
+    jq '.진단 결과 = "취약" | .현황 += ["/etc/login.defs 파일이 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
- 
 
-cat $result
-
-echo ; echo
+# 결과 출력
+cat $results_file

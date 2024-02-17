@@ -1,55 +1,56 @@
 #!/bin/bash
 
- 
+# 초기 진단 결과 및 현황 설정
+category="서비스 관리"
+code="U-63"
+severity="하"
+check_item="ftpusers 파일 소유자 및 권한 설정"
+result=""
+declare -a status
+recommendation="ftpusers 파일의 소유자를 root로 설정하고, 권한을 640 이하로 설정"
+file_checked_and_secure=false
 
-. function.sh
+# 검사할 ftpusers 파일 목록
+ftpusers_files=(
+    "/etc/ftpusers" "/etc/pure-ftpd/ftpusers" "/etc/wu-ftpd/ftpusers"
+    "/etc/vsftpd/ftpusers" "/etc/proftpd/ftpusers" "/etc/ftpd/ftpusers"
+    "/etc/vsftpd.ftpusers" "/etc/vsftpd.user_list" "/etc/vsftpd/user_list"
+)
 
- 
-TMP1=`SCRIPTNAME`.log
+for ftpusers_file in "${ftpusers_files[@]}"; do
+    if [ -f "$ftpusers_file" ]; then
+        file_checked_and_secure=true
+        owner=$(stat -c "%U" "$ftpusers_file")
+        permissions=$(stat -c "%a" "$ftpusers_file")
 
-> $TMP1 
- 
+        # 소유자가 root가 아니거나 권한이 640보다 큰 경우
+        if [ "$owner" != "root" ] || [ "$permissions" -gt 640 ]; then
+            result="취약"
+            [ "$owner" != "root" ] && status+=("$ftpusers_file 파일의 소유자(owner)가 root가 아닙니다.")
+            [ "$permissions" -gt 640 ] && status+=("$ftpusers_file 파일의 권한이 640보다 큽니다.")
+        fi
+    fi
+done
 
-BAR
-
-CODE [U-63] ftpusers 파일 소유자 및 권한 설정
-
-cat << EOF >> $result
-
-[양호]: ftpusers 파일의 소유자가 root이고, 권한이 640 이하인 경우
-
-[취약]: ftpusers 파일의 소유자가 root아니거나, 권한이 640 이하가 아닌 경우
-
-EOF
-
-BAR
-
-ftpusers_file="/etc/vsftpd/ftpusers"
-
-owner=$(stat -c '%U' $ftpusers_file)
-
-# ftpusers 파일 확인
-if [ ! -f $ftpusers_file ]; then
-  INFO "ftpusers 파일이 없습니다. 확인해주세요."
-else
-  # ftpusers 파일 소유자 root 확인
-  if [[ $owner == "root" ]]; then
-      OK "root가 users 파일을 소유하고 있습니다."
-  else
-      WARN "root가 users 파일을 소유하고 있지 않습니다."
-  fi
-  # ftp 사용자에 대한 권한
-
-  if [[ `stat -c '%a' $ftpusers_file` -lt 640 ]]; then
-    WARN "권한이 640 초과입니다"
-  else
-      # 스크립트가 이 지점에 도달하면 소유권 및 사용 권한이 올바른 것입니다
-      OK "권한이 600 이하입니다."
-  fi
+# 파일 검사 후 취약하지 않은 경우 양호로 설정
+if [ ${#status[@]} -eq 0 ]; then
+    if $file_checked_and_secure; then
+        result="양호"
+        status=("모든 ftpusers 파일이 적절한 소유자 및 권한 설정을 가지고 있습니다.")
+    else
+        result="취약"
+        status=("ftp 접근제어 파일이 없습니다.")
+    fi
 fi
 
-cat $result
-
-echo ; echo 
-
- 
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황:"
+for i in "${status[@]}"; do
+    echo "- $i"
+done
+echo "대응방안: $recommendation"

@@ -1,38 +1,59 @@
 #!/bin/bash
 
-. function.sh
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "계정관리",
+    "코드": "U-50",
+    "위험도": "하",
+    "진단 항목": "관리자 그룹에 최소한의 계정 포함",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "관리자 그룹(root)에 불필요한 계정이 등록되지 않도록 관리"
+}' > $results_file
 
-TMP1=`SCRIPTNAME`.log
+# 불필요한 계정 목록
+unnecessary_accounts=(
+    "bin" "sys" "adm" "listen" "nobody4" "noaccess" "diag"
+    "operator" "gopher" "games" "ftp" "apache" "httpd" "www-data"
+    "mysql" "mariadb" "postgres" "mail" "postfix" "news" "lp"
+    "uucp" "nuucp" "sync" "shutdown" "halt" "mailnull" "smmsp"
+    "manager" "dumper" "abuse" "webmaster" "noc" "security"
+    "hostmaster" "info" "marketing" "sales" "support" "accounts"
+    "help" "admin" "guest" "user" "ubuntu"
+)
 
-> $TMP1
+if [ -f "/etc/group" ]; then
+    root_group_found=false
+    while IFS=: read -r group_name _ _ members; do
+        if [ "$group_name" == "root" ]; then
+            root_group_found=true
+            IFS=',' read -ra members_array <<< "$members"
+            found_accounts=()
+            for account in "${members_array[@]}"; do
+                for unnecessary_account in "${unnecessary_accounts[@]}"; do
+                    if [ "$account" == "$unnecessary_account" ]; then
+                        found_accounts+=("$account")
+                        break
+                    fi
+                done
+            done
 
-BAR
+            if [ ${#found_accounts[@]} -gt 0 ]; then
+                jq --arg accounts "$(IFS=, ; echo "${found_accounts[*]}")" '.진단 결과 = "취약" | .현황 += ["관리자 그룹(root)에 불필요한 계정이 등록되어 있습니다: " + $accounts]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+            else
+                jq '.현황 += ["관리자 그룹(root)에 불필요한 계정이 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+            fi
+            break
+        fi
+    done < "/etc/group"
 
-CODE [U-50] 관리자 그룹에 최소한의 계정 포함
-
-cat << EOF >> $result
-
-양호: 관리자 그룹에 불필요한 계정이 등록되어 있지 않은 경우
-
-취약: 관리자 그룹에 불필요한 계정이 등록되어 있는 경우
-
-EOF
-
-BAR
-
-# 필요한 계정 목록 정의
-necessary_accounts=("root" "bin" "daemon" "adm" "lp" "sync" "shutdown" "halt" "ubuntu" "user")
-
-# 필요한 계정 목록에 없는 계정 검색
-unnecessary_accounts=$(getent group Administrators | awk -F: '{split($4,a,","); for(i in a) {if (!(a[i] in necessary_accounts)) { print a[i] }}}')
-
-# 불필요한 계정이 발견되었는지 확인합니다
-if [ -n "$unnecessary_accounts" ]; then
-  WARN "Administrators 그룹에서 불필요한 계정이 발견되었습니다.: $unnecessary_accounts"
+    if [ "$root_group_found" = false ]; then
+        jq '.진단 결과 = "오류" | .현황 += ["관리자 그룹(root)을 /etc/group 파일에서 찾을 수 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+    fi
 else
-  OK "Administrators 그룹에서 불필요한 계정을 찾을 수 없습니다."
-fi 
+    jq '.진단 결과 = "취약" | .현황 += ["/etc/group 파일이 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+fi
 
-cat $result
-
-echo ; echo
+# 결과 출력
+cat $results_file

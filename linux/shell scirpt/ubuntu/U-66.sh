@@ -1,41 +1,28 @@
 #!/bin/bash
 
- 
+# 초기 진단 결과 및 현황 설정
+category="서비스 관리"
+code="U-66"
+severity="중"
+check_item="SNMP 서비스 구동 점검"
+result=""
+status=""
+recommendation="SNMP 서비스 사용을 필요로 하지 않는 경우, 서비스를 비활성화"
 
-. function.sh
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-   
-
-BAR
-
-CODE [U-66] SNMP 서비스 구동 점검
-
-cat << EOF >> $result
-
-[양호]: SNMP 서비스를 사용하지 않는 경우
-
-[취약]: SNMP 서비스를 사용하는 경우
-
-EOF
-
-BAR
-
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
-
-# snmp 서비스가 활성 상태인지 확인합니다
-if systemctl is-active --quiet snmpd; then
-    WARN "SNMP 서비스가 활성되어 있습니다"
+# SNMP 서비스 실행 여부 확인
+if ps -ef | grep -i "snmp" | grep -v "grep" > /dev/null; then
+    result="취약"
+    status="SNMP 서비스를 사용하고 있습니다."
 else
-    OK "SNMP 서비스가 활성화되지 않았습니다."
+    result="양호"
+    status="SNMP 서비스를 사용하지 않고 있습니다."
 fi
 
-cat $result
-
-echo ; echo
- 
-
+# 결과 출력
+echo "분류: $category"
+echo "코드: $code"
+echo "위험도: $severity"
+echo "진단 항목: $check_item"
+echo "진단 결과: $result"
+echo "현황: $status"
+echo "대응방안: $recommendation"

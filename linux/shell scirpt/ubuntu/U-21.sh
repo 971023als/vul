@@ -1,53 +1,53 @@
 #!/bin/bash
 
-. function.sh
+# 변수 설정
+분류="서비스 관리"
+코드="U-21"
+위험도="상"
+진단_항목="r 계열 서비스 비활성화"
+대응방안="불필요한 r 계열 서비스 비활성화"
+현황=()
 
-TMP1=`SCRIPTNAME`.log
+r_commands=("rsh" "rlogin" "rexec" "shell" "login" "exec")
+xinetd_dir="/etc/xinetd.d"
+inetd_conf="/etc/inetd.conf"
+vulnerable_services=()
 
-> $TMP1
- 
-
-BAR
-
-CODE [U-21] r 계열 서비스 비활성화
-
-cat << EOF >> $result
-
-[양호]: r 계열 서비스가 비활성화 되어 있는 경우
-
-[취약]: r 계열 서비스가 활성화 되어 있는 경우
-
-EOF
-
-BAR
-
-
-files=(/etc/xinetd.d/rlogin /etc/xinetd.d/rsh /etc/xinetd.d/rexec)
-expected_settings=(
-"socket_type= stream"
-"wait= no"
-"user= nobody"
-"log_on_success+= USERID"
-"log_on_failure+= USERID"
-"server= /usr/sdin/in.fingerd"
-"disable= yes"
-)
-
-for file in "${files[@]}"; do
-  INFO "파일 확인 중: $file"
-  if [ ! -f "$file" ]; then
-	  INFO "$file 파일이 없습니다."
-  else
-    for setting in "${expected_settings[@]}"; do
-      if grep -q "$setting" "$file"; then
-        OK "'$setting'이 올바르게 설정되었습니다."
-      else
-        WARN "$file 파일에서 '$setting'을 올바르게 설정하지 않았습니다."
-      fi
+# xinetd.d 아래 서비스 검사
+if [ -d "$xinetd_dir" ]; then
+    for r_command in "${r_commands[@]}"; do
+        service_path="$xinetd_dir/$r_command"
+        if [ -f "$service_path" ] && grep -q 'disable\s*=\s*no' "$service_path"; then
+            vulnerable_services+=("$r_command")
+        fi
     done
-  fi
+fi
+
+# inetd.conf 아래 서비스 검사
+if [ -f "$inetd_conf" ]; then
+    for r_command in "${r_commands[@]}"; do
+        if grep -q "^$r_command" "$inetd_conf"; then
+            vulnerable_services+=("$r_command")
+        fi
+    done
+fi
+
+# 진단 결과 업데이트
+if [ ${#vulnerable_services[@]} -gt 0 ]; then
+    진단_결과="취약"
+    현황+=("불필요한 r 계열 서비스가 실행 중입니다: ${vulnerable_services[*]}")
+else
+    진단_결과="양호"
+    현황+=("모든 r 계열 서비스가 비활성화되어 있습니다.")
+fi
+
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
 done
-
-cat $result
-
-echo ; echo

@@ -1,46 +1,31 @@
-#!/usr/bin/python3
-import subprocess
-import json
+#!/bin/bash
 
-def check_automountd_disabled():
-    results = {
-        "분류": "서비스 관리",
-        "코드": "U-26",
-        "위험도": "상",
-        "진단 항목": "automountd 제거",
-        "진단 결과": None,  # 초기 상태 설정, 검사 후 결과에 따라 업데이트
-        "현황": [],
-        "대응방안": "automountd 서비스 비활성화"
-    }
+# 변수 설정
+분류="서비스 관리"
+코드="U-26"
+위험도="상"
+진단_항목="automountd 제거"
+대응방안="automountd 서비스 비활성화"
+현황=()
 
-    try:
-        # automountd 또는 autofs 서비스 실행 여부 확인
-        automountd_running = subprocess.check_output(
-            "ps -ef | grep -iE '[a]utomount|[a]utofs'", 
-            shell=True, text=True
-        ).strip()
+# automountd 또는 autofs 서비스 실행 상태 확인
+if ps -ef | grep -iE '[a]utomount|[a]utofs' &> /dev/null; then
+    # automountd 또는 autofs 서비스가 실행 중임
+    진단_결과="취약"
+    현황+=("automountd 서비스가 실행 중입니다.")
+else
+    # automountd 또는 autofs 서비스가 실행 중이지 않음
+    진단_결과="양호"
+    현황+=("automountd 서비스가 비활성화되어 있습니다.")
+fi
 
-        if automountd_running:
-            results["진단 결과"] = "취약"
-            results["현황"].append("automountd 서비스가 실행 중입니다.")
-        else:
-            results["진단 결과"] = "양호"
-            results["현황"].append("automountd 서비스가 비활성화되어 있습니다.")
-
-    except subprocess.CalledProcessError as e:
-        results["진단 결과"] = "오류"
-        results["현황"].append(f"automountd 서비스 확인 중 오류 발생: {e}")
-
-    # 진단 결과가 명시적으로 설정되지 않은 경우 기본값을 "양호"로 설정
-    if results["진단 결과"] is None:
-        results["진단 결과"] = "양호"
-        results["현황"].append("automountd 서비스 관련 문제가 발견되지 않았습니다.")
-
-    return results
-
-def main():
-    results = check_automountd_disabled()
-    print(json.dumps(results, ensure_ascii=False, indent=4))
-
-if __name__ == "__main__":
-    main()
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+for item in "${현황[@]}"; do
+    echo "$item"
+done

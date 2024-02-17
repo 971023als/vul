@@ -1,47 +1,52 @@
 #!/bin/bash
 
-. function.sh
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-13"
+위험도="상"
+진단_항목="SUID, SGID 설정 파일 점검"
+대응방안="주요 실행파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우"
+현황=()
+진단_결과=""
 
-BAR
+# 검사할 실행 파일 목록
+executables=(
+    "/sbin/dump" "/sbin/restore" "/sbin/unix_chkpwd"
+    "/usr/bin/at" "/usr/bin/lpq" "/usr/bin/lpq-lpd"
+    "/usr/bin/lpr" "/usr/bin/lpr-lpd" "/usr/bin/lprm"
+    "/usr/bin/lprm-lpd" "/usr/bin/newgrp" "/usr/sbin/lpc"
+    "/usr/sbin/lpc-lpd" "/usr/sbin/traceroute"
+)
 
-CODE [U-13] SUID,SGID,Sticky bit 설정파일 점검 
+vulnerable_files=()
 
-cat << EOF >> $result
-
-[양호]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있지 않은 경우
-
-[취약]: 주요 파일의 권한에 SUID와 SGID에 대한 설정이 부여되어 있는 경우
-
-EOF
-
-BAR
-
-# /etc/passwd 파일을 읽고 홈 디렉토리 정보 추출
-while IFS=: read -r username passwd uid gid name home shell
-do
-  # 홈 디렉토리에서 기본 실행 파일의 사용 권한 정보를 가져옵니다
-  main_exec=$(find / -user root -type f \( -perm -04000 -o -perm -02000 \) -exec ls -al {} \;)
-
-  # 주 실행 파일이 존재하는 경우
-  if [ -n "$main_exec" ]; then
-    # 권한 정보를 가져옵니다
-    permissions=$(ls -ld "$main_exec" | awk '{print $1}')
-    owner=$(ls -ld "$main_exec" | awk '{print $3}')
-    group=$(ls -ld "$main_exec" | awk '{print $4}')
-
-    # 파일에 SUID 또는 SGID 사용 권한이 있는지 확인합니다
-    if [ -u "$main_exec" ]; then
-      WARN "$main_exec SUID 권한이 탐지됨"
-    elif [ -g "$main_exec" ]; then
-      WARN "$main_exec SGID 권한이 파일에서 탐지됨"
-    else
-      OK "$main_exec SUID와 SGID에 대한 설정이 부여"
+for executable in "${executables[@]}"; do
+    if [ -f "$executable" ]; then
+        mode=$(stat -c "%A" "$executable")
+        if [[ $mode = *s* ]]; then
+            vulnerable_files+=("$executable")
+        fi
     fi
-  fi
-done < /etc/passwd
+done
 
-cat $result
+if [ ${#vulnerable_files[@]} -gt 0 ]; then
+    진단_결과="취약"
+    for file in "${vulnerable_files[@]}"; do
+        현황+=("$file")
+    done
+else
+    진단_결과="양호"
+    현황+=("SUID나 SGID에 대한 설정이 부여된 주요 실행 파일이 없습니다.")
+fi
 
-echo ; echo
-
- 
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+echo "현황:"
+for item in "${현황[@]}"; do
+    echo "- $item"
+done

@@ -1,56 +1,51 @@
 #!/bin/bash
 
- 
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-14"
+위험도="상"
+진단_항목="사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정"
+대응방안="홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고, 쓰기 권한이 부여된 경우"
+현황=()
+진단_결과=""
 
-. function.sh
+start_files=(".profile" ".cshrc" ".login" ".kshrc" ".bash_profile" ".bashrc" ".bash_login")
+vulnerable_files=()
 
-TMP1=`SCRIPTNAME`.log
+# 모든 사용자 홈 디렉터리 순회
+while IFS=: read -r user _ uid _ _ home _; do
+    if [ -d "$home" ]; then
+        for start_file in "${start_files[@]}"; do
+            file_path="$home/$start_file"
+            if [ -f "$file_path" ]; then
+                file_uid=$(stat -c "%u" "$file_path")
+                permissions=$(stat -c "%A" "$file_path")
 
->$TMP1  
- 
-
-BAR
-
-CODE [U-14] 사용자, 시스템 시작파일 및 환경파일 소유자 및 권한 설정 
-
-cat << EOF >> $result  
-
-[양호]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되어 있고 
-
-홈 디렉터리 환경변수 파일에 root와 소유자만 쓰기 권한이 부여된 경우
-
-[취약]: 홈 디렉터리 환경변수 파일 소유자가 root 또는 해당 계정으로 지정되지 않고 
-
-홈 디렉터리 환경변수 파일에 root와 소유자 외에 쓰기 권한이 부여된 경우
-
-EOF
-
-BAR
-
-files=(".profile" ".kshrc" ".cshrc" ".bashrc" ".bash_profile" ".login" ".exrc" ".netrc")
-
-for file in "${files[@]}"; do
-
-  if [ -f "${file}" ]; then
-    owner=$(stat -c '%U' $file)
-    if [ "$owner" != "root" ] && [ "$owner" != "$USER" ]; then
-      WARN "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다."
-    else
-      OK "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다." 
+                # 파일 소유자가 root 또는 해당 사용자가 아니거나, 다른 사용자에게 쓰기 권한이 있을 경우
+                if [ "$file_uid" -ne 0 ] && [ "$file_uid" -ne "$uid" ] || [[ $permissions == *w*o ]]; then
+                    vulnerable_files+=("$file_path")
+                fi
+            fi
+        done
     fi
+done < /etc/passwd
 
-    permission=$(stat -c '%a' $file)
-    if [ "$permission" != "600" ] && [ "$permission" != "700" ]; then
-      WARN "$file 에 잘못된 권한($permission)이 있습니다. 600 또는 700이 예상됩니다."
-    else
-      OK "$file 에 잘못된 소유자($owner), 예상 루트 또는 $USER 가 있습니다." 
-    fi
-  else
-    INFO " $file 을 찾을 수 없습니다"
-  fi
+if [ ${#vulnerable_files[@]} -gt 0 ]; then
+    진단_결과="취약"
+    현황=("${vulnerable_files[@]}")
+else
+    진단_결과="양호"
+    현황+=("모든 홈 디렉터리 내 시작파일 및 환경파일이 적절한 소유자와 권한 설정을 가지고 있습니다.")
+fi
+
+# 결과 출력
+echo "분류: $분류"
+echo "코드: $코드"
+echo "위험도: $위험도"
+echo "진단 항목: $진단_항목"
+echo "대응방안: $대응방안"
+echo "진단 결과: $진단_결과"
+echo "현황:"
+for item in "${현황[@]}"; do
+    echo "- $item"
 done
-
-cat $result
-
-echo ; echo
- 

@@ -1,34 +1,31 @@
 #!/bin/bash
 
-. function.sh
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "계정관리",
+    "코드": "U-44",
+    "위험도": "중",
+    "진단 항목": "root 이외의 UID가 '\''0'\'' 금지",
+    "진단 결과": "양호",
+    "현황": [],
+    "대응방안": "root 계정 외 UID 0 사용 금지"
+}' > $results_file
 
-BAR
+# /etc/passwd 파일에서 UID가 '0'이고 사용자 이름이 'root'가 아닌 계정 검사
+vulnerable=false
+while IFS=: read -r username _ userid _; do
+    if [ "$userid" == "0" ] && [ "$username" != "root" ]; then
+        vulnerable=true
+        echo "취약: root 계정과 동일한 UID(0)를 갖는 계정이 존재합니다: $username"
+        jq --arg username "$username" '.진단 결과 = "취약" | .현황 += ["root 계정과 동일한 UID(0)를 갖는 계정이 존재합니다: " + $username]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+        break
+    fi
+done < /etc/passwd
 
-CODE [U-44] root 이외의 UID가 '0' 금지
-
-cat << EOF >> $result
-
-[양호]: root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우
-
-[취약]: root 계정과 동일한 UID를 갖는 계정이 존재하는 경우
-
-EOF
-
-BAR
-
-FILE=/etc/passwd
-
-# 루트 계정과 동일한 UID를 가진 계정 확인(UID 값 0)
-awk -F: '$3=="0"{print $1":"$3}' $FILE > $TMP1
-UIDCHECK=$(wc -l < $TMP1)
-if [ $UIDCHECK -ge 2 ]; then
-   WARN "루트 계정과 동일한 UID를 가진 계정이 있습니다."
-   INFO "자세한 내용은 $TMP1 을 확인하십시오."
-else
-   OK "루트 계정과 동일한 UID를 가진 계정이 없습니다."
-   rm $TMP1
+if [ "$vulnerable" = false ]; then
+    jq '.현황 += ["root 계정 외에 UID 0을 갖는 계정이 존재하지 않습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
- 
-cat $result
 
-echo ; echo
+# 결과 출력
+cat $results_file

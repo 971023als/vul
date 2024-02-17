@@ -1,39 +1,51 @@
 #!/bin/bash
 
-. function.sh
+# 변수 설정
+분류="파일 및 디렉터리 관리"
+코드="U-07"
+위험도="상"
+진단_항목="/etc/passwd 파일 소유자 및 권한 설정"
+대응방안="/etc/passwd 파일의 소유자가 root이고, 권한이 644 이하인 경우"
+passwd_file='/etc/passwd'
+results_file='results.json'
+현황=()
+진단_결과=""
 
-TMP1=`SCRIPTNAME`.log
+# /etc/passwd 파일 존재 여부 확인
+if [ -e "$passwd_file" ]; then
+    # 파일 권한 확인
+    mode=$(stat -c "%a" "$passwd_file")
+    owner_uid=$(stat -c "%u" "$passwd_file")
 
->$TMP1
-
-BAR
-
-CODE [U-07] /etc/passwd 파일 소유자 및 권한 설정
-
-cat << EOF >> $result
-
-[ 양호 ] : /etc/passwd 파일의 소유자가 root이고, 권한이 644 이하인 경우
-
-[ 취약 ] : /etc/passwd 파일의 소유자가 root가 아니거나, 권한이 644 이하가 아닌 경우
-
-EOF
-
-BAR
-
-# check if the file is owned by root
-if [ $(stat -c "%U" /etc/passwd) != "root" ]; then
-    WARN "/etc/passwd 파일이 루트에 의해 소유되지 않습니다."
+    # 소유자가 root인지 확인
+    if [ "$owner_uid" -eq 0 ]; then
+        # 파일 권한이 644 이하인지 확인
+        if [ "$mode" -le 644 ]; then
+            진단_결과="양호"
+            현황+=("/etc/passwd 파일의 소유자가 root이고, 권한이 $mode입니다.")
+        else
+            진단_결과="취약"
+            현황+=("/etc/passwd 파일의 권한이 $mode로 설정되어 있어 취약합니다.")
+        fi
+    else
+        진단_결과="취약"
+        현황+=("/etc/passwd 파일의 소유자가 root가 아닙니다.")
+    fi
 else
-    OK "/etc/passwd 파일이 루트에 의해 소유됩니다."
+    진단_결과="N/A"
+    현황+=("/etc/passwd 파일이 없습니다.")
 fi
 
-# check if the file permissions are less than 644
-if [ $(stat -c "%a" /etc/passwd) -lt 644 ]; then
-    WARN "/etc/passwd 파일에 644 미만의 권한이 있습니다."
-else
-    OK "/etc/passwd 파일에 644 이상의 권한이 있습니다."
-fi
+# 결과 JSON 형식으로 저장
+echo "{
+    \"분류\": \"$분류\",
+    \"코드\": \"$코드\",
+    \"위험도\": \"$위험도\",
+    \"진단 항목\": \"$진단_항목\",
+    \"진단 결과\": \"$진단_결과\",
+    \"현황\": [$(printf '\"%s\",' "${현황[@]}" | sed 's/,$//')],
+    \"대응방안\": \"$대응방안\"
+}" > "$results_file"
 
-cat $result
-
-echo ; echo
+# 결과 출력
+cat "$results_file"

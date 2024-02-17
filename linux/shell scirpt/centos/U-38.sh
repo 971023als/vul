@@ -1,46 +1,50 @@
 #!/bin/bash
 
- 
+# 결과를 저장할 JSON 파일 초기화
+results_file="results.json"
+echo '{
+    "분류": "서비스 관리",
+    "코드": "U-38",
+    "위험도": "상",
+    "진단 항목": "웹서비스 불필요한 파일 제거",
+    "진단 결과": null,
+    "현황": [],
+    "대응방안": "기본으로 생성되는 불필요한 파일 및 디렉터리 제거"
+}' > $results_file
 
-. function.sh
+webconf_files=(".htaccess" "httpd.conf" "apache2.conf")
+serverroot_directories=()
 
- 
-TMP1=`SCRIPTNAME`.log
-
-> $TMP1 
- 
-
-BAR
-
-CODE [U-38] Apache 불필요한 파일 제거 
-
-cat << EOF >> $result
-
-[양호]: 매뉴얼 파일 및 디렉터리가 제거되어 있는 경우
-
-[취약]: 매뉴얼 파일 및 디렉터리가 제거되지 않은 경우
-
-EOF
-
-BAR
-
-
-HTTPD_ROOT="/etc/httpd/conf/httpd.conf"
-UNWANTED_ITEMS="manual samples docs"
-
-if [ `ps -ef | grep httpd | grep -v "grep" | wc -l` -eq 0 ]; then
-    INFO "아파치가 실행되지 않습니다."
-else
-    for item in $UNWANTED_ITEMS
-    do
-        if [ ! -d "$HTTPD_ROOT/$item" ] && [ ! -f "$HTTPD_ROOT/$item" ]; then
-            OK "$item 을 $HTTPD_ROOT 에서 찾을 수 없습니다"
-        else
-            WARN "$item 을 $HTTPD_ROOT 에서 찾을 수 있습니다"
+for conf_file in "${webconf_files[@]}"; do
+    find_output=$(find / -name $conf_file -type f 2>/dev/null)
+    for file_path in $find_output; do
+        if [[ -n "$file_path" ]]; then
+            while IFS= read -r line; do
+                if [[ "$line" == ServerRoot* ]] && [[ ! "$line" =~ ^# ]]; then
+                    serverroot=$(echo $line | awk '{print $2}' | tr -d '"')
+                    if [[ ! " ${serverroot_directories[@]} " =~ " ${serverroot} " ]]; then
+                        serverroot_directories+=("$serverroot")
+                    fi
+                fi
+            done < "$file_path"
         fi
     done
+done
+
+vulnerable=false
+for directory in "${serverroot_directories[@]}"; do
+    manual_path="$directory/manual"
+    if [[ -d "$manual_path" ]]; then
+        vulnerable=true
+        jq --arg path "$manual_path" '.현황 += ["Apache 홈 디렉터리 내 기본으로 생성되는 불필요한 파일 및 디렉터리가 제거되어 있지 않습니다: " + $path]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+    fi
+done
+
+if [ "$vulnerable" = false ]; then
+    jq '.진단 결과 = "양호" | .현황 += ["Apache 홈 디렉터리 내 기본으로 생성되는 불필요한 파일 및 디렉터리가 제거되어 있습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+else
+    jq '.진단 결과 = "취약"' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
-cat $result
-
-echo ; echo
+# 결과 출력
+cat $results_file
