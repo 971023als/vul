@@ -20,17 +20,24 @@ unnecessary_accounts=(
     "news" "lp" "uucp" "nuucp"
 )
 
+found_issues=false
+
 if [ -f "/etc/passwd" ]; then
     while IFS=: read -r username _ _ _ _ _ shell; do
         for account in "${unnecessary_accounts[@]}"; do
             if [ "$username" == "$account" ] && [ "$shell" != "/bin/false" ] && [ "$shell" != "/sbin/nologin" ]; then
                 jq --arg username "$username" '.진단 결과 = "취약" | .현황 += ["계정 " + $username + "에 /bin/false 또는 /sbin/nologin 쉘이 부여되지 않았습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
-                break 2
+                found_issues=true
+                break
             fi
         done
     done < /etc/passwd
 else
     jq '.진단 결과 = "취약" | .현황 += ["/etc/passwd 파일이 없습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
+fi
+
+if [ "$found_issues" = false ]; then
+    jq '.현황 += ["모든 불필요한 계정에 /bin/false 또는 /sbin/nologin 쉘이 부여되었습니다."]' $results_file > tmp.$$.json && mv tmp.$$.json $results_file
 fi
 
 # 결과 출력

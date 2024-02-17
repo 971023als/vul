@@ -1,23 +1,12 @@
 #!/bin/bash
 
-# 결과를 저장할 JSON 파일 초기화
-results_file="results.json"
-echo '{
-    "분류": "계정관리",
-    "코드": "U-52",
-    "위험도": "중",
-    "진단 항목": "동일한 UID 금지",
-    "진단 결과": "양호",
-    "현황": [],
-    "대응방안": "동일한 UID로 설정된 사용자 계정을 제거하거나 수정"
-}' > $results_file
-
 min_regular_user_uid=1000
+declare -A uid_counts
 duplicate_uids=()
 
 if [ -f "/etc/passwd" ]; then
     # UID를 추출하고, 정규 사용자 UID(>=1000)에 대해 중복을 검사합니다.
-    while IFS=: read -r _ _ uid _; do
+    while IFS=: read -r username _ uid _; do
         if [ "$uid" -ge "$min_regular_user_uid" ]; then
             uid_counts["$uid"]=$((uid_counts["$uid"]+1))
         fi
