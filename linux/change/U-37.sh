@@ -1,49 +1,45 @@
 #!/bin/bash
 
-# 변수 설정
-분류="서비스 관리"
-코드="U-37"
-위험도="상"
-진단항목="웹서비스 상위 디렉토리 접근 금지"
-진단결과=""
-현황=()
-대응방안="상위 디렉터리에 이동제한 설정"
-found_vulnerability=0
+# Apache 구성 파일 경로 설정
+apache_conf_files=(
+    "/etc/apache2/apache2.conf"
+    "/etc/apache2/conf-enabled/*.conf"
+    "/etc/httpd/conf/httpd.conf"
+)
 
-# 웹 구성 파일 목록
-webconf_files=(".htaccess" "httpd.conf" "apache2.conf" "userdir.conf")
-
-# 웹 구성 파일 검사
-for conf_file in "${webconf_files[@]}"; do
-    while IFS= read -r file_path; do
-        if [ -f "$file_path" ]; then
-            if ! grep -q "AllowOverride None" "$file_path"; then
-                found_vulnerability=1
-                진단결과="취약"
-                현황+=("$file_path 파일에 상위 디렉터리 접근 제한 설정이 없습니다.")
-                break
-            fi
+# 상위 디렉터리 접근 금지 설정 함수
+restrict_directory_access() {
+    local conf_file=$1
+    if [ -f "$conf_file" ]; then
+        # AllowOverride 설정 확인 및 업데이트
+        if grep -q "AllowOverride None" "$conf_file"; then
+            echo "$conf_file 파일에 이미 상위 디렉터리 접근 제한 설정이 적용되어 있습니다."
+        else
+            echo "<Directory />" >> "$conf_file"
+            echo "    AllowOverride None" >> "$conf_file"
+            echo "    Require all denied" >> "$conf_file"
+            echo "</Directory>" >> "$conf_file"
+            echo "$conf_file 파일에 상위 디렉터리 접근 제한 설정을 추가했습니다."
         fi
-    done < <(find / -name $conf_file -type f 2>/dev/null)
-    if [ $found_vulnerability -eq 1 ]; then
-        break
+    else
+        echo "$conf_file 파일을 찾을 수 없습니다."
     fi
+}
+
+# 모든 지정된 Apache 구성 파일 업데이트
+for conf_file in "${apache_conf_files[@]}"; do
+    restrict_directory_access "$conf_file"
 done
 
-# 진단 결과 설정
-if [ $found_vulnerability -eq 0 ]; then
-    진단결과="양호"
-    현황+=("웹서비스 상위 디렉터리 접근에 대한 제한이 적절히 설정되어 있습니다.")
+# Apache 서비스 재시작
+if systemctl is-active --quiet apache2; then
+    systemctl restart apache2
+    echo "Apache2 서비스가 재시작되었습니다."
+elif systemctl is-active --quiet httpd; then
+    systemctl restart httpd
+    echo "HTTPD 서비스가 재시작되었습니다."
+else
+    echo "Apache 서비스가 실행 중이지 않거나 인식되지 않습니다."
 fi
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단항목"
-echo "진단 결과: $진단결과"
-echo "현황:"
-for 상태 in "${현황[@]}"; do
-    echo "- $상태"
-done
-echo "대응방안: $대응방안"
+echo "웹서비스 상위 디렉터리 접근 금지 설정이 완료되었습니다."

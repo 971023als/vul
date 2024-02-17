@@ -1,54 +1,46 @@
 #!/bin/bash
 
-# 변수 설정
-분류="서비스 관리"
-코드="U-36"
-위험도="상"
-진단항목="웹서비스 웹 프로세스 권한 제한"
-진단결과=""
-현황=()
-대응방안="Apache 데몬 root 권한 구동 방지"
-found_vulnerability=0
+# Apache 구성 파일 경로 설정
+apache_conf_files=("/etc/httpd/conf/httpd.conf" "/etc/apache2/apache2.conf")
 
-# 웹 구성 파일 목록
-webconf_files=(".htaccess" "httpd.conf" "apache2.conf")
-
-# 웹 구성 파일 검사
-for conf_file in "${webconf_files[@]}"; do
-    while IFS= read -r file_path; do
-        if [ -f "$file_path" ]; then
-            while IFS= read -r line; do
-                if [[ "$line" =~ ^Group && ! "$line" =~ ^# ]]; then
-                    group_setting=($line) # 배열로 변환
-                    if [ "${#group_setting[@]}" -gt 1 ] && [ "${group_setting[1],,}" == "root" ]; then
-                        진단결과="취약"
-                        현황+=("$file_path 파일에서 Apache 데몬이 root 권한으로 구동되도록 설정되어 있습니다.")
-                        found_vulnerability=1
-                        break 2
-                    fi
-                fi
-            done < "$file_path"
+# Apache가 Non-root 사용자로 실행되도록 설정
+update_apache_user_group() {
+    local conf_file=$1
+    if [ -f "$conf_file" ]; then
+        # User 지시어를 non-root 사용자 'www-data'로 설정
+        if grep -q "^User" "$conf_file"; then
+            sed -i 's/^User.*/User www-data/' "$conf_file"
+        else
+            echo "User www-data" >> "$conf_file"
         fi
-    done < <(find / -name $conf_file -type f 2>/dev/null)
-    if [ $found_vulnerability -eq 1 ]; then
-        break
+
+        # Group 지시어를 'www-data' 그룹으로 설정
+        if grep -q "^Group" "$conf_file"; then
+            sed -i 's/^Group.*/Group www-data/' "$conf_file"
+        else
+            echo "Group www-data" >> "$conf_file"
+        fi
+
+        echo "Apache 구성 파일($conf_file)이 업데이트되었습니다: User와 Group을 www-data로 설정."
+    else
+        echo "Apache 구성 파일($conf_file)을 찾을 수 없습니다."
     fi
+}
+
+# 모든 지정된 Apache 구성 파일 업데이트
+for conf_file in "${apache_conf_files[@]}"; do
+    update_apache_user_group "$conf_file"
 done
 
-# 진단 결과 설정
-if [ $found_vulnerability -eq 0 ]; then
-    진단결과="양호"
-    현황+=("Apache 데몬이 root 권한으로 구동되도록 설정되어 있지 않습니다.")
+# Apache 서비스 재시작
+if systemctl is-active --quiet apache2; then
+    systemctl restart apache2
+    echo "Apache2 서비스가 재시작되었습니다."
+elif systemctl is-active --quiet httpd; then
+    systemctl restart httpd
+    echo "HTTPD 서비스가 재시작되었습니다."
+else
+    echo "Apache 서비스가 실행 중이지 않거나 인식되지 않습니다."
 fi
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단항목"
-echo "진단 결과: $진단결과"
-echo "현황:"
-for 상태 in "${현황[@]}"; do
-    echo "- $상태"
-done
-echo "대응방안: $대응방안"
+echo "웹서비스 웹 프로세스 권한 제한 조치가 완료되었습니다."

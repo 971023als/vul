@@ -1,57 +1,38 @@
 #!/bin/bash
 
-# 변수 설정
-분류="서비스 관리"
-코드="U-35"
-위험도="상"
-진단항목="웹서비스 디렉토리 리스팅 제거"
-진단결과=""
-현황=()
-대응방안="디렉터리 검색 기능 사용하지 않기"
-vulnerable=0
-
 # 웹 구성 파일 목록
-webconf_files=(".htaccess" "httpd.conf" "apache2.conf" "userdir.conf")
+webconf_files=("/etc/apache2/apache2.conf" "/etc/apache2/conf-enabled/userdir.conf" "/etc/httpd/conf/httpd.conf" "/var/www/html/.htaccess")
 
-# 웹 구성 파일 검사
-for conf_file in "${webconf_files[@]}"; do
-    find_output=$(find / -name $conf_file -type f 2>/dev/null)
-    IFS=$'\n' # find 명령어의 출력을 줄 단위로 분리
-    for file_path in $find_output; do
-        if [ -n "$file_path" ]; then
-            if grep -qi "options indexes" "$file_path" && ! grep -qi "-indexes" "$file_path"; then
-                if [ "$conf_file" == "userdir.conf" ]; then
-                    if ! grep -qi "userdir disabled" "$file_path"; then
-                        vulnerable=1
-                        현황+=("$file_path 파일에 디렉터리 검색 기능을 사용하도록 설정되어 있습니다.")
-                        break 2
-                    fi
-                else
-                    vulnerable=1
-                    현황+=("$file_path 파일에 디렉터리 검색 기능을 사용하도록 설정되어 있습니다.")
-                    break 2
-                fi
+# 디렉터리 리스팅 비활성화 설정
+disable_directory_listing() {
+    for conf_file in "${webconf_files[@]}"; do
+        if [ -f "$conf_file" ]; then
+            # 'Options Indexes' 설정이 있는지 확인하고, 있다면 '-Indexes'로 변경
+            if grep -q "Options Indexes" "$conf_file"; then
+                sed -i 's/Options Indexes/Options -Indexes/g' "$conf_file"
+                echo "$conf_file 파일에서 디렉터리 리스팅이 비활성화되었습니다."
+            fi
+            # 'Userdir enabled' 설정이 있는 경우 'Userdir disabled'로 변경
+            if grep -q "Userdir enabled" "$conf_file"; then
+                sed -i 's/Userdir enabled/Userdir disabled/g' "$conf_file"
+                echo "$conf_file 파일에서 Userdir이 비활성화되었습니다."
             fi
         fi
     done
-done
+}
 
-# 진단 결과 설정
-if [ $vulnerable -eq 0 ]; then
-    진단결과="양호"
-    현황+=("웹서비스 디렉터리 리스팅이 적절히 제거되었습니다.")
+# 디렉터리 리스팅 비활성화 실행
+disable_directory_listing
+
+# 웹 서버 재시작 (Apache 예시, 다른 웹 서버 사용 시 적절히 변경 필요)
+if systemctl is-active --quiet apache2; then
+    systemctl restart apache2
+    echo "Apache 웹 서버가 재시작되었습니다."
+elif systemctl is-active --quiet httpd; then
+    systemctl restart httpd
+    echo "HTTPD 웹 서버가 재시작되었습니다."
 else
-    진단결과="취약"
+    echo "웹 서버가 실행 중이지 않거나, 지원되지 않는 웹 서버입니다."
 fi
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단항목"
-echo "진단 결과: $진단결과"
-echo "현황:"
-for 상태 in "${현황[@]}"; do
-    echo "- $상태"
-done
-echo "대응방안: $대응방안"
+echo "웹서비스 디렉토리 리스팅 제거 조치가 완료되었습니다."

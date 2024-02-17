@@ -1,46 +1,28 @@
 #!/bin/bash
 
-# 변수 설정
-분류="서비스 관리"
-코드="U-34"
-위험도="상"
-진단_항목="DNS Zone Transfer 설정"
-대응방안="Zone Transfer를 허가된 사용자에게만 허용"
-현황=()
+read -p "허가된 IP 주소를 입력하세요 (예: 192.168.1.100): " allowed_ip
+
 named_conf_path="/etc/named.conf"
 
-# DNS 서비스 실행 여부 확인
-if ps -ef | grep -i 'named' | grep -v 'grep' &> /dev/null; then
-    dns_service_running=true
-else
-    dns_service_running=false
-fi
-
-if $dns_service_running; then
-    if [ -f "$named_conf_path" ]; then
-        if grep -q "allow-transfer { any; }" "$named_conf_path"; then
-            진단_결과="취약"
-            현황+=("/etc/named.conf 파일에 allow-transfer { any; } 설정이 있습니다.")
-        else
-            진단_결과="양호"
-            현황+=("DNS Zone Transfer가 허가된 사용자에게만 허용되어 있습니다.")
-        fi
+# named.conf 파일이 존재하는지 확인
+if [ -f "$named_conf_path" ]; then
+    # allow-transfer 옵션이 설정된 부분을 찾아 입력받은 IP로 변경
+    if grep -q "allow-transfer" "$named_conf_path"; then
+        sed -i "/allow-transfer/c\allow-transfer { $allowed_ip; };" "$named_conf_path"
+        echo "DNS Zone Transfer 설정이 업데이트되었습니다: $allowed_ip 에게만 허용"
     else
-        진단_결과="양호"
-        현황+=("/etc/named.conf 파일이 존재하지 않습니다. DNS 서비스 미사용 가능성.")
+        # allow-transfer 옵션이 없는 경우, options 섹션에 추가
+        sed -i "/options {/a \\\tallow-transfer { $allowed_ip; };" "$named_conf_path"
+        echo "DNS Zone Transfer 설정이 추가되었습니다: $allowed_ip 에게만 허용"
     fi
 else
-    진단_결과="양호"
-    현황+=("DNS 서비스가 실행 중이지 않습니다.")
+    echo "/etc/named.conf 파일이 존재하지 않습니다. DNS 서비스 설정 파일을 찾을 수 없습니다."
 fi
 
-# 결과 출력
-echo "분류: $분류"
-echo "코드: $코드"
-echo "위험도: $위험도"
-echo "진단 항목: $진단_항목"
-echo "대응방안: $대응방안"
-echo "진단 결과: $진단_결과"
-for item in "${현황[@]}"; do
-    echo "$item"
-done
+# DNS 서비스 재시작 (BIND9 예시)
+if systemctl is-active --quiet named; then
+    systemctl restart named
+    echo "DNS 서비스(named)가 재시작되었습니다."
+else
+    echo "DNS 서비스(named)가 실행 중이지 않습니다. 설정 변경 후 수동으로 서비스를 시작하세요."
+fi
