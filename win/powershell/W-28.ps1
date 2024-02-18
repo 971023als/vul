@@ -1,82 +1,58 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한이 필요합니다...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
-    exit /B
+# 관리자 권한 요청
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process PowerShell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$PSCommandPath`"", "-Verb RunAs"
+    exit
+}
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------설정------------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS 설정---------------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-set "line="
-for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-set "line=!line!%%a" 
-)
-echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
-for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
-)
-for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
-)
-for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
-)
-for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
-)
-for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
-)
-type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------종료-------------------------------------------
-echo ------------------------------------------W-28------------------------------------------
-net start | find "World Wide Web Publishing Service" >nul
-IF NOT ERRORLEVEL 1 (
-	FOR /F "tokens=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\http_path.txt') DO (
-		cd %%a
-		IF EXIST *.lnk (
-			echo %%a 경로에 단축 파일(*.lnk)이 발견되었습니다 >> C:\Window_%COMPUTERNAME%_raw\W-28.txt
-		)
-	)
-	cd "%install_path%"
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\W-28.txt >nul
-	IF ERRORLEVEL 1 (
-		echo W-28,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 중요 IIS 경로에 단축 파일이 발견되어 보안 위험이 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 중요 IIS 경로에 무단 단축 파일이 없습니다. 시스템이 보안 표준을 준수합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
-) ELSE (
-	echo W-28,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo World Wide Web Publishing Service가 실행되지 않고 있습니다. 단축 파일을 확인할 필요가 없습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------종료-------------------------------------------
+# 초기 설정
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
+Remove-Item -Path $rawDir, $resultDir -Recurse -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt"
+$null = New-Item -Path "$rawDir\compare.txt" -ItemType File
+Set-Location -Path $rawDir
+[System.IO.File]::WriteAllText("$rawDir\install_path.txt", (Get-Location).Path)
+systeminfo | Out-File "$rawDir\systeminfo.txt"
 
-echo --------------------------------------W-28------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-type C:\Window_%COMPUTERNAME%_raw\W-28.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo ------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+# IIS 설정 분석
+Get-Content "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config" | Out-File "$rawDir\iis_setting.txt"
+Get-Content "$rawDir\iis_setting.txt" | Select-String -Pattern "physicalPath|bindingInformation" | Out-File "$rawDir\iis_path1.txt"
+$line = Get-Content "$rawDir\iis_path1.txt" -Raw
+Set-Content -Path "$rawDir\line.txt" -Value $line
+1..5 | ForEach-Object {
+    Get-Content "$rawDir\line.txt" | ForEach-Object { $_ -split '\*'} | Select-Object -Index ($_-1) | Out-File "$rawDir\path$_.txt"
+}
+Get-Content "$env:WinDir\System32\Inetsrv\MetaBase.xml" | Out-File "$rawDir\iis_setting.txt"
+
+# W-28 검사
+$serviceStatus = Get-Service W3SVC -ErrorAction SilentlyContinue
+if ($serviceStatus.Status -eq 'Running') {
+    $pathsChecked = $False
+    1..5 | ForEach-Object {
+        $path = Get-Content "$rawDir\path$_.txt" -ErrorAction SilentlyContinue
+        if (Test-Path $path) {
+            Get-ChildItem -Path $path -Filter "*.lnk" | ForEach-Object {
+                "$path 경로에 단축 파일(*.lnk)이 발견되었습니다" | Out-File "$rawDir\W-28.txt" -Append
+                $pathsChecked = $True
+            }
+        }
+    }
+    if ($pathsChecked) {
+        "W-28,X,|" | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+        "중요 IIS 경로에 단축 파일이 발견되어 보안 위험이 있습니다." | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+        Get-Content "$rawDir\W-28.txt" | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+    } else {
+        "W-28,O,|" | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+        "중요 IIS 경로에 무단 단축 파일이 없습니다. 시스템이 보안 표준을 준수합니다." | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+    }
+} else {
+    "W-28,O,|" | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+    "World Wide Web Publishing Service가 실행되지 않고 있습니다. 단축 파일을 확인할 필요가 없습니다." | Out-File "$resultDir\W-Window-$computerName-result.txt" -Append
+}
+
+# 결과 데이터 캡처
+"--------------------------------------W-28-------------------------------------" | Out-File "$resultDir\W-Window-$computerName-rawdata.txt" -Append
+Get-Content "$rawDir\W-28.txt" | Out-File "$resultDir\W-Window-$computerName-rawdata.txt" -Append
+"-------------------------------------------------------------------------------" | Out-File "$resultDir\W-Window-$computerName-rawdata.txt" -Append
