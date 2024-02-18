@@ -47,3 +47,4 @@ update_login_defs
 update_pwquality_conf
 
 echo "패스워드 정책이 업데이트되었습니다."
+
