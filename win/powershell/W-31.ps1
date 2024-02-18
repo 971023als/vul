@@ -1,76 +1,63 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한이 필요합니다...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
-    exit /B
+# 관리자 권한 확인 및 요청
+If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{
+    Start-Process PowerShell -ArgumentList "-File",("`"" + $MyInvocation.MyCommand.Definition + "`""), "-Verb", "RunAs"
+    exit
+}
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-set "line="
-for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-set "line=!line!%%a" 
-)
-echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
-for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
-)
-for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
-)
-for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
-)
-for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
-)
-for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-	echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
-)
-type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
-echo ------------------------------------------W-31------------------------------------------
-net start | find "World Wide Web Publishing Service" >nul
-IF NOT ERRORLEVEL 1 (
-    type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr /I ".asax asax" >> C:\Window_%COMPUTERNAME%_raw\W-30.txt
-    type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr /I ".asa asa" >> C:\Window_%COMPUTERNAME%_raw\W-30.txt
-    IF ERRORLEVEL 1 (
-        echo W-30,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 정책 준수: .asa 및 .asax 파일이 적절히 제한됩니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    ) ELSE (
-        echo W-30,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 정책 위반: .asa 또는 .asax 파일에 대한 접근 제한이 없습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        type C:\Window_%COMPUTERNAME%_raw\W-30.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    )
-) ELSE (
-    echo W-30,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo World Wide Web Publishing Service가 실행되지 않음: .asa 또는 .asax 파일 검사가 필요 없습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------end-------------------------------------------
+# 콘솔 설정
+chcp 437 > $null
+$host.UI.RawUI.BackgroundColor = "DarkGreen"
+$host.UI.RawUI.ForegroundColor = "Green"
+Clear-Host
 
-echo --------------------------------------W-31 결과 요약 ------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-type C:\Window_%COMPUTERNAME%_raw\W-30.txt >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo -------------------------------------------------------------------------------- >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+Write-Output "------------------------------------------Setting---------------------------------------"
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
+
+# 이전 디렉토리 삭제 및 새 디렉토리 생성
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory -Force | Out-Null
+Remove-Item -Path "$resultDir\W-Window-*.txt" -ErrorAction SilentlyContinue
+
+# 로컬 보안 정책 내보내기
+secedit /EXPORT /CFG "$rawDir\Local_Security_Policy.txt"
+New-Item -Path "$rawDir\compare.txt" -ItemType File -Force | Out-Null
+
+# 설치 경로 저장
+$installPath = (Get-Location).Path
+$installPath | Out-File -FilePath "$rawDir\install_path.txt"
+
+# 시스템 정보 저장
+systeminfo | Out-File -FilePath "$rawDir\systeminfo.txt"
+
+Write-Output "------------------------------------------IIS Setting-----------------------------------"
+# IIS 설정 복사
+$applicationHostConfig = "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config"
+Get-Content -Path $applicationHostConfig | Out-File -FilePath "$rawDir\iis_setting.txt"
+$lines = Select-String -Path "$rawDir\iis_setting.txt" -Pattern "physicalPath|bindingInformation"
+$lines | ForEach-Object { $_.Line } | Set-Content -Path "$rawDir\iis_path1.txt"
+
+# MetaBase.xml 복사 (해당하는 경우)
+$metaBasePath = "$env:WINDIR\system32\inetsrv\MetaBase.xml"
+If (Test-Path $metaBasePath) {
+    Get-Content -Path $metaBasePath | Out-File -FilePath "$rawDir\iis_setting.txt" -Append
+}
+
+# 정책 검사 및 결과 저장
+Write-Output "------------------------------------------end-------------------------------------------"
+
+Write-Output "------------------------------------------W-31------------------------------------------"
+If (Get-Service -Name "W3SVC" -ErrorAction SilentlyContinue).Status -eq "Running" {
+    $asaFiles = Select-String -Path "$rawDir\iis_setting.txt" -Pattern "\.asax|\.asa"
+    If ($asaFiles) {
+        "W-30,X,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        "정책 위반: .asa 또는 .asax 파일에 대한 접근 제한이 없습니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        $asaFiles | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    } Else {
+        "W-30,O,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        "정책 준수: .asa 및 .asax 파일이 적절히 제한됩니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    }
+} Else {
+    "W-30,O,|" | Out-File
