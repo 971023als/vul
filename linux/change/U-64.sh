@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# 초기 진단 결과 및 현황 설정
-category="서비스 관리"
-code="U-64"
-severity="중"
-check_item="ftpusers 파일 설정(FTP 서비스 root 계정 접근제한)"
-result=""
-declare -a status
-recommendation="FTP 서비스가 활성화된 경우 root 계정 접속을 차단"
-
 # 검사할 ftpusers 파일 및 설정 파일 목록
 ftpusers_files=(
     "/etc/ftpusers" "/etc/ftpd/ftpusers" "/etc/proftpd.conf"
@@ -25,24 +16,30 @@ else
 
     for ftpusers_file in "${ftpusers_files[@]}"; do
         if [ -f "$ftpusers_file" ]; then
-            # proftpd.conf의 경우 'RootLogin on' 설정 확인
-            if [[ "$ftpusers_file" == *proftpd.conf* ]] && grep -q "RootLogin on" "$ftpusers_file"; then
-                result="취약"
-                status+=("$ftpusers_file 파일에 'RootLogin on' 설정이 있습니다.")
-                break
-            # 다른 ftpusers 파일의 경우 'root' 존재 확인
-            elif grep -q "^root$" "$ftpusers_file"; then
-                root_access_restricted=true
+            # proftpd.conf의 경우 'RootLogin on' 설정 확인 및 수정
+            if [[ "$ftpusers_file" == *proftpd.conf* ]]; then
+                if grep -q "RootLogin on" "$ftpusers_file"; then
+                    sed -i 's/RootLogin on/RootLogin off/' "$ftpusers_file"
+                    status+=("$ftpusers_file 파일에서 'RootLogin on'을 'RootLogin off'로 변경하였습니다.")
+                    root_access_restricted=true
+                fi
+            # 다른 ftpusers 파일에 'root' 추가
+            else
+                if ! grep -q "^root$" "$ftpusers_file"; then
+                    echo "root" >> "$ftpusers_file"
+                    status+=("$ftpusers_file 파일에 root 계정 접근을 차단하는 설정을 추가하였습니다.")
+                    root_access_restricted=true
+                fi
             fi
         fi
     done
 
     if $root_access_restricted; then
         result="양호"
-        status+=("FTP 서비스 root 계정 접근이 제한되어 있습니다.")
+        status=("모든 설정에서 FTP 서비스 root 계정 접근이 제한되었습니다.")
     else
         result="취약"
-        status+=("FTP 서비스 root 계정 접근 제한 설정이 충분하지 않습니다.")
+        status=("FTP 서비스 root 계정 접근 제한 설정이 충분하지 않습니다.")
     fi
 fi
 

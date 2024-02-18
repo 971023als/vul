@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# 초기 진단 결과 및 현황 설정
-category="서비스 관리"
-code="U-63"
-severity="하"
-check_item="ftpusers 파일 소유자 및 권한 설정"
-result=""
-declare -a status
-recommendation="ftpusers 파일의 소유자를 root로 설정하고, 권한을 640 이하로 설정"
-file_checked_and_secure=false
 
 # 검사할 ftpusers 파일 목록
 ftpusers_files=(
@@ -23,11 +14,11 @@ for ftpusers_file in "${ftpusers_files[@]}"; do
         owner=$(stat -c "%U" "$ftpusers_file")
         permissions=$(stat -c "%a" "$ftpusers_file")
 
-        # 소유자가 root가 아니거나 권한이 640보다 큰 경우
+        # 소유자가 root가 아니거나 권한이 640보다 큰 경우, 수정
         if [ "$owner" != "root" ] || [ "$permissions" -gt 640 ]; then
-            result="취약"
-            [ "$owner" != "root" ] && status+=("$ftpusers_file 파일의 소유자(owner)가 root가 아닙니다.")
-            [ "$permissions" -gt 640 ] && status+=("$ftpusers_file 파일의 권한이 640보다 큽니다.")
+            chown root "$ftpusers_file"
+            chmod 640 "$ftpusers_file"
+            status+=("$ftpusers_file 파일의 소유자와 권한을 적절히 수정하였습니다.")
         fi
     fi
 done
@@ -39,8 +30,10 @@ if [ ${#status[@]} -eq 0 ]; then
         status=("모든 ftpusers 파일이 적절한 소유자 및 권한 설정을 가지고 있습니다.")
     else
         result="취약"
-        status=("ftp 접근제어 파일이 없습니다.")
+        status=("시스템에 ftp 접근제어 파일이 존재하지 않습니다.")
     fi
+else
+    result="조치 완료"
 fi
 
 # 결과 출력

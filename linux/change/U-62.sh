@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# 초기 진단 결과 및 현황 설정
-category="서비스 관리"
-code="U-62"
-severity="중"
-check_item="ftp 계정 shell 제한"
-result=""
-status=""
-recommendation="ftp 계정에 /bin/false 쉘 부여"
 
 # /etc/passwd에서 ftp 계정 확인
 if grep -q "^ftp:" /etc/passwd; then
@@ -16,8 +8,15 @@ if grep -q "^ftp:" /etc/passwd; then
         result="양호"
         status="ftp 계정에 /bin/false 쉘이 부여되어 있습니다."
     else
-        result="취약"
-        status="ftp 계정에 /bin/false 쉘이 부여되어 있지 않습니다."
+        # ftp 계정의 쉘을 /bin/false로 변경
+        usermod -s /bin/false ftp
+        if [ $? -eq 0 ]; then
+            result="양호"
+            status="ftp 계정의 쉘을 /bin/false로 성공적으로 변경하였습니다."
+        else
+            result="취약"
+            status="ftp 계정의 쉘 변경 시도 중 오류가 발생하였습니다."
+        fi
     fi
 else
     result="양호"

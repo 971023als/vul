@@ -11,8 +11,18 @@ recommendation="SNMP 서비스 사용을 필요로 하지 않는 경우, 서비�
 
 # SNMP 서비스 실행 여부 확인
 if ps -ef | grep -i "snmp" | grep -v "grep" > /dev/null; then
-    result="취약"
-    status="SNMP 서비스를 사용하고 있습니다."
+    # SNMP 서비스 비활성화 조치
+    systemctl stop snmpd.service > /dev/null 2>&1
+    systemctl disable snmpd.service > /dev/null 2>&1
+    
+    # 조치 후 다시 확인
+    if ps -ef | grep -i "snmp" | grep -v "grep" > /dev/null; then
+        result="취약"
+        status="SNMP 서비스를 비활성화 시도했으나 여전히 사용 중입니다. 수동 점검이 필요합니다."
+    else
+        result="양호"
+        status="SNMP 서비스를 비활성화하였습니다."
+    fi
 else
     result="양호"
     status="SNMP 서비스를 사용하지 않고 있습니다."

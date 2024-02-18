@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Initialize diagnostic results and current status
-category="서비스 관리"
-code="U-69"
-severity="중"
-check_item="NFS 설정파일 접근권한"
-result=""
-status=""
-recommendation="NFS 설정파일의 소유자를 root으로 설정하고, 권한을 644 이하로 설정"
-
 exports_file='/etc/exports'
 
 if [ -e "$exports_file" ]; then
@@ -16,18 +7,29 @@ if [ -e "$exports_file" ]; then
     mode=$(stat -c "%a" "$exports_file")
     owner_uid=$(stat -c "%u" "$exports_file")
 
+    # Initialize a flag to check if changes are made
+    changes_made=false
+
     # Check if owner is root and file permissions are 644 or less
-    if [ "$owner_uid" -eq 0 ] && [ "$mode" -le 644 ]; then
+    if [ "$owner_uid" -ne 0 ]; then
+        # Change the file's owner to root
+        chown root "$exports_file"
+        status="/etc/exports 파일의 소유자를 root로 변경하였습니다."
+        changes_made=true
+    fi
+    
+    if [ "$mode" -gt 644 ]; then
+        # Change the file permissions to 644
+        chmod 644 "$exports_file"
+        status+="${status:+ }/etc/exports 파일의 권한을 644로 설정하였습니다."
+        changes_made=true
+    fi
+
+    if $changes_made; then
+        result="조치 완료"
+    else
         result="양호"
         status="NFS 접근제어 설정파일의 소유자가 root이고, 권한이 644 이하입니다."
-    else
-        result="취약"
-        if [ "$owner_uid" -ne 0 ]; then
-            status="/etc/exports 파일의 소유자(owner)가 root가 아닙니다."
-        fi
-        if [ "$mode" -gt 644 ]; then
-            status+="${status:+ }/etc/exports 파일의 권한이 644보다 큽니다."
-        fi
     fi
 else
     result="N/A"

@@ -7,7 +7,7 @@ severity="중"
 check_item="SNMP 서비스 Community String의 복잡성 설정"
 result=""
 status=""
-recommendation="SNMP Community 이름이 public, private이 아닌 경우"
+recommendation="SNMP Community 이름이 public, private이 아닌 경우 안전한 값으로 변경 권장"
 
 # SNMP 서비스 실행 여부 확인
 if ! ps -ef | grep -i "snmp" | grep -v "grep" > /dev/null; then
@@ -26,8 +26,9 @@ else
             if grep -Eiq "\b(public|private)\b" "$file_path"; then
                 weak_string_found=true
                 result="취약"
-                status="SNMP Community String이 취약(public 또는 private)으로 설정되어 있습니다. 파일: $file_path"
-                break
+                status+="SNMP Community String이 취약(public 또는 private)으로 설정되어 있습니다. 파일: $file_path\n"
+                # 사용자에게 안내 메시지 추가
+                recommendation+=" 설정된 Community String을 안전한 값으로 변경하세요. 파일: $file_path"
             fi
         done
     fi
@@ -44,5 +45,5 @@ echo "코드: $code"
 echo "위험도: $severity"
 echo "진단 항목: $check_item"
 echo "진단 결과: $result"
-echo "현황: $status"
+echo -e "현황: $status"
 echo "대응방안: $recommendation"

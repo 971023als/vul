@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# 변수 초기화
-category="서비스 관리"
-code="U-60"
-severity="중"
-check_item="ssh 원격접속 허용"
-ssh_status=""
-telnet_status=""
-ftp_status=""
-result=""
-recommendation="SSH 사용 권장, Telnet 및 FTP 사용하지 않도록 설정"
-
 # SSH 서비스 상태 확인
 if systemctl is-active --quiet ssh; then
     ssh_status="활성화"
@@ -37,6 +26,25 @@ if [ "$ssh_status" == "활성화" ] && [ "$telnet_status" == "비활성화" ] &&
     result="양호"
 else
     result="취약"
+    # Telnet과 FTP 서비스 비활성화 조치
+    if [ "$telnet_status" == "활성화" ]; then
+        systemctl stop telnetd
+        systemctl disable telnetd
+        echo "Telnet 서비스가 비활성화되었습니다."
+    fi
+    if [ "$ftp_status" == "활성화" ]; then
+        systemctl stop ftpd
+        systemctl disable ftpd
+        echo "FTP 서비스가 비활성화되었습니다."
+    fi
+    # SSH 서비스 활성화 조치
+    if [ "$ssh_status" == "비활성화" ]; then
+        systemctl start ssh
+        systemctl enable ssh
+        echo "SSH 서비스가 활성화되었습니다."
+        ssh_status="활성화" # 상태 업데이트
+    fi
+    result="양호" # 모든 조치 후 결과 업데이트
 fi
 
 # 결과 출력
