@@ -1,51 +1,44 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한 요청 중...
-    goto UACPrompt
-) else ( goto gotAdmin )
+# 관리자 권한 확인 및 요청
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Start-Process PowerShell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "$PSCommandPath", "-Verb", "RunAs"
+    exit
+}
 
-:UACPrompt
-    echo Set UAC = CreateObject("Shell.Application") > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-    del "getadmin.vbs"
-    exit /B
+# 콘솔 환경 설정
+chcp 437 | Out-Null
+$Host.UI.RawUI.ForegroundColor = "Green"
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------설정 초기화---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS 설정 분석-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-echo ------------------------------------------IIS 설정 분석 완료-------------------------------------------
+# 초기 설정
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_$computerName`_raw"
+$resultDir = "C:\Window_$computerName`_result"
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory | Out-Null
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt"
+New-Item -Path "$rawDir\compare.txt" -ItemType File | Out-Null
+$installPath = (Get-Location).Path
+$installPath | Out-File -FilePath "$rawDir\install_path.txt"
+systeminfo | Out-File -FilePath "$rawDir\systeminfo.txt"
 
-echo ------------------------------------------W-13 보안 정책 분석------------------------------------------
-type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "DontDisplayLastUserName" | findstr "1" > nul
-IF NOT ERRORLEVEL 1 (
-    echo W-13,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo 준수: 마지막으로 로그온한 사용자 이름을 표시하지 않는 정책이 활성화되어 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "DontDisplayLastUserName" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-) ELSE ( 
-    echo W-13,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo 미준수: 마지막으로 로그온한 사용자 이름을 표시하지 않는 정책이 비활성화되어 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "DontDisplayLastUserName" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------보안 정책 분석 완료------------------------------------------
+# IIS 설정 분석
+$applicationHostConfig = Get-Content -Path "${env:WinDir}\System32\Inetsrv\Config\applicationHost.Config"
+$applicationHostConfig | Out-File -FilePath "$rawDir\iis_setting.txt"
+$bindingInfo = Select-String -Path "$rawDir\iis_setting.txt" -Pattern "physicalPath|bindingInformation"
+$bindingInfo | Out-File -FilePath "$rawDir\iis_path1.txt"
 
-echo --------------------------------------W-13 데이터 캡처-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "DontDisplayLastUserName">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+# 보안 정책 분석 - DontDisplayLastUserName
+$securityPolicy = Get-Content -Path "$rawDir\Local_Security_Policy.txt"
+$policyAnalysis = $securityPolicy | Where-Object { $_ -match "DontDisplayLastUserName" -and $_ -match ",1" }
+
+If ($policyAnalysis) {
+    "W-13,O,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    "준수: 마지막으로 로그온한 사용자 이름을 표시하지 않는 정책이 활성화되어 있습니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+} Else {
+    "W-13,X,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    "미준수: 마지막으로 로그온한 사용자 이름을 표시하지 않는 정책이 비활성화되어 있습니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+}
+$securityPolicy | Where-Object { $_ -match "DontDisplayLastUserName" } | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+
+# 데이터 캡처
+$securityPolicy | Where-Object { $_ -match "DontDisplayLastUserName" } | Out-File -FilePath "$resultDir\W-Window-$computerName-rawdata.txt" -Append
