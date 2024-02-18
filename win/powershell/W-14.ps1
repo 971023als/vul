@@ -1,84 +1,39 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
-    goto UACPrompt
-) else ( goto gotAdmin )
+# 관리자 권한 요청
+If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Start-Process PowerShell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "$PSCommandPath", "-Verb", "RunAs"
+    exit
+}
 
-:UACPrompt
-    echo Set UAC = CreateObject("Shell.Application") > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-    del "getadmin.vbs"
-    exit /B
+# 콘솔 환경 설정
+chcp 437 | Out-Null
+$host.UI.RawUI.ForegroundColor = "Green"
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------Settings Initialization---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt 0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Settings Analysis-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-set "line="
-for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-set "line=!line!%%a"
-)
-echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
-for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
-)
-for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
-)
-for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
-)
-for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
-)
-for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
-)
-type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------End of IIS Settings-------------------------------------------
+# 초기 설정
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory | Out-Null
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt"
+New-Item -Path "$rawDir\compare.txt" -ItemType File | Out-Null
+Set-Location -Path $rawDir
+(Get-Location).Path | Out-File -FilePath "install_path.txt"
+systeminfo | Out-File -FilePath "systeminfo.txt"
 
-echo ------------------------------------------W-14 Security Policy Audit------------------------------------------
-echo W-14,C,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo Checking policy >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo The interactive logon right policy check for Administrators, IUSR accounts >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo Policy details >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo The SeInteractiveLogonRight policy for Administrators, IUSR accounts compliance check >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo --------------------------------------- >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN-LOCAL-GROUP  >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo --------------------------------------- >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\ADMINISTRATORS     S-1-5-32-544                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\USERS              S-1-5-32-545                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\GUESTS             S-1-5-32-546                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\ACCOUNT OPERATORS  S-1-5-32-548                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\SERVER OPERATORS   S-1-5-32-549                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\PRINT OPERATORS    S-1-5-32-550                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\BACKUP OPERATORS   S-1-5-32-551                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo BUILTIN\REPLICATOR         S-1-5-32-552                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo ---------------------------------------                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "SeInteractiveLogonRight" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo ---------------------------------------                                                >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo Conclusion >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo If necessary, adjust the policy to ensure compliance. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-echo -------------------------------------------End of Audit------------------------------------------
+# IIS 설정 분석
+Copy-Item -Path "${env:WinDir}\System32\Inetsrv\Config\applicationHost.Config" -Destination "$rawDir\iis_setting.txt"
+Select-String -Path "$rawDir\iis_setting.txt" -Pattern "physicalPath|bindingInformation" | Out-File -FilePath "$rawDir\iis_path1.txt"
 
-echo --------------------------------------W-14 Data Capture-------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-type C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt | Find /I "SeInteractiveLogonRight">> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
-echo -------------------------------------------------------------------------------->> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-rawdata.txt
+# 보안 정책 감사 - SeInteractiveLogonRight
+$securityPolicy = Get-Content -Path "$rawDir\Local_Security_Policy.txt"
+$interactiveLogonRight = Select-String -Path "$rawDir\Local_Security_Policy.txt" -Pattern "SeInteractiveLogonRight"
+
+"------------------------------------------W-14 Security Policy Audit------------------------------------------" | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+"Checking policy" | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+"The interactive logon right policy check for Administrators, IUSR accounts" | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+"Policy details" | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+$interactiveLogonRight | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+"Conclusion: If necessary, adjust the policy to ensure compliance." | Out-File "$resultDir\W-Window-${computerName}-result.txt" -Append
+
+# 데이터 캡처
+$interactiveLogonRight | Out-File "$resultDir\W-Window-${computerName}-rawdata.txt" -Append
