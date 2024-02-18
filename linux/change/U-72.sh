@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Initialize diagnostic results and current status
-category="로그 관리"
-code="U-72"
-severity="하"
-check_item="정책에 따른 시스템 로깅 설정"
-result="N/A"  # 수동 확인 필요
-declare -a status
-recommendation="로그 기록 정책 설정 및 보안 정책에 따른 로그 관리"
-
 filename="/etc/rsyslog.conf"
 expected_content=(
     "*.info;mail.none;authpriv.none;cron.none /var/log/messages"
@@ -23,21 +14,29 @@ expected_content=(
 if [ ! -e "$filename" ]; then
     result="취약"
     status+=("$filename 파일이 존재하지 않습니다.")
+    echo "$filename 파일을 생성합니다."
+    touch "$filename"
+    for content in "${expected_content[@]}"; do
+        echo "$content" >> "$filename"
+    done
+    result="조치 완료"
+    status=("필요한 로깅 정책이 $filename 파일에 추가되었습니다.")
 else
-    # Check the contents of the logging file
-    content_mismatch=false
+    # Ensure the contents of the logging file match expectations
+    modified=false
     for content in "${expected_content[@]}"; do
         if ! grep -Fxq "$content" "$filename"; then
-            content_mismatch=true
-            result="취약"
-            status+=("$filename 파일의 내용이 잘못되었습니다.")
-            break
+            echo "$content" >> "$filename"
+            modified=true
         fi
     done
 
-    if [ "$content_mismatch" = false ]; then
+    if $modified; then
+        result="조치 완료"
+        status=("누락된 로깅 정책이 $filename 파일에 추가되었습니다.")
+    else
         result="양호"
-        status+=("$filename 파일의 내용이 정확합니다.")
+        status=("모든 필수 로깅 정책이 $filename 파일에 이미 설정되어 있습니다.")
     fi
 fi
 
