@@ -1,51 +1,68 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한을 요청합니다...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
-    exit /B
+# 관리자 권한 요청
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+If (-not $isAdmin) {
+    Start-Process PowerShell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "`"$PSCommandPath`"", "-Verb", "RunAs"
+    Exit
+}
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------설정 시작---------------------------------------
-...
-echo ------------------------------------------W-40 점검 시작------------------------------------------
-cd "C:\Window_%COMPUTERNAME%_raw\"
-dir | find /I "ftp_path.txt" >nul
-IF NOT ERRORLEVEL 1 (
-	TYPE C:\WINDOWS\system32\inetsrv\MetaBase.xml | findstr /i "IIsFtpService IIsFtpVirtualDir IPSecurity=" | find /I "0102" >> C:\Window_%COMPUTERNAME%_raw\w-40-1.txt
-	ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\w-40-1.txt
-	IF NOT ERRORLEVEL 1 (
-		echo W-40,경고,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 상태 확인: 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 특정 IP 주소에서만 FTP 접속이 허용되어야 하나, 현재 모든 IP에서 접속이 허용되어 있어 취약합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 조치 방안: 필요한 IP 주소만 접속을 허용하도록 설정 변경이 필요합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	) ELSE (
-		echo W-40,OK,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 상태 확인: 안전 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-		echo 특정 IP 주소에서만 FTP 접속이 허용되어 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	)
-) ELSE (
-	echo W-40,정보,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo 상태 확인: FTP 서비스 미설치 또는 비활성화 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-	echo FTP 경로 파일을 찾을 수 없습니다. FTP 서비스가 설치되어 있지 않거나 비활성화되어 있을 수 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------W-40 점검 종료------------------------------------------
-...
-echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt에 저장되었습니다.
-...
-echo 정리 작업을 수행합니다...
-del C:\Window_%COMPUTERNAME%_raw\*.txt
-del C:\Window_%COMPUTERNAME%_raw\*.vbs
+# 콘솔 환경 설정
+chcp 437 | Out-Null
+$host.UI.RawUI.BackgroundColor = "DarkGreen"
+$host.UI.RawUI.ForegroundColor = "Green"
+Clear-Host
 
-echo 스크립트를 종료합니다.
-exit
+Write-Host "------------------------------------------설정 시작---------------------------------------"
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
+
+# 이전 디렉토리 삭제 및 새 디렉토리 생성
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory | Out-Null
+
+# 로컬 보안 정책 내보내기 및 비교 파일 생성
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt" | Out-Null
+New-Item -Path "$rawDir\compare.txt" -ItemType File -Value $null
+
+Set-Location -Path $rawDir
+
+# IIS 설정 분석
+Get-Content "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config" | Out-File -FilePath "$rawDir\iis_setting.txt"
+Get-Content "$rawDir\iis_setting.txt" | Select-String "physicalPath|bindingInformation" | Out-File -FilePath "$rawDir\iis_path1.txt"
+
+# MetaBase.xml 분석 (해당하는 경우)
+$metaBasePath = "$env:WINDIR\system32\inetsrv\MetaBase.xml"
+If (Test-Path $metaBasePath) {
+    Get-Content $metaBasePath | Out-File -FilePath "$rawDir\iis_setting.txt" -Append
+}
+
+Write-Host "------------------------------------------설정 종료-------------------------------------------"
+
+# W-40 점검 시작
+Write-Host "------------------------------------------W-40 점검 시작------------------------------------------"
+If (Test-Path "$rawDir\ftp_path.txt") {
+    $metaBaseContent = Get-Content "$env:WINDOWS\system32\inetsrv\MetaBase.xml"
+    $ipSecurity = $metaBaseContent | Where-Object { $_ -match "IIsFtpService" -and $_ -match "IIsFtpVirtualDir" -and $_ -match 'IPSecurity="0102"' }
+
+    If ($ipSecurity) {
+        "W-40,OK,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        @"
+상태 확인: 안전
+특정 IP 주소에서만 FTP 접속이 허용되어 있습니다.
+"@
+    } Else {
+        "W-40,경고,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        @"
+상태 확인: 취약
+특정 IP 주소에서만 FTP 접속이 허용되어야 하나, 현재 모든 IP에서 접속이 허용되어 있어 취약합니다.
+조치 방안: 필요한 IP 주소만 접속을 허용하도록 설정 변경이 필요합니다.
+"@
+    }
+} Else {
+    "W-40,정보,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    @"
+상태 확인: FTP 서비스 미설치 또는 비활성화
+FTP 경로 파일을 찾을 수 없습니다. FTP 서비스가 설치되어 있지 않거나 비활성화되어 있을 수 있습니다.
+"@
+}
+Write-Host "-------------------------------------------W-40 점검 종료

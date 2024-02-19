@@ -1,64 +1,77 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한을 요청합니다...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "getadmin.vbs"
-    "getadmin.vbs"
-	del "getadmin.vbs"
-    exit /B
+# 관리자 권한 요청
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+If (-not $isAdmin) {
+    $info = New-Object System.Diagnostics.ProcessStartInfo "PowerShell"
+    $info.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" $args"
+    $info.Verb = "runas"
+    [System.Diagnostics.Process]::Start($info)
+    Exit
+}
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------설정 시작---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y 
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS 설정-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-...
-echo ------------------------------------------W-39 점검 시작------------------------------------------
-cd "C:\Window_%COMPUTERNAME%_raw\"
-dir | find /I "ftp_path.txt" >nul
-IF NOT ERRORLEVEL 1 (
-    TYPE C:\Window_%COMPUTERNAME%_raw\ftp_config.txt | find /i "anonymousAuthentication enabled=""true"""  >> C:\Window_%COMPUTERNAME%_raw\w-39.txt
-    ECHO n | COMP C:\Window_%COMPUTERNAME%_raw\compare.txt C:\Window_%COMPUTERNAME%_raw\w-39.txt
-    IF NOT ERRORLEVEL 1 (
-        echo W-39,OK,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 상태 확인: 안전 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 익명 인증이 비활성화되어 있어 안전합니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    ) ELSE (
-        echo W-39,경고,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 상태 확인: 취약 >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-        echo 익명 인증이 활성화되어 있어 취약합니다. 필요하지 않다면 비활성화해 주세요. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    )
-) ELSE (
-    echo W-39,정보,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo FTP 경로 파일을 찾을 수 없습니다. FTP 서비스가 설치되어 있지 않거나 비활성화되어 있을 수 있습니다. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------W-39 점검 종료------------------------------------------
-...
-echo ------------------------------------------결과 요약------------------------------------------
-type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
-...
-echo 결과가 C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt에 저장되었습니다.
-...
-echo 정리 작업을 수행합니다...
-del C:\Window_%COMPUTERNAME%_raw\*.txt
-del C:\Window_%COMPUTERNAME%_raw\*.vbs
-echo 스크립트를 종료합니다.
-exit
+# 콘솔 환경 설정
+chcp 437 | Out-Null
+$host.UI.RawUI.BackgroundColor = "DarkGreen"
+$host.UI.RawUI.ForegroundColor = "Green"
+Clear-Host
+
+Write-Host "------------------------------------------설정 시작---------------------------------------"
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
+
+# 이전 디렉토리 삭제 및 새 디렉토리 생성
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory | Out-Null
+
+# 로컬 보안 정책 내보내기 및 비교 파일 생성
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt" | Out-Null
+New-Item -Path "$rawDir\compare.txt" -ItemType File -Value $null
+
+# 설치 경로 저장 및 시스템 정보 수집
+Set-Location -Path $rawDir
+Get-Location | Out-File -FilePath "$rawDir\install_path.txt"
+systeminfo | Out-File -FilePath "$rawDir\systeminfo.txt"
+
+Write-Host "------------------------------------------IIS 설정-----------------------------------"
+Get-Content "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config" | Out-File -FilePath "$rawDir\iis_setting.txt"
+Select-String -Path "$rawDir\iis_setting.txt" -Pattern "physicalPath|bindingInformation" | ForEach-Object { $_.Line } | Out-File -FilePath "$rawDir\iis_path1.txt"
+
+# IIS 설정 분석 및 경로 저장
+$line = Get-Content "$rawDir\iis_path1.txt" -Raw
+$line | Out-File -FilePath "$rawDir\line.txt"
+
+1..5 | ForEach-Object {
+    $filePath = "$rawDir\path$_.txt"
+    Get-Content "$rawDir\line.txt" | ForEach-Object {
+        $_ | Out-File -FilePath $filePath -Append
+    }
+}
+
+# MetaBase.xml 추가 (해당하는 경우)
+$metaBasePath = "$env:WINDIR\system32\inetsrv\MetaBase.xml"
+If (Test-Path $metaBasePath) {
+    Get-Content $metaBasePath | Out-File -FilePath "$rawDir\iis_setting.txt" -Append
+}
+
+Write-Host "------------------------------------------설정 종료-------------------------------------------"
+
+# W-39 점검 시작
+Write-Host "------------------------------------------W-39 점검 시작------------------------------------------"
+If (Test-Path "$rawDir\ftp_config.txt") {
+    $ftpConfig = Get-Content "$rawDir\ftp_config.txt"
+    $anonymousAuth = $ftpConfig | Where-Object { $_ -match 'anonymousAuthentication enabled="true"' }
+
+    If ($anonymousAuth) {
+        "W-39,경고,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        @"
+상태 확인: 취약
+익명 인증이 활성화되어 있어 취약합니다. 필요하지 않다면 비활성화해 주세요.
+"@
+    } Else {
+        "W-39,OK,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        @"
+상태 확인: 안전
+익명 인증이 비활성화되어 있어 안전합니다.
+"@
+    }
+} Else {

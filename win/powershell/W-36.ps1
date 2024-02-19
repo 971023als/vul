@@ -1,89 +1,83 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%getadmin.vbs"
-    "%getadmin.vbs"
-    del "%getadmin.vbs"
-    exit /B
+# 관리자 권한 요청
+If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Start-Process PowerShell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", $PSCommandPath, "-Verb", "RunAs"
+    Exit
+}
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------Setting---------------------------------------
-rd /S /Q C:\Window_%COMPUTERNAME%_raw
-rd /S /Q C:\Window_%COMPUTERNAME%_result
-mkdir C:\Window_%COMPUTERNAME%_raw
-mkdir C:\Window_%COMPUTERNAME%_result
-del C:\Window_%COMPUTERNAME%_result\W-Window-*.txt
-secedit /EXPORT /CFG C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt
-fsutil file createnew C:\Window_%COMPUTERNAME%_raw\compare.txt  0
-cd >> C:\Window_%COMPUTERNAME%_raw\install_path.txt
-for /f "tokens=2 delims=:" %%y in ('type C:\Window_%COMPUTERNAME%_raw\install_path.txt') do set install_path=c:%%y
-systeminfo >> C:\Window_%COMPUTERNAME%_raw\systeminfo.txt
-echo ------------------------------------------IIS Setting-----------------------------------
-type %WinDir%\System32\Inetsrv\Config\applicationHost.Config >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-type C:\Window_%COMPUTERNAME%_raw\iis_setting.txt | findstr "physicalPath bindingInformation" >> C:\Window_%COMPUTERNAME%_raw\iis_path1.txt
-set "line="
-for /F "delims=" %%a in ('type C:\Window_%COMPUTERNAME%_raw\iis_path1.txt') do (
-set "line=!line!%%a"
-)
-echo !line!>>C:\Window_%COMPUTERNAME%_raw\line.txt
-for /F "tokens=1 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path1.txt
-)
-for /F "tokens=2 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path2.txt
-)
-for /F "tokens=3 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path3.txt
-)
-for /F "tokens=4 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path4.txt
-)
-for /F "tokens=5 delims=*" %%a in ('type C:\Window_%COMPUTERNAME%_raw\line.txt') do (
-    echo %%a >> C:\Window_%COMPUTERNAME%_raw\path5.txt
-)
-type C:\WINDOWS\system32\inetsrv\MetaBase.xml >> C:\Window_%COMPUTERNAME%_raw\iis_setting.txt
-echo ------------------------------------------end-------------------------------------------
+# 콘솔 환경 설정
+chcp 437 | Out-Null
+$host.UI.RawUI.BackgroundColor = "DarkGreen"
+$host.UI.RawUI.ForegroundColor = "Green"
+Clear-Host
 
-echo ------------------------------------------W-36 NetBIOS Configuration Check------------------------------------------
-REG QUERY HKLM\SYSTEM\ControlSet001\Services\NetBT\Parameters\Interfaces /S | findstr "NetbiosOptions" >> C:\Window_%COMPUTERNAME%_raw\W-36.txt
-TYPE C:\Window_%COMPUTERNAME%_raw\W-36.txt | findstr "NetbiosOptions" | findstr /L "0x2" > nul
-if NOT ERRORLEVEL 1 (
-    echo W-36,O,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Test >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo NetBIOS over TCP/IP is disabled, which is a secure configuration. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Test End >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    REG QUERY HKLM\SYSTEM\ControlSet001\Services\NetBT\Parameters\Interfaces /S | findstr "NetbiosOptions" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Summary >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo The system is configured securely with NetBIOS over TCP/IP disabled. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-) ELSE (
-    echo W-36,X,^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Test >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Review required: NetBIOS over TCP/IP settings. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Test End >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    REG QUERY HKLM\SYSTEM\ControlSet001\Services\NetBT\Parameters\Interfaces /S | findstr "NetbiosOptions" >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Summary >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo Attention needed: NetBIOS over TCP/IP may not be properly configured. >> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-    echo ^|>> C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt
-)
-echo -------------------------------------------end------------------------------------------
+Write-Host "------------------------------------------Setting---------------------------------------"
+$computerName = $env:COMPUTERNAME
+$rawDir = "C:\Window_${computerName}_raw"
+$resultDir = "C:\Window_${computerName}_result"
 
-echo ------------------------------------------결과 요약------------------------------------------
-type C:\Window_%COMPUTERNAME%_result\W-Window-* >> C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt
-echo Results have been saved to C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt.
+# 이전 디렉토리 삭제 및 새 디렉토리 생성
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory | Out-Null
 
-echo Performing cleanup...
-del C:\Window_%COMPUTERNAME%_raw\*.txt
-del C:\Window_%COMPUTERNAME%_raw\*.vbs
+# 로컬 보안 정책 내보내기 및 비교 파일 생성
+secedit /export /cfg "$rawDir\Local_Security_Policy.txt" | Out-Null
+New-Item -Path "$rawDir\compare.txt" -ItemType File -Value $null
 
-echo Script has completed.
-exit
+# 설치 경로 저장 및 시스템 정보 수집
+$installPath = (Get-Location).Path
+$installPath | Out-File -FilePath "$rawDir\install_path.txt"
+systeminfo | Out-File -FilePath "$rawDir\systeminfo.txt"
+
+Write-Host "------------------------------------------IIS Setting-----------------------------------"
+$applicationHostConfig = Get-Content "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config"
+$applicationHostConfig | Out-File -FilePath "$rawDir\iis_setting.txt"
+$bindingInfo = $applicationHostConfig | Select-String "physicalPath|bindingInformation"
+$line = $bindingInfo -join "`n"
+$line | Out-File -FilePath "$rawDir\line.txt"
+
+1..5 | ForEach-Object {
+    $filePath = "$rawDir\path$_.txt"
+    $bindingInfo | ForEach-Object {
+        $_.Line | Out-File -FilePath $filePath -Append
+    }
+}
+
+# MetaBase.xml 추가 (해당하는 경우)
+$metaBasePath = "$env:WINDIR\system32\inetsrv\MetaBase.xml"
+If (Test-Path $metaBasePath) {
+    Get-Content $metaBasePath | Out-File -FilePath "$rawDir\iis_setting.txt" -Append
+}
+
+Write-Host "------------------------------------------end-------------------------------------------"
+
+Write-Host "------------------------------------------W-36 NetBIOS Configuration Check------------------------------------------"
+$netBIOSConfig = Get-ItemProperty HKLM:\SYSTEM\ControlSet001\Services\NetBT\Parameters\Interfaces\* | Where-Object { $_.NetbiosOptions -eq 2 }
+If ($netBIOSConfig) {
+    "W-36,O,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    @"
+Test
+NetBIOS over TCP/IP is disabled, which is a secure configuration.
+Test End
+Summary
+The system is configured securely with NetBIOS over TCP/IP disabled.
+"@
+} Else {
+    "W-36,X,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    @"
+Test
+Review required: NetBIOS over TCP/IP settings.
+Test End
+Summary
+Attention needed: NetBIOS over TCP/IP may not be properly configured.
+"@
+}
+Write-Host "-------------------------------------------end------------------------------------------"
+
+Write-Host "------------------------------------------결과 요약------------------------------------------"
+Get-Content "$resultDir\W-Window-*" | Out-File "$resultDir\security_audit_summary.txt"
+Write-Host "Results have been saved to $resultDir\security_audit_summary.txt."
+
+Write-Host "Performing cleanup..."
+Remove-Item "$rawDir\*" -Force
+
+Write-Host "Script has completed."

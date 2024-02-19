@@ -1,49 +1,67 @@
-# 관리자 권한 요청
+# 관리자 권한 확인 및 요청
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-{ 
-    Start-Process PowerShell -ArgumentList "Start-Process PowerShell -ArgumentList '-File `"$PSCommandPath`"' -Verb RunAs" -Verb RunAs; 
-    exit 
+{
+    Start-Process PowerShell -ArgumentList "-File",("`"" + $MyInvocation.MyCommand.Definition + "`""), "-Verb", "RunAs"
+    exit
 }
 
-# 초기 설정
+# 콘솔 설정
+chcp 437 > $null
+$host.UI.RawUI.BackgroundColor = "DarkGreen"
+$host.UI.RawUI.ForegroundColor = "Green"
+Clear-Host
+
+Write-Output "------------------------------------------Setting---------------------------------------"
 $computerName = $env:COMPUTERNAME
 $rawDir = "C:\Window_${computerName}_raw"
 $resultDir = "C:\Window_${computerName}_result"
-Remove-Item -Path $rawDir, $resultDir -Recurse -ErrorAction SilentlyContinue
-New-Item -Path $rawDir, $resultDir -ItemType Directory
 
-# 로컬 보안 정책 내보내기 및 시스템 정보 저장
-secedit /export /cfg "$rawDir\Local_Security_Policy.txt" | Out-Null
-New-Item -Path "$rawDir\compare.txt" -ItemType File
-systeminfo | Out-File "$rawDir\systeminfo.txt"
+# 이전 디렉토리 삭제 및 새 디렉토리 생성
+Remove-Item -Path $rawDir, $resultDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -Path $rawDir, $resultDir -ItemType Directory -Force | Out-Null
+Remove-Item -Path "$resultDir\W-Window-*.txt" -ErrorAction SilentlyContinue
 
-# IIS 설정 분석
-$applicationHostConfigPath = "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config"
-$metaBaseXmlPath = "$env:WINDOWS\system32\inetsrv\MetaBase.xml"
+# 로컬 보안 정책 내보내기
+secedit /EXPORT /CFG "$rawDir\Local_Security_Policy.txt"
+New-Item -Path "$rawDir\compare.txt" -ItemType File -Force | Out-Null
 
-Get-Content $applicationHostConfigPath | Out-File "$rawDir\iis_setting.txt"
-(Get-Content $applicationHostConfigPath) -join "`n" | Select-String -Pattern "physicalPath|bindingInformation" | Out-File "$rawDir\iis_path1.txt"
-(Get-Content "$rawDir\iis_path1.txt" -Raw) | Out-File "$rawDir\line.txt"
-1..5 | ForEach-Object {
-    Get-Content "$rawDir\line.txt" -Raw -split '\*' | Select-Object -Index ($_-1) | Out-File "$rawDir\path$_.txt"
+# 설치 경로 저장
+$installPath = (Get-Location).Path
+$installPath | Out-File -FilePath "$rawDir\install_path.txt"
+
+# 시스템 정보 저장
+systeminfo | Out-File -FilePath "$rawDir\systeminfo.txt"
+
+Write-Output "------------------------------------------IIS Setting-----------------------------------"
+# IIS 설정 복사
+$applicationHostConfig = "$env:WinDir\System32\Inetsrv\Config\applicationHost.Config"
+Get-Content -Path $applicationHostConfig | Out-File -FilePath "$rawDir\iis_setting.txt"
+$lines = Select-String -Path "$rawDir\iis_setting.txt" -Pattern "physicalPath|bindingInformation"
+$lines | ForEach-Object { $_.Line } | Set-Content -Path "$rawDir\iis_path1.txt"
+
+# MetaBase.xml 복사 (해당하는 경우)
+$metaBasePath = "$env:WINDIR\system32\inetsrv\MetaBase.xml"
+If (Test-Path $metaBasePath) {
+    Get-Content -Path $metaBasePath | Out-File -FilePath "$rawDir\iis_setting.txt" -Append
 }
-Get-Content $metaBaseXmlPath | Out-File "$rawDir\iis_setting.txt"
 
-# W-30 보안 검사 시작
-if ((Get-Service W3SVC -ErrorAction SilentlyContinue).Status -eq 'Running') {
-    $iisSettings = Get-Content "$rawDir\iis_setting.txt"
-    $asaFiles = $iisSettings | Select-String -Pattern "\.asa" -AllMatches
-    $asaxFiles = $iisSettings | Select-String -Pattern "\.asax" -AllMatches
-    $allowedFalse = $iisSettings | Select-String -Pattern 'allowed="false"' -AllMatches
+# 정책 검사 및 결과 저장
+Write-Output "------------------------------------------end-------------------------------------------"
 
-    if ($asaFiles -and $asaxFiles -and $allowedFalse) {
-        "W-30,O,|.asa 및 .asax 파일이 안전하게 처리되어 있습니다." | Out-File "$resultDir\W-Window-$computerName-result.txt"
-    } else {
-        "W-30,X,|.asa 및 .asax 파일 처리에 문제가 있습니다." | Out-File "$resultDir\W-Window-$computerName-result.txt"
+Write-Output "------------------------------------------W-31------------------------------------------"
+If (Get-Service -Name "W3SVC" -ErrorAction SilentlyContinue).Status -eq "Running" {
+    $asaFiles = Select-String -Path "$rawDir\iis_setting.txt" -Pattern "\.asax|\.asa"
+    If ($asaFiles) {
+        "W-30,X,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        "정책 위반: .asa 또는 .asax 파일에 대한 접근 제한이 없습니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        $asaFiles | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    } Else {
+        "W-30,O,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+        "정책 준수: .asa 및 .asax 파일이 적절히 제한됩니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
     }
-} else {
-    "W-30,O,|World Wide Web Publishing Service가 실행되지 않고 있습니다. IIS 구성 검사가 필요하지 않습니다." | Out-File "$resultDir\W-Window-$computerName-result.txt"
+} Else {
+    "W-30,O,|" | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
+    "World Wide Web Publishing Service가 실행되지 않음: .asa 또는 .asax 파일 검사가 필요 없습니다." | Out-File -FilePath "$resultDir\W-Window-$computerName-result.txt" -Append
 }
-# 보안 검사 완료
 
-"결과 파일 경로: $resultDir\W-Window-$computerName-result.txt" | Out-Host
+Write-Output "-------------------------------------------end-------------------------------------------"

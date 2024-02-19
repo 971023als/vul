@@ -1,91 +1,50 @@
-@echo off
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo 관리자 권한을 요청합니다...
-    goto UACPrompt
-) else ( goto gotAdmin )
+# 관리자 권한 확인 및 요청
+If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Start-Process PowerShell -ArgumentList "Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"' -Verb RunAs" -Wait
+    exit
+}
 
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%getadmin.vbs"
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%getadmin.vbs"
-    "%getadmin.vbs"
-	del "%getadmin.vbs"
-    exit /B
+# 환경 설정
+$computerName = $env:COMPUTERNAME
+$rawDirectory = "C:\Window_${computerName}_raw"
+$resultDirectory = "C:\Window_${computerName}_result"
 
-:gotAdmin
-chcp 437
-color 02
-setlocal enabledelayedexpansion
-echo ------------------------------------------설정------------------------------------------
-rd /S /Q "C:\Window_%COMPUTERNAME%_raw"
-rd /S /Q "C:\Window_%COMPUTERNAME%_result"
-mkdir "C:\Window_%COMPUTERNAME%_raw"
-mkdir "C:\Window_%COMPUTERNAME%_result"
-del "C:\Window_%COMPUTERNAME%_result\W-Window-*.txt"
-secedit /EXPORT /CFG "C:\Window_%COMPUTERNAME%_raw\Local_Security_Policy.txt"
-fsutil file createnew "C:\Window_%COMPUTERNAME%_raw\compare.txt"  0
-cd >> "C:\Window_%COMPUTERNAME%_raw\install_path.txt"
-for /f "tokens=2 delims=:" %%y in ('type "C:\Window_%COMPUTERNAME%_raw\install_path.txt"') do set install_path=c:%%y 
-systeminfo >> "C:\Window_%COMPUTERNAME%_raw\systeminfo.txt"
-echo ------------------------------------------IIS 설정---------------------------------------
-type "%WinDir%\System32\Inetsrv\Config\applicationHost.Config" >> "C:\Window_%COMPUTERNAME%_raw\iis_setting.txt"
-type "C:\Window_%COMPUTERNAME%_raw\iis_setting.txt" | findstr "physicalPath bindingInformation" >> "C:\Window_%COMPUTERNAME%_raw\iis_path1.txt"
-set "line="
-for /F "delims=" %%a in ('type "C:\Window_%COMPUTERNAME%_raw\iis_path1.txt"') do (
-set "line=!line!%%a" 
-)
-echo !line! >> "C:\Window_%COMPUTERNAME%_raw\line.txt"
-for /F "tokens=1-5 delims=*" %%a in ('type "C:\Window_%COMPUTERNAME%_raw\line.txt"') do (
-    echo %%a >> "C:\Window_%COMPUTERNAME%_raw\path1.txt"
-    echo %%b >> "C:\Window_%COMPUTERNAME%_raw\path2.txt"
-    echo %%c >> "C:\Window_%COMPUTERNAME%_raw\path3.txt"
-    echo %%d >> "C:\Window_%COMPUTERNAME%_raw\path4.txt"
-    echo %%e >> "C:\Window_%COMPUTERNAME%_raw\path5.txt"
-)
-type "C:\WINDOWS\system32\inetsrv\MetaBase.xml" >> "C:\Window_%COMPUTERNAME%_raw\iis_setting.txt"
-echo ------------------------------------------종료-------------------------------------------
+# 디렉토리 초기화 및 생성
+Remove-Item -Path $rawDirectory, $resultDirectory -Recurse -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path $rawDirectory, $resultDirectory | Out-Null
 
-echo ------------------------------------------W-62------------------------------------------
-reg query "HKLM\SOFTWARE\ESTsoft" /S >> "C:\Window_%COMPUTERNAME%_raw\W-62.txt"
-reg query "HKLM\SOFTWARE\AhnLab" /S >> "C:\Window_%COMPUTERNAME%_raw\W-62.txt"
-TYPE "C:\Window_%COMPUTERNAME%_raw\W-62.txt" | Findstr /I "AhnLab ESTsoft" >nul
-IF NOT ERRORLEVEL 1 (
-    REM 취약
-    echo W-62,O,^| >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 작업 시작 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ESTsoft 또는 AhnLab 소프트웨어가 설치된 경우 취약 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 조치 방안 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ESTsoft 또는 AhnLab 소프트웨어의 보안 업데이트 필요 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    TYPE "C:\Window_%COMPUTERNAME%_raw\W-62.txt" >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 작업 완료 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 보안 업데이트를 통해 취약성을 해결 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ^| >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-) ELSE (
-    REM 안전
-    echo W-62,C,^| >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 작업 시작 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ESTsoft 또는 AhnLab 소프트웨어가 설치되지 않은 경우 안전 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 조치 방안 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 추가 조치 필요 없음 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo 작업 완료 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ESTsoft 또는 AhnLab 소프트웨어가 설치되지 않아 안전합니다 >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-    echo ^| >> "C:\Window_%COMPUTERNAME%_result\W-Window-%COMPUTERNAME%-result.txt"
-)
-echo -------------------------------------------종료-------------------------------------------
+# 시스템 정보 수집
+secedit /export /cfg "$rawDirectory\Local_Security_Policy.txt"
+systeminfo | Out-File "$rawDirectory\systeminfo.txt"
 
-echo ------------------------------------------결과 요약------------------------------------------
-:: 결과 요약 보고
-type "C:\Window_%COMPUTERNAME%_result\W-Window-*" >> "C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt"
+# IIS 설정 정보 수집
+$applicationHostConfig = "$env:windir\System32\Inetsrv\Config\applicationHost.config"
+If (Test-Path $applicationHostConfig) {
+    Get-Content $applicationHostConfig | Out-File "$rawDirectory\iis_setting.txt"
+}
 
-:: 이메일로 결과 요약 보내기 (가상의 명령어, 실제 환경에 맞게 수정 필요)
-:: sendmail -to admin@example.com -subject "Security Audit Summary" -body "C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt"
+# ESTsoft 및 AhnLab 소프트웨어 설치 여부 확인
+$softwareKeys = @("HKLM:\SOFTWARE\ESTsoft", "HKLM:\SOFTWARE\AhnLab")
+$w62Result = @()
 
-echo 결과가 "C:\Window_%COMPUTERNAME%_result\security_audit_summary.txt"에 저장되었습니다.
+foreach ($key in $softwareKeys) {
+    If (Test-Path $key) {
+        $w62Result += Get-ChildItem -Path $key -Recurse
+    }
+}
 
-:: 정리 작업
-echo 정리 작업을 수행합니다...
-del "C:\Window_%COMPUTERNAME%_raw\*.txt"
-del "C:\Window_%COMPUTERNAME%_raw\*.vbs"
+If ($w62Result.Count -gt 0) {
+    "W-62,O,| 취약: ESTsoft 또는 AhnLab 소프트웨어가 설치된 경우" | Out-File "$resultDirectory\W-Window-${computerName}-result.txt"
+} Else {
+    "W-62,C,| 안전: ESTsoft 또는 AhnLab 소프트웨어가 설치되지 않은 경우" | Out-File "$resultDirectory\W-Window-${computerName}-result.txt"
+}
 
-echo 스크립트를 종료합니다.
-exit
+# 결과 요약
+Get-Content -Path "$resultDirectory\W-Window-*" | Out-File -FilePath "$resultDirectory\security_audit_summary.txt"
+
+Write-Output "Results have been saved to $resultDirectory\security_audit_summary.txt."
+
+# 정리 작업
+Remove-Item -Path "$rawDirectory\*" -Force
+
+Write-Output "Script has completed."
